@@ -31,7 +31,26 @@ signal wave_triggered(wave_id: int)
 @export var one_shot: bool = true
 @export var target_player: bool = true
 
+# 精英词缀(策划 03 §5.1):本波怪刷出来后自动打上对应标签。
+@export var spawn_as_molten: bool = false
+
+# 系统组对接 — 元数据归属(ProgressionManager 给 XP / LootManager 掉物按源分级)
+# 在 Inspector 配置后,本波每只怪都会被打上这三条 meta:
+#   monster_id    → ProgressionManager 据此查 monsters.tres 的 base_xp(策划 V2.1 怪物 id)
+#   monster_level → 0 表示运行时取玩家等级;>0 用于固定级别(屠夫=7)
+#   drop_source   → DropSystem.Source 枚举:0=TRASH 1=ELITE_BLUE 2=CHAMPION_YELLOW 3=BUTCHER
+@export_enum("trash", "elite_blue", "champion_yellow", "skeleton_guard", "butcher") var monster_id: String = "trash"
+@export_range(0, 8, 1) var monster_level: int = 0
+@export_enum("trash", "elite_blue", "champion_yellow", "butcher") var drop_source: String = "trash"
+# 精英组:全员清光时调 LootManager.notify_elite_group_killed() 喂软保底
+@export var elite_group: bool = false
+
+const _DROP_SOURCE_MAP := {
+	"trash": 0, "elite_blue": 1, "champion_yellow": 2, "butcher": 3,
+}
+
 var _triggered: bool = false
+var _my_wave_id: int = -1
 
 func _ready() -> void:
 	# Area3D 默认 monitoring=true,这里再保险设置;collision_mask 应在 .tscn 里设为 1(player layer)
@@ -75,7 +94,41 @@ func _trigger_spawn(player_body: Node) -> void:
 	})
 	if wid >= 0:
 		_triggered = true
+		_my_wave_id = wid
 		wave_triggered.emit(wid)
+		# 系统组对接:始终连 enemy_spawned 来挂 monster_id / monster_level / drop_source 元数据
+		if sm.has_signal("enemy_spawned"):
+			sm.enemy_spawned.connect(_on_enemy_spawned)
+		# 精英组保底通知:全员清光时调 LootManager.notify_elite_group_killed()
+		if elite_group and sm.has_signal("wave_cleared"):
+			sm.wave_cleared.connect(_on_wave_cleared)
+
+func _on_enemy_spawned(enemy: Node, wave_id: int) -> void:
+	if wave_id != _my_wave_id or enemy == null:
+		return
+	# 元数据(策划 V2.1 锁定 id 池;ProgressionManager / LootManager 据此结算)
+	enemy.set_meta(&"monster_id", StringName(monster_id))
+	var lv: int = monster_level
+	if lv <= 0:
+		lv = _get_player_level()
+	enemy.set_meta(&"monster_level", lv)
+	enemy.set_meta(&"drop_source", int(_DROP_SOURCE_MAP.get(drop_source, 0)))
+	# 精英词缀
+	if spawn_as_molten and "is_molten" in enemy:
+		enemy.is_molten = true
+
+func _on_wave_cleared(wave_id: int) -> void:
+	if wave_id != _my_wave_id:
+		return
+	var lm: Node = get_node_or_null("/root/LootManager")
+	if lm != null and lm.has_method("notify_elite_group_killed"):
+		lm.notify_elite_group_killed()
+
+func _get_player_level() -> int:
+	var pm: Node = get_node_or_null("/root/ProgressionManager")
+	if pm != null and "level" in pm:
+		return int(pm.level)
+	return 1
 
 # 公共 API:重置触发器(允许再次触发)
 func reset() -> void:
