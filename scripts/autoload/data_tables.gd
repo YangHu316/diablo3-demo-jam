@@ -7,6 +7,8 @@ extends Node
 # 关卡C finalizes numbers (Day1 上午先用占位/初版数值).
 
 const AFFIX_TABLE_PATH: String = "res://data/affixes.tres"
+const BASE_ITEM_TABLE_PATH: String = "res://data/base_items.tres"
+const EPIC_ITEM_TABLE_PATH: String = "res://data/epic_items.tres"
 const LEGENDARY_TABLE_PATH: String = "res://data/legendaries.tres"
 const MONSTER_TABLE_PATH: String = "res://data/monsters.tres"
 const XP_CURVE_PATH: String = "res://data/xp_curve.tres"
@@ -15,6 +17,13 @@ const TIER_TABLE_PATH: String = "res://data/tier_table.tres"
 var _affixes: Array[AffixDef] = []
 var _affix_by_id: Dictionary = {}            # StringName -> AffixDef
 var _affixes_by_slot: Dictionary = {}        # slot StringName -> Array[AffixDef]
+
+var _base_items: Array[ItemBaseDef] = []
+var _base_by_slot: Dictionary = {}           # slot StringName -> ItemBaseDef
+
+var _epics: Array[EpicItemDef] = []
+var _epic_by_id: Dictionary = {}             # StringName -> EpicItemDef
+var _epics_by_slot: Dictionary = {}          # slot StringName -> Array[EpicItemDef]
 
 var _legendaries: Array[LegendaryDef] = []
 var _legendary_by_id: Dictionary = {}
@@ -32,6 +41,8 @@ func _ready() -> void:
 
 func _load_all() -> void:
 	_load_affixes()
+	_load_base_items()
+	_load_epics()
 	_load_legendaries()
 	_load_monsters()
 	xp_curve = _load_res(XP_CURVE_PATH) as XPCurve
@@ -57,6 +68,36 @@ func _load_affixes() -> void:
 			continue
 		_affixes.append(ad)
 		_affix_by_id[ad.id] = ad
+
+func _load_base_items() -> void:
+	_base_items.clear()
+	_base_by_slot.clear()
+	var pack: Resource = _load_res(BASE_ITEM_TABLE_PATH)
+	if pack == null or not (&"base_items" in pack):
+		return
+	for b in pack.get(&"base_items"):
+		var bd: ItemBaseDef = b as ItemBaseDef
+		if bd == null:
+			continue
+		_base_items.append(bd)
+		_base_by_slot[bd.slot] = bd
+
+func _load_epics() -> void:
+	_epics.clear()
+	_epic_by_id.clear()
+	_epics_by_slot.clear()
+	var pack: Resource = _load_res(EPIC_ITEM_TABLE_PATH)
+	if pack == null or not (&"epics" in pack):
+		return
+	for e in pack.get(&"epics"):
+		var ed: EpicItemDef = e as EpicItemDef
+		if ed == null:
+			continue
+		_epics.append(ed)
+		_epic_by_id[ed.id] = ed
+		if not _epics_by_slot.has(ed.slot):
+			_epics_by_slot[ed.slot] = []
+		_epics_by_slot[ed.slot].append(ed)
 
 func _load_legendaries() -> void:
 	_legendaries.clear()
@@ -100,6 +141,32 @@ func get_affixes_for_slot(slot_name: StringName) -> Array[AffixDef]:
 	for ad in _affixes:
 		if ad.allowed_slots.is_empty() or ad.allowed_slots.has(slot_name):
 			out.append(ad)
+	return out
+
+# ---- 基底装备 (base_items.tres) ----
+func get_all_base_items() -> Array[ItemBaseDef]:
+	return _base_items
+
+# 某槽位的基底 (戒指两槽共用 "ring").
+func get_base_item(slot_name: StringName) -> ItemBaseDef:
+	return _base_by_slot.get(slot_name, null)
+
+# 某槽位在指定 tier 的基底名 (短弓/猎弓/战弓); 无则空串.
+func get_base_name(slot_name: StringName, tier: int) -> String:
+	var bd: ItemBaseDef = get_base_item(slot_name)
+	return bd.name_for_tier(tier) if bd != null else ""
+
+# ---- 史诗具名件 (epic_items.tres) ----
+func get_all_epics() -> Array[EpicItemDef]:
+	return _epics
+
+func get_epic(id: StringName) -> EpicItemDef:
+	return _epic_by_id.get(id, null)
+
+func get_epics_for_slot(slot_name: StringName) -> Array[EpicItemDef]:
+	var out: Array[EpicItemDef] = []
+	for ed in _epics_by_slot.get(slot_name, []):
+		out.append(ed)
 	return out
 
 func get_legendary(id: StringName) -> LegendaryDef:

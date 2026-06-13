@@ -1,0 +1,98 @@
+[gd_resource type="Resource" script_class="EpicItemTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/epic_item_def.gd" id="1_e11ni"]
+[ext_resource type="Script" path="res://scripts/data/epic_item_table.gd" id="2_7v1q6"]
+
+[sub_resource type="Resource" id="Resource_jkdp8"]
+script = ExtResource("1_e11ni")
+id = &"riftwind_bow"
+display_name = "裂风长弓"
+slot = &"bow"
+guaranteed_affix_id = &"weapon_damage"
+secondary_hint = "攻速+5~7%"
+serves_build = "通用DPS"
+
+[sub_resource type="Resource" id="Resource_vl6qx"]
+script = ExtResource("1_e11ni")
+id = &"thousand_eye_quiver"
+display_name = "千眼箭囊"
+slot = &"quiver"
+guaranteed_affix_id = &"skill_damage"
+secondary_hint = "敏捷"
+serves_build = "多重散射/冰控"
+
+[sub_resource type="Resource" id="Resource_hb87g"]
+script = ExtResource("1_e11ni")
+id = &"falcon_visor"
+display_name = "鹰隼面甲"
+slot = &"head"
+guaranteed_affix_id = &"crit_chance"
+secondary_hint = "敏捷"
+serves_build = "暴击Build"
+
+[sub_resource type="Resource" id="Resource_ef58f"]
+script = ExtResource("1_e11ni")
+id = &"thorn_cuirass"
+display_name = "荆棘胸铠"
+slot = &"chest"
+guaranteed_affix_id = &"vitality"
+secondary_hint = "护甲+15~30"
+serves_build = "生存/坦"
+
+[sub_resource type="Resource" id="Resource_yaoed"]
+script = ExtResource("1_e11ni")
+id = &"swift_grips"
+display_name = "疾矢指套"
+slot = &"gloves"
+guaranteed_affix_id = &"attack_speed"
+secondary_hint = "暴击率+3~6%"
+serves_build = "攻速/手感"
+
+[sub_resource type="Resource" id="Resource_02udj"]
+script = ExtResource("1_e11ni")
+id = &"windrunner_boots"
+display_name = "风行战靴"
+slot = &"boots"
+guaranteed_affix_id = &"move_speed"
+secondary_hint = "技能伤%"
+serves_build = "机动游击/风筝"
+
+[sub_resource type="Resource" id="Resource_xp8r4"]
+script = ExtResource("1_e11ni")
+id = &"keen_chain"
+display_name = "敏锐之链"
+slot = &"amulet"
+guaranteed_affix_id = &"agility"
+secondary_hint = "暴击伤害+25~50%"
+serves_build = "通用DPS"
+
+[sub_resource type="Resource" id="Resource_jmdq0"]
+script = ExtResource("1_e11ni")
+id = &"bloodquench_ring"
+display_name = "淬血指环"
+slot = &"ring"
+guaranteed_affix_id = &"crit_chance"
+secondary_hint = "暴击伤害+25~50%"
+serves_build = "暴击双修"
+
+[sub_resource type="Resource" id="Resource_eq18c"]
+script = ExtResource("1_e11ni")
+id = &"unyielding_girdle"
+display_name = "不挠腰封"
+slot = &"waist"
+guaranteed_affix_id = &"all_resist"
+secondary_hint = "体能+10~18"
+serves_build = "生存"
+
+[sub_resource type="Resource" id="Resource_eo5yk"]
+script = ExtResource("1_e11ni")
+id = &"windhunt_pauldrons"
+display_name = "猎风披膊"
+slot = &"shoulder"
+guaranteed_affix_id = &"agility"
+secondary_hint = "护甲+15~30"
+serves_build = "通用/生存"
+
+[resource]
+script = ExtResource("2_7v1q6")
+epics = Array[ExtResource("1_e11ni")]([SubResource("Resource_jkdp8"), SubResource("Resource_vl6qx"), SubResource("Resource_hb87g"), SubResource("Resource_ef58f"), SubResource("Resource_yaoed"), SubResource("Resource_02udj"), SubResource("Resource_xp8r4"), SubResource("Resource_jmdq0"), SubResource("Resource_eq18c"), SubResource("Resource_eo5yk")])

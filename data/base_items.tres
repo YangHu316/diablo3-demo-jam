@@ -1,0 +1,125 @@
+[gd_resource type="Resource" script_class="BaseItemTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_base_def.gd" id="1_qbuaf"]
+[ext_resource type="Script" path="res://scripts/data/base_item_table.gd" id="2_vbaxp"]
+
+[sub_resource type="Resource" id="Resource_ha431"]
+script = ExtResource("1_qbuaf")
+slot = &"bow"
+display_part = "弓"
+t1_name = "短弓"
+t2_name = "猎弓"
+t3_name = "战弓"
+base_value_kind = 0
+main_roll_affixes = Array[StringName]([&"weapon_damage", &"attack_speed", &"agility"])
+
+[sub_resource type="Resource" id="Resource_n2e01"]
+script = ExtResource("1_qbuaf")
+slot = &"quiver"
+display_part = "箭袋"
+t1_name = "皮箭袋"
+t2_name = "精织箭袋"
+t3_name = "符纹箭囊"
+main_roll_affixes = Array[StringName]([&"skill_damage", &"agility", &"vitality"])
+
+[sub_resource type="Resource" id="Resource_fmcb6"]
+script = ExtResource("1_qbuaf")
+slot = &"head"
+display_part = "头"
+t1_name = "布兜帽"
+t2_name = "皮盔"
+t3_name = "链头盔"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"crit_chance", &"skill_damage", &"agility"])
+
+[sub_resource type="Resource" id="Resource_t04ne"]
+script = ExtResource("1_qbuaf")
+slot = &"shoulder"
+display_part = "肩"
+t1_name = "布披膊"
+t2_name = "皮护肩"
+t3_name = "链肩甲"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"agility", &"armor", &"all_resist"])
+
+[sub_resource type="Resource" id="Resource_x5ge1"]
+script = ExtResource("1_qbuaf")
+slot = &"chest"
+display_part = "胸"
+t1_name = "布上衣"
+t2_name = "皮甲"
+t3_name = "链胸甲"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"skill_damage", &"vitality", &"armor"])
+
+[sub_resource type="Resource" id="Resource_ayabo"]
+script = ExtResource("1_qbuaf")
+slot = &"wrist"
+display_part = "腕"
+t1_name = "布护腕"
+t2_name = "皮护腕"
+t3_name = "链护腕"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"agility", &"armor", &"vitality"])
+
+[sub_resource type="Resource" id="Resource_22lnt"]
+script = ExtResource("1_qbuaf")
+slot = &"gloves"
+display_part = "手套"
+t1_name = "布手套"
+t2_name = "皮手套"
+t3_name = "链护手"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"attack_speed", &"crit_chance", &"crit_damage"])
+
+[sub_resource type="Resource" id="Resource_fs7s3"]
+script = ExtResource("1_qbuaf")
+slot = &"waist"
+display_part = "腰"
+t1_name = "布腰带"
+t2_name = "皮腰带"
+t3_name = "链腰带"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"vitality", &"all_resist", &"armor"])
+
+[sub_resource type="Resource" id="Resource_sg2d2"]
+script = ExtResource("1_qbuaf")
+slot = &"legs"
+display_part = "腿"
+t1_name = "布护腿"
+t2_name = "皮护腿"
+t3_name = "链护腿"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"agility", &"armor", &"vitality"])
+
+[sub_resource type="Resource" id="Resource_58cq1"]
+script = ExtResource("1_qbuaf")
+slot = &"boots"
+display_part = "脚"
+t1_name = "布鞋"
+t2_name = "皮靴"
+t3_name = "链靴"
+base_value_kind = 1
+main_roll_affixes = Array[StringName]([&"move_speed", &"skill_damage", &"agility"])
+
+[sub_resource type="Resource" id="Resource_44r3r"]
+script = ExtResource("1_qbuaf")
+slot = &"amulet"
+display_part = "项链"
+t1_name = "护符"
+t2_name = "项链"
+t3_name = "圣徽"
+main_roll_affixes = Array[StringName]([&"agility", &"crit_damage", &"all_resist"])
+
+[sub_resource type="Resource" id="Resource_mc684"]
+script = ExtResource("1_qbuaf")
+slot = &"ring"
+display_part = "戒指"
+t1_name = "铜戒"
+t2_name = "银指环"
+t3_name = "符纹印戒"
+main_roll_affixes = Array[StringName]([&"crit_chance", &"crit_damage", &"attack_speed"])
+
+[resource]
+script = ExtResource("2_vbaxp")
+base_items = Array[ExtResource("1_qbuaf")]([SubResource("Resource_ha431"), SubResource("Resource_n2e01"), SubResource("Resource_fmcb6"), SubResource("Resource_t04ne"), SubResource("Resource_x5ge1"), SubResource("Resource_ayabo"), SubResource("Resource_22lnt"), SubResource("Resource_fs7s3"), SubResource("Resource_sg2d2"), SubResource("Resource_58cq1"), SubResource("Resource_44r3r"), SubResource("Resource_mc684")])

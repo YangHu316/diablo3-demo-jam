@@ -73,6 +73,79 @@ func _build_legendaries() -> LegendaryTable:
 	t.legendaries = list
 	return t
 
+# ---------------------------------------------------------------------------
+# 基底装备 (base_items.csv) — 12 部位类型 × 3 Tier.
+# ---------------------------------------------------------------------------
+func _make_base(slot: String, part: String, t1: String, t2: String, t3: String,
+		kind: int, main_roll: Array) -> ItemBaseDef:
+	var b := ItemBaseDef.new()
+	b.slot = StringName(slot)
+	b.display_part = part
+	b.t1_name = t1
+	b.t2_name = t2
+	b.t3_name = t3
+	b.base_value_kind = kind
+	var typed: Array[StringName] = []
+	for a in main_roll:
+		typed.append(StringName(a))
+	b.main_roll_affixes = typed
+	return b
+
+func _build_base_items() -> BaseItemTable:
+	var WPN := ItemBaseDef.BaseValueKind.WEAPON_DPS
+	var ARM := ItemBaseDef.BaseValueKind.ARMOR
+	var NON := ItemBaseDef.BaseValueKind.NONE
+	var t := BaseItemTable.new()
+	var list: Array[ItemBaseDef] = [
+		# slot, 部位, T1, T2, T3, 白值类型, 主roll词缀(遵 affixes.csv 部位约束)
+		_make_base("bow", "弓", "短弓", "猎弓", "战弓", WPN, ["weapon_damage", "attack_speed", "agility"]),
+		_make_base("quiver", "箭袋", "皮箭袋", "精织箭袋", "符纹箭囊", NON, ["skill_damage", "agility", "vitality"]),
+		_make_base("head", "头", "布兜帽", "皮盔", "链头盔", ARM, ["crit_chance", "skill_damage", "agility"]),
+		_make_base("shoulder", "肩", "布披膊", "皮护肩", "链肩甲", ARM, ["agility", "armor", "all_resist"]),
+		_make_base("chest", "胸", "布上衣", "皮甲", "链胸甲", ARM, ["skill_damage", "vitality", "armor"]),
+		_make_base("wrist", "腕", "布护腕", "皮护腕", "链护腕", ARM, ["agility", "armor", "vitality"]),
+		_make_base("gloves", "手套", "布手套", "皮手套", "链护手", ARM, ["attack_speed", "crit_chance", "crit_damage"]),
+		_make_base("waist", "腰", "布腰带", "皮腰带", "链腰带", ARM, ["vitality", "all_resist", "armor"]),
+		_make_base("legs", "腿", "布护腿", "皮护腿", "链护腿", ARM, ["agility", "armor", "vitality"]),
+		_make_base("boots", "脚", "布鞋", "皮靴", "链靴", ARM, ["move_speed", "skill_damage", "agility"]),
+		_make_base("amulet", "项链", "护符", "项链", "圣徽", NON, ["agility", "crit_damage", "all_resist"]),
+		_make_base("ring", "戒指", "铜戒", "银指环", "符纹印戒", NON, ["crit_chance", "crit_damage", "attack_speed"]),
+	]
+	t.base_items = list
+	return t
+
+# ---------------------------------------------------------------------------
+# 史诗具名件 (epic_items.csv) — 10 件; 保送顶值词缀 = affixes.csv 的 id.
+# ---------------------------------------------------------------------------
+func _make_epic(id: StringName, name: String, slot: String, guaranteed: StringName,
+		hint: String, build: String) -> EpicItemDef:
+	var e := EpicItemDef.new()
+	e.id = id
+	e.display_name = name
+	e.slot = StringName(slot)
+	e.guaranteed_affix_id = guaranteed
+	e.secondary_hint = hint
+	e.serves_build = build
+	return e
+
+func _build_epics() -> EpicItemTable:
+	var t := EpicItemTable.new()
+	var list: Array[EpicItemDef] = [
+		# id, 名称, slot, 保送词缀id(affixes), 次要倾向, 服务Build
+		_make_epic(&"riftwind_bow", "裂风长弓", "bow", &"weapon_damage", "攻速+5~7%", "通用DPS"),
+		_make_epic(&"thousand_eye_quiver", "千眼箭囊", "quiver", &"skill_damage", "敏捷", "多重散射/冰控"),
+		_make_epic(&"falcon_visor", "鹰隼面甲", "head", &"crit_chance", "敏捷", "暴击Build"),
+		_make_epic(&"thorn_cuirass", "荆棘胸铠", "chest", &"vitality", "护甲+15~30", "生存/坦"),
+		_make_epic(&"swift_grips", "疾矢指套", "gloves", &"attack_speed", "暴击率+3~6%", "攻速/手感"),
+		_make_epic(&"windrunner_boots", "风行战靴", "boots", &"move_speed", "技能伤%", "机动游击/风筝"),
+		_make_epic(&"keen_chain", "敏锐之链", "amulet", &"agility", "暴击伤害+25~50%", "通用DPS"),
+		_make_epic(&"bloodquench_ring", "淬血指环", "ring", &"crit_chance", "暴击伤害+25~50%", "暴击双修"),
+		_make_epic(&"unyielding_girdle", "不挠腰封", "waist", &"all_resist", "体能+10~18", "生存"),
+		_make_epic(&"windhunt_pauldrons", "猎风披膊", "shoulder", &"agility", "护甲+15~30", "通用/生存"),
+	]
+	t.epics = list
+	return t
+
 func _make_monster(id: StringName, name: String, bh: float, ba: float, bx: float,
 		hmul: float, amul: float, boss: bool, gold_mul: float) -> MonsterDef:
 	var m := MonsterDef.new()
@@ -150,6 +223,8 @@ func _save(res: Resource, path: String) -> void:
 func _init() -> void:
 	print("Generating data tables...")
 	_save(_build_affixes(), "res://data/affixes.tres")
+	_save(_build_base_items(), "res://data/base_items.tres")
+	_save(_build_epics(), "res://data/epic_items.tres")
 	_save(_build_legendaries(), "res://data/legendaries.tres")
 	_save(_build_monsters(), "res://data/monsters.tres")
 	_save(_build_xp_curve(), "res://data/xp_curve.tres")

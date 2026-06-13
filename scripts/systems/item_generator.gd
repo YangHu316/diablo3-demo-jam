@@ -34,6 +34,21 @@ const QUALITY_WEIGHTS := {
 var _dt: Object = null          # DataTables autoload
 var _rng: RandomNumberGenerator
 
+# 程序化命名素材 (affix_naming.csv 镜像; 按 affix id 索引).
+# 精良: 前缀+基底(+后缀若2词缀); 稀有: 两段稀有名素材+基底. 命名是表现层, 用 const 即可.
+const NAMING := {
+	&"agility":       {"prefix": "敏锐的", "suffix": "之力",   "rare": "鹰"},
+	&"crit_chance":   {"prefix": "致命的", "suffix": "之精准", "rare": "蛇牙"},
+	&"crit_damage":   {"prefix": "残酷的", "suffix": "之毁灭", "rare": "血"},
+	&"attack_speed":  {"prefix": "迅捷的", "suffix": "之疾风", "rare": "风"},
+	&"weapon_damage": {"prefix": "凶蛮的", "suffix": "之利刃", "rare": "獠牙"},
+	&"skill_damage":  {"prefix": "奥能的", "suffix": "之奥义", "rare": "奥术"},
+	&"vitality":      {"prefix": "坚韧的", "suffix": "之活力", "rare": "熊"},
+	&"armor":         {"prefix": "铁壁的", "suffix": "之守护", "rare": "龟甲"},
+	&"all_resist":    {"prefix": "抗御的", "suffix": "之屏障", "rare": "棱光"},
+	&"move_speed":    {"prefix": "疾行的", "suffix": "之疾步", "rare": "豹"},
+}
+
 func _init(data_tables: Object, seed_value: int = -1) -> void:
 	_dt = data_tables
 	_rng = RandomNumberGenerator.new()
@@ -71,10 +86,19 @@ func generate(slot: int, item_level: int, quality: int = -1) -> ItemInstance:
 	item.item_level = item_level
 	item.quality = quality
 	item.tier = _tier_for(item_level)
-	# 史诗: 保送 1 条顶值词缀 (扩展层 §一); 其余正常 roll.
-	var force_top: bool = (quality == ItemInstance.Quality.EPIC)
-	item.affixes = _roll_affixes(slot, item.tier, _count_for(quality), force_top)
-	item.display_name = _make_name(quality, slot)
+	# 史诗: 从具名池抽一件, 保送其指定顶值词缀 (扩展层 §一); 其余正常 roll.
+	if quality == ItemInstance.Quality.EPIC:
+		var ep = _pick_epic_for_slot(slot)
+		if ep != null:
+			item.affixes = _roll_affixes(slot, item.tier, _count_for(quality), ep.guaranteed_affix_id)
+			item.display_name = ep.display_name
+			return item
+		# 该槽位无对应史诗 -> 退化成保送该槽首条顶值的匿名史诗.
+		item.affixes = _roll_affixes(slot, item.tier, _count_for(quality), &"__TOP__")
+		item.display_name = _make_name(quality, slot, item.affixes, item.tier)
+		return item
+	item.affixes = _roll_affixes(slot, item.tier, _count_for(quality))
+	item.display_name = _make_name(quality, slot, item.affixes, item.tier)
 	return item
 
 # 生成指定传奇 (4 条普通词缀 + 橙字特效).
@@ -110,18 +134,31 @@ func _tier_for(item_level: int) -> int:
 	return 1
 
 # 从该槽位合法词缀池里, 不重复抽 count 条并 roll 数值.
-# force_top=true (史诗): 第 1 条词缀直接取该 tier 顶值 (保送1条顶值词缀).
-func _roll_affixes(slot: int, tier: int, count: int, force_top: bool = false) -> Array[Dictionary]:
+# guaranteed_id: 史诗保送一条该词缀(取该 tier 顶值)并置于首位. &"__TOP__" = 保送该池第一条的顶值.
+func _roll_affixes(slot: int, tier: int, count: int, guaranteed_id: StringName = &"") -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var slot_name: StringName = _slot_name(slot)
 	var pool: Array = _dt.get_affixes_for_slot(slot_name).duplicate()
-	# 洗牌后顺序取, 保证不重复词缀类型.
 	_shuffle(pool)
+	# 史诗保送: 把指定词缀(或池首条)提到队首, 后续以顶值产出.
+	var forced: Object = null
+	if guaranteed_id == &"__TOP__":
+		if not pool.is_empty():
+			forced = pool[0]
+	elif guaranteed_id != &"":
+		for ad in pool:
+			if ad.id == guaranteed_id:
+				forced = ad
+				break
+	if forced != null:
+		pool.erase(forced)
+		pool.insert(0, forced)
 	var picked: int = 0
 	for ad in pool:
 		if picked >= count:
 			break
-		var raw: float = (ad.max_value(tier) if (force_top and picked == 0) else ad.roll_value(tier, _rng))
+		var is_top: bool = (forced != null and picked == 0)
+		var raw: float = (ad.max_value(tier) if is_top else ad.roll_value(tier, _rng))
 		# 百分比保留 1 位小数, 绝对值取整.
 		var value: float = (round(raw * 10.0) / 10.0) if ad.is_percent else float(round(raw))
 		out.append({
@@ -151,6 +188,14 @@ func _pick_legendary_for_slot(slot: int) -> StringName:
 		return &""
 	return matches[_rng.randi_range(0, matches.size() - 1)]
 
+# 该槽位随机一件史诗具名件 (无则 null).
+func _pick_epic_for_slot(slot: int) -> Object:
+	var slot_name: StringName = _slot_name(slot)
+	var matches: Array = _dt.get_epics_for_slot(slot_name)
+	if matches.is_empty():
+		return null
+	return matches[_rng.randi_range(0, matches.size() - 1)]
+
 func _slot_name(slot: int) -> StringName:
 	return EquipSlots.SLOT_NAMES.get(slot, &"")
 
@@ -161,7 +206,36 @@ func _slot_from_name(slot_name: StringName) -> int:
 			return s
 	return EquipSlots.Slot.HEAD
 
-func _make_name(quality: int, slot: int) -> String:
-	var q: String = ItemInstance.QUALITY_NAMES.get(quality, "")
-	var s: String = EquipSlots.SLOT_DISPLAY.get(slot, "装备")
-	return "%s %s" % [q, s]
+func _make_name(quality: int, slot: int, affixes: Array[Dictionary], tier: int) -> String:
+	var slot_name: StringName = _slot_name(slot)
+	var base: String = _dt.get_base_name(slot_name, tier)
+	if base == "":
+		base = EquipSlots.SLOT_DISPLAY.get(slot, "装备")
+	match quality:
+		ItemInstance.Quality.COMMON:
+			# 普通: 基底名.
+			return base
+		ItemInstance.Quality.MAGIC:
+			# 精良: 前缀+基底 (+后缀若 ≥2 词缀).
+			if affixes.is_empty():
+				return base
+			var p: String = _naming_of(affixes[0]).get("prefix", "")
+			var name: String = p + base
+			if affixes.size() >= 2:
+				name += " " + _naming_of(affixes[1]).get("suffix", "")
+			return name
+		ItemInstance.Quality.RARE:
+			# 稀有: 生成式两段名 + 基底类型 (取前两条词缀的稀有名素材).
+			var seg1: String = _naming_of(affixes[0]).get("rare", "") if affixes.size() >= 1 else ""
+			var seg2: String = _naming_of(affixes[1]).get("rare", "") if affixes.size() >= 2 else ""
+			var two: String = seg1
+			if seg2 != "":
+				two += "·" + seg2
+			return ("%s %s" % [two, base]) if two != "" else base
+		_:
+			# 史诗/传说 走具名, 不应到此; 兜底用基底名.
+			return base
+
+# 取某条已 roll 词缀的命名素材 dict (无则空 dict).
+func _naming_of(affix: Dictionary) -> Dictionary:
+	return NAMING.get(affix.get("affix_id", &""), {})
