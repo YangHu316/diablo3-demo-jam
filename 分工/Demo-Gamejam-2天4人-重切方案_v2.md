@@ -295,6 +295,16 @@
 4. **报错贴全栈**,并说明 Godot 版本与节点树。
 5. **数据表让 Claude 批量产**:词缀池、传奇表、怪物数值、XP 曲线,直接让它生成 .tres/CSV,人只审。
 
+> **Git 协作约定(全员)**
+> - 仓库已加 `.gitattributes`,把 Godot 文本资源(`.gd`/`.import`/`.tres`/`.tscn`/`.godot`/`.uid` 等)统一锁为 **LF** 行尾,二进制资源(`.fbx`/`.png`/`.ttf` 等)标 `binary`。这是为根治此前 500+ 个 `.import` 文件因 `core.autocrlf` 反复在 LF/CRLF 间抖动产生的噪音 diff。
+> - **首次 pull 到此修复后,本地若有 CRLF 旧副本会出现一次性"重规范化"改动**,执行下面两行清掉即可(无内容变化,放心丢弃):
+>   ```bash
+>   git add --renormalize .
+>   git checkout -- .
+>   ```
+> - 之后正常提交即可,Godot 重新导入资源**不会再产生**满屏 `.import` 行尾 diff。
+> - `数值表/*.csv` 已设 `importer="keep"`(不当翻译导入);**新增 CSV 时记得把其 `.csv.import` 也设为 keep**,否则中文表头会再次触发非法翻译路径报错。
+
 ### 8.4 Claude 不该主导(必须人来)的边界
 
 - 在引擎里**实际运行验证**(Claude 看不到运行结果)。
