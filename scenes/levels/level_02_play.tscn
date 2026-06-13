@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -20,3 +22,7 @@ script = ExtResource("3")
 
 [node name="ScreenShake" type="Node" parent="Camera3D" unique_id=154599739]
 script = ExtResource("4")
+
+[node name="HUD" parent="." instance=ExtResource("5")]
+
+[node name="InventoryPanel" parent="." instance=ExtResource("6")]
