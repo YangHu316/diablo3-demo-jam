@@ -16,6 +16,10 @@ desktop.ini
 *.swp
 *.swo
 
+# AI assistant local settings
+.claude/
+.codebuddy/
+
 # Export builds
 export/
 *.pck
