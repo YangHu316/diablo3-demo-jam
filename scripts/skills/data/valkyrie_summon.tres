@@ -27,4 +27,4 @@ cancels_attack_cooldowns = false
 summon_scene = ExtResource("2")
 summon_duration = 20.0
 summon_max_count = 1
-description = "召唤女武神协战 20s。AI 追最近敌人近战(1.5s 间隔,武器均伤×2)。同时上限 1 个。"
+description = "召唤女武神协战 20s。AI 追最近敌人近战(1.5s 间隔,武器均伤×2)。同时上限 1 个。CD 45s。"

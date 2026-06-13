@@ -37,6 +37,11 @@ const MOLTEN_DELAY: float = 1.0
 var max_health: int = 80
 var current_health: int = 80
 var move_speed: float = 4.2
+
+# 冰冻 / 减速(冰冻箭命中:1.5s 冻 + 解冻后 2s 减速 50%)
+var _freeze_timer: float = 0.0
+var _slow_amount: float = 0.0       # 0~1,1=完全停止
+var _slow_timer: float = 0.0
 var attack_damage: int = 12
 var attack_range: float = 2.0
 var detection_range: float = 12.0
@@ -54,7 +59,6 @@ var _attack_did_strike: bool = false
 
 # ── 状态效果(冰冻/灼烧等)──────────────────────────
 var is_frozen: bool = false
-var _freeze_timer: float = 0.0
 
 # ── 节点引用 ─────────────────────────────────────────
 @onready var body_mesh: MeshInstance3D = $BodyMesh if has_node("BodyMesh") else null
@@ -112,6 +116,11 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector3.ZERO
 			move_and_slide()
 			return
+	# 减速 buff 衰减(独立于其他状态)
+	if _slow_timer > 0.0:
+		_slow_timer -= delta
+		if _slow_timer <= 0.0:
+			_slow_amount = 0.0
 	# 没找到玩家就持续重试(避免顺序问题)
 	if _player == null or not is_instance_valid(_player):
 		_acquire_player()
@@ -167,7 +176,7 @@ func _tick_chase(delta: float) -> void:
 	dir.y = 0.0
 	if dir.length() > 0.001:
 		dir = dir.normalized()
-		velocity = dir * move_speed
+		velocity = dir * (move_speed * (1.0 - _slow_amount))
 		# 朝向移动方向
 		look_at(global_position + dir, Vector3.UP)
 	else:
@@ -197,7 +206,7 @@ func _tick_attack(delta: float) -> void:
 			var step_dir: Vector3 = _player.global_position - global_position
 			step_dir.y = 0.0
 			if step_dir.length() > 0.001:
-				velocity = step_dir.normalized() * (move_speed * 0.5)
+				velocity = step_dir.normalized() * (move_speed * 0.5 * (1.0 - _slow_amount))
 			else:
 				velocity = Vector3.ZERO
 		else:
@@ -279,9 +288,18 @@ func apply_status(effect: String, duration: float) -> void:
 	match effect:
 		"frost", "freeze":
 			apply_freeze(duration)
+		"slow":
+			apply_slow(0.5, duration)
 		_:
 			# 其他状态后续扩展(灼烧/麻痹/中毒...)
 			push_warning("EnemyBase: unhandled status '%s'" % effect)
+
+# 减速:amount=0~1(0.5 = 减半速),duration 内生效;多次叠加取最大
+func apply_slow(amount: float, duration: float) -> void:
+	if state == State.DEATH:
+		return
+	_slow_amount = max(_slow_amount, clamp(amount, 0.0, 1.0))
+	_slow_timer = max(_slow_timer, duration)
 
 func apply_freeze(duration: float) -> void:
 	if state == State.DEATH:
@@ -306,6 +324,8 @@ func _unfreeze() -> void:
 		return
 	is_frozen = false
 	_freeze_timer = 0.0
+	# 冰冻箭余韵:解冻后 2s 内 50% 减速(策划 §4.2 寒霜碎裂前置)
+	apply_slow(0.5, 2.0)
 	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
 	if cjm != null and cjm.has_method("set_freeze"):
 		cjm.set_freeze(self, false)
