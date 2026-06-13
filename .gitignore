@@ -1,0 +1,22 @@
+# Godot
+.godot/
+*.tmp
+*.log
+
+# Import cache
+.import/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Export builds
+export/
+*.pck
+*.zip

@@ -1,0 +1,87 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_zombie.tscn" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="floor_mat"]
+albedo_color = Color(0.227451, 0.227451, 0.227451, 1)
+roughness = 0.95
+metallic = 0.0
+
+[sub_resource type="PlaneMesh" id="floor_mesh"]
+material = SubResource("floor_mat")
+size = Vector2(20, 20)
+
+[sub_resource type="BoxShape3D" id="floor_shape"]
+size = Vector3(20, 0.1, 20)
+
+[sub_resource type="NavigationMesh" id="nav_mesh"]
+agent_radius = 0.4
+agent_height = 1.8
+vertices = PackedVector3Array(-10, 0.05, -10, 10, 0.05, -10, 10, 0.05, 10, -10, 0.05, 10)
+polygons = [PackedInt32Array(0, 1, 2, 3)]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0, 0, 0, 1)
+sky_horizon_color = Color(0.02, 0.02, 0.03, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.02, 0.02, 0.03, 1)
+sun_angle_max = 30.0
+sun_curve = 0.15
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+
+[sub_resource type="Environment" id="env"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 2
+ambient_light_color = Color(0.1, 0.09, 0.08, 1)
+ambient_light_energy = 0.3
+tonemap_mode = 3
+ssao_enabled = true
+ssao_radius = 0.8
+ssao_intensity = 1.5
+glow_enabled = true
+glow_intensity = 0.4
+
+[node name="TestArena" type="Node3D"]
+
+[node name="Floor" type="StaticBody3D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("floor_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("floor_shape")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("nav_mesh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 8, 0)
+light_color = Color(1, 0.878431, 0.698039, 1)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="Enemies" type="Node3D" parent="."]
+
+[node name="EnemyZombie1" parent="Enemies" instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
+
+[node name="EnemyZombie2" parent="Enemies" instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 5)
+
+[node name="EnemyZombie3" parent="Enemies" instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
+
+[node name="EnemyZombie4" parent="Enemies" instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
+
+[node name="EnemyZombie5" parent="Enemies" instance=ExtResource("1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7)
