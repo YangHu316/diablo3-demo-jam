@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/butcher.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/stagger_component.gd" id="2"]
 [ext_resource type="PackedScene" path="res://assets/PolygonDungeon/Models/Characters/Characters.fbx" id="3"]
 [ext_resource type="Script" path="res://scripts/components/character_visibility.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/components/enemy_anim_driver.gd" id="5"]
 
 [sub_resource type="CapsuleShape3D" id="butcher_shape"]
 radius = 0.65
@@ -73,3 +74,9 @@ avoidance_enabled = false
 [node name="StaggerComponent" type="Node" parent="."]
 script = ExtResource("2")
 mesh_path = NodePath("../CharacterRig")
+
+[node name="AnimDriver" type="Node" parent="."]
+script = ExtResource("5")
+anim_player_path = NodePath("../CharacterRig/AnimationPlayer")
+anim_library = "ual1"
+death_state = 5

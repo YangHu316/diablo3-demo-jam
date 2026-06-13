@@ -17,6 +17,7 @@ extends CharacterBody3D
 
 signal phase_changed(new_phase: int)
 signal died(self_ref)
+signal state_changed(old_state: int, new_state: int)
 
 # ── 数值(策划 03 §6 锚点)─────────────────────────
 const MAX_HEALTH: int = 11000
@@ -395,6 +396,7 @@ func _tick_roar(delta: float) -> void:
 
 # ── 状态切换 ───────────────────────────────────────
 func _set_state(new_state: int) -> void:
+	var old_state := state
 	state = new_state
 	match new_state:
 		State.CHASE:
@@ -429,6 +431,7 @@ func _set_state(new_state: int) -> void:
 			var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
 			if cjm != null and cjm.has_method("_trigger_screen_shake"):
 				cjm._trigger_screen_shake()
+	state_changed.emit(old_state, new_state)
 
 # ── 受伤 / 死亡 ───────────────────────────────────────
 func take_damage(amount: int, source = null) -> void:

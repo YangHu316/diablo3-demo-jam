@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_base.gd" id="1_588kd"]
+[ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="2_a887j"]
+[ext_resource type="PackedScene" path="res://assets/characters/synty/Character_Goblin_Shaman.tscn" id="3_74eiw"]
+[ext_resource type="Script" path="res://scripts/components/knockback_component.gd" id="4_6fd5f"]
+[ext_resource type="Script" path="res://scripts/components/stagger_component.gd" id="5_u2w3k"]
+[ext_resource type="Script" path="res://scripts/components/enemy_anim_driver.gd" id="6_jcee3"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_ais8l"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_46hp3"]
+radius = 0.3
+height = 1.8
+
+[node name="Enemy_Goblin_Shaman" type="CharacterBody3D" unique_id=1986674023 groups=["enemies"]]
+collision_layer = 2
+collision_mask = 21
+script = ExtResource("1_588kd")
+data = ExtResource("2_a887j")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1157863892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_ais8l")
+
+[node name="Visual" type="Node3D" parent="." unique_id=44165934]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+
+[node name="Character_Goblin_Shaman" type="Node3D" parent="Visual" unique_id=1807831365 instance=ExtResource("3_74eiw")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=103833952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_46hp3")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=895113038]
+path_desired_distance = 0.5
+height = 1.8
+radius = 0.4
+
+[node name="KnockbackComponent" type="Node" parent="." unique_id=1107841871]
+script = ExtResource("4_6fd5f")
+
+[node name="StaggerComponent" type="Node" parent="." unique_id=1968374843]
+script = ExtResource("5_u2w3k")
+mesh_path = NodePath("../Visual")
+
+[node name="AnimDriver" type="Node" parent="." unique_id=1514361905]
+script = ExtResource("6_jcee3")
+anim_player_path = NodePath("../Visual/Character_Goblin_Shaman/AnimationPlayer")
+loop_anims = PackedStringArray("Idle", "Walk")
+anim_library = "ual1"
+ual_idle_anim = "Idle"
+ual_move_anim = "Walk"
+ual_loop_anims = PackedStringArray("Idle", "Walk")

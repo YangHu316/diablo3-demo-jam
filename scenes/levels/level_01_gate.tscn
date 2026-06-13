@@ -1,8 +1,11 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/level_01_gate.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_zombie.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/components/spawn_trigger.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_skeleton_slave_01.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_goblin_male.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_skeleton_soldier_01.tscn" id="8"]
 [ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="4"]
 [ext_resource type="Script" path="res://scripts/components/level_exit.gd" id="5"]
 
@@ -72,7 +75,7 @@ collision_layer = 0
 collision_mask = 1
 monitoring = true
 script = ExtResource("3")
-enemy_scene = ExtResource("2")
+enemy_scene = ExtResource("6")
 enemy_data = ExtResource("4")
 count = 3
 formation = "cluster"
@@ -90,7 +93,7 @@ collision_layer = 0
 collision_mask = 1
 monitoring = true
 script = ExtResource("3")
-enemy_scene = ExtResource("2")
+enemy_scene = ExtResource("7")
 enemy_data = ExtResource("4")
 count = 2
 formation = "line"
@@ -126,7 +129,7 @@ collision_layer = 0
 collision_mask = 1
 monitoring = true
 script = ExtResource("3")
-enemy_scene = ExtResource("2")
+enemy_scene = ExtResource("8")
 enemy_data = ExtResource("4")
 count = 4
 formation = "cluster"

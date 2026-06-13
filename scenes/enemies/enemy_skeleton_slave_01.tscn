@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_base.gd" id="1_w0x6d"]
+[ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="2_bgcv3"]
+[ext_resource type="PackedScene" path="res://assets/characters/synty/Character_Skeleton_Slave_01.tscn" id="3_4we4d"]
+[ext_resource type="Script" path="res://scripts/components/knockback_component.gd" id="4_bpg1v"]
+[ext_resource type="Script" path="res://scripts/components/stagger_component.gd" id="5_nus1p"]
+[ext_resource type="Script" path="res://scripts/components/enemy_anim_driver.gd" id="6_bp4b4"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_aclc6"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xdqcr"]
+radius = 0.3
+height = 1.8
+
+[node name="Enemy_Skeleton_Slave_01" type="CharacterBody3D" unique_id=754108412 groups=["enemies"]]
+collision_layer = 2
+collision_mask = 21
+script = ExtResource("1_w0x6d")
+data = ExtResource("2_bgcv3")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=2084502625]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_aclc6")
+
+[node name="Visual" type="Node3D" parent="." unique_id=814928552]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+
+[node name="Character_Skeleton_Slave_01" type="Node3D" parent="Visual" unique_id=1807831365 instance=ExtResource("3_4we4d")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1453233186]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_xdqcr")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=132802648]
+path_desired_distance = 0.5
+height = 1.8
+radius = 0.4
+
+[node name="KnockbackComponent" type="Node" parent="." unique_id=1618590503]
+script = ExtResource("4_bpg1v")
+
+[node name="StaggerComponent" type="Node" parent="." unique_id=319111730]
+script = ExtResource("5_nus1p")
+mesh_path = NodePath("../Visual")
+
+[node name="AnimDriver" type="Node" parent="." unique_id=1276260067]
+script = ExtResource("6_bp4b4")
+anim_player_path = NodePath("../Visual/Character_Skeleton_Slave_01/AnimationPlayer")
+loop_anims = PackedStringArray("Idle", "Walk")
+anim_library = "ual1"
+ual_idle_anim = "Idle"
+ual_move_anim = "Walk"
+ual_loop_anims = PackedStringArray("Idle", "Walk")
