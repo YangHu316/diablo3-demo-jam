@@ -1,0 +1,17 @@
+[gd_resource type="StandardMaterial3D" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/PolygonDungeon/Textures/Alternatives/Dungeons_Texture_01_B.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/PolygonDungeon/Textures/Emissive/Emmisive_01.png" id="2"]
+
+[resource]
+resource_name = "DungeonAtlas_B"
+albedo_texture = ExtResource("1")
+texture_filter = 0
+roughness = 1.0
+metallic = 0.0
+metallic_specular = 0.25
+emission_enabled = true
+emission = Color(0, 0, 0, 1)
+emission_energy_multiplier = 3.0
+emission_texture = ExtResource("2")
+emission_operator = 0

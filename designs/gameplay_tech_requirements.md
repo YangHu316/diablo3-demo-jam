@@ -68,7 +68,7 @@ res://scripts/
 │   ├── arrow.gd                 # 箭矢飞行+命中+伤害
 │   └── enemy_zombie.gd          # 站桩敌人：生命+受伤+死亡
 └── camera/
-    └── topdown_camera.gd        # 俯视相机：跟随+插值+shake/push 接口
+	└── topdown_camera.gd        # 俯视相机：跟随+插值+shake/push 接口
 ```
 
 ### B2. Node Structure (精确到叶子节点)
@@ -91,11 +91,11 @@ TestArena (Node3D)
 ├── DirectionalLight3D (energy=0.6, 偏黄暗调)
 ├── WorldEnvironment (Environment: 黑色天空 + SSAO + tonemap)
 └── Enemies (Node3D)
-    ├── EnemyZombie1 (instance enemy_zombie.tscn) @(5, 0, 5)
-    ├── EnemyZombie2 @(-5, 0, 5)
-    ├── EnemyZombie3 @(5, 0, -5)
-    ├── EnemyZombie4 @(-5, 0, -5)
-    └── EnemyZombie5 @(0, 0, 7)
+	├── EnemyZombie1 (instance enemy_zombie.tscn) @(5, 0, 5)
+	├── EnemyZombie2 @(-5, 0, 5)
+	├── EnemyZombie3 @(5, 0, -5)
+	├── EnemyZombie4 @(-5, 0, -5)
+	└── EnemyZombie5 @(0, 0, 7)
 ```
 
 **player.tscn** (CharacterBody3D 根, layer=1, mask=4)
