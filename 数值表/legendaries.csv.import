@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cdq76yoydpoq7"
+
+[deps]
+
+files=["res://数值表/legendaries.部位.translation", "res://数值表/legendaries.特效.translation", "res://数值表/legendaries.服务Build.translation", "res://数值表/legendaries.投放标记.translation"]
+
+source_file="res://数值表/legendaries.csv"
+dest_files=["res://数值表/legendaries.部位.translation", "res://数值表/legendaries.特效.translation", "res://数值表/legendaries.服务Build.translation", "res://数值表/legendaries.投放标记.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

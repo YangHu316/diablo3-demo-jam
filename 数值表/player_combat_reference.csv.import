@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://buhh1hs7o0gkj"
+
+[deps]
+
+files=["res://数值表/player_combat_reference.敏捷裸加装.translation", "res://数值表/player_combat_reference.生命标准体.translation", "res://数值表/player_combat_reference.武器均伤标准体.translation", "res://数值表/player_combat_reference.利箭单发期望155%.translation", "res://数值表/player_combat_reference.持续DPS预期.translation", "res://数值表/player_combat_reference.白怪几发死.translation", "res://数值表/player_combat_reference.暴击率%.translation", "res://数值表/player_combat_reference.暴伤%.translation"]
+
+source_file="res://数值表/player_combat_reference.csv"
+dest_files=["res://数值表/player_combat_reference.敏捷裸加装.translation", "res://数值表/player_combat_reference.生命标准体.translation", "res://数值表/player_combat_reference.武器均伤标准体.translation", "res://数值表/player_combat_reference.利箭单发期望155%.translation", "res://数值表/player_combat_reference.持续DPS预期.translation", "res://数值表/player_combat_reference.白怪几发死.translation", "res://数值表/player_combat_reference.暴击率%.translation", "res://数值表/player_combat_reference.暴伤%.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

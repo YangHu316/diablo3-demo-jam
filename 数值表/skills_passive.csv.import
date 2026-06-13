@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bbln5r1uyl5n2"
+
+[deps]
+
+files=["res://数值表/skills_passive.名称.translation", "res://数值表/skills_passive.入池Lv.translation", "res://数值表/skills_passive.效果.translation", "res://数值表/skills_passive.配额.translation"]
+
+source_file="res://数值表/skills_passive.csv"
+dest_files=["res://数值表/skills_passive.名称.translation", "res://数值表/skills_passive.入池Lv.translation", "res://数值表/skills_passive.效果.translation", "res://数值表/skills_passive.配额.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
