@@ -26,13 +26,21 @@ gold_per_kill_mult = 8.0
 
 [sub_resource type="Resource" id="Resource_j14jh"]
 script = ExtResource("1_f0pji")
+id = &"skeleton_guard"
+display_name = "骸骨卫士"
+base_xp = 12.0
+health_mult = 1.6
+attack_mult = 1.3
+
+[sub_resource type="Resource" id="Resource_15n4t"]
+script = ExtResource("1_f0pji")
 id = &"butcher"
 display_name = "屠夫"
-health_mult = 41.5
-attack_mult = 5.0
+health_mult = 55.0
+attack_mult = 1.95
 is_boss = true
 gold_per_kill_mult = 0.0
 
 [resource]
 script = ExtResource("2_ael0v")
-monsters = Array[ExtResource("1_f0pji")]([SubResource("Resource_1lehl"), SubResource("Resource_trg0k"), SubResource("Resource_q5rdt"), SubResource("Resource_j14jh")])
+monsters = Array[ExtResource("1_f0pji")]([SubResource("Resource_1lehl"), SubResource("Resource_trg0k"), SubResource("Resource_q5rdt"), SubResource("Resource_j14jh"), SubResource("Resource_15n4t")])

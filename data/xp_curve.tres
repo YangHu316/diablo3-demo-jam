@@ -12,6 +12,6 @@ unlocks = {
 4: ["slot_4", "skill_roll", "rune_system", "tier2_weapon"],
 5: ["slot_5", "skill_valkyrie", "passive_slot_1"],
 6: ["rune_batch_2", "passive_pool"],
-7: ["passive_slot_2", "rune_batch_3"],
+7: ["passive_slot_2", "rune_batch_3", "tier3_weapon"],
 8: ["rune_ultimate", "passive_ultimate"]
 }

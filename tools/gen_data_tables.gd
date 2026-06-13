@@ -97,8 +97,12 @@ func _build_monsters() -> MonsterTable:
 		_make_monster(&"trash", "普通怪", 40, 15, 8, 1.0, 1.0, false, 1.0),
 		_make_monster(&"elite_blue", "蓝名精英", 40, 15, 8, 2.5, 1.3, false, 8.0),
 		_make_monster(&"champion_yellow", "黄名首领", 40, 15, 8, 5.0, 1.4, false, 8.0),
-		# 屠夫: 生命≈11000 (≈白怪L7 265*pow(1.31,6)≈ * 倍率). 用 health_mult 近似锚定.
-		_make_monster(&"butcher", "屠夫", 40, 15, 8, 41.5, 5.0, true, 0.0),
+		# 骸骨卫士(盾兵): 白怪 ×1.6 生命 / ×1.3 攻 / ×1.5 经验 (constants.csv / monsters.csv 派生列).
+		# 经验靠 base_xp 抬到 12 (=8×1.5) 实现 ×1.5; 生命/攻走 mult.
+		_make_monster(&"skeleton_guard", "骸骨卫士", 40, 15, 12, 1.6, 1.3, false, 1.0),
+		# 屠夫(唯一 Boss, 玩家@7 交战): 生命≈11000 = 白怪@7(≈200)×55; 攻≈75 = 白怪攻@7(≈38.5)×1.95.
+		# (constants.csv: 屠夫生命×约55锁定 / 攻×约2锁定; D1 已修正非 ×5.)
+		_make_monster(&"butcher", "屠夫", 40, 15, 8, 55.0, 1.95, true, 0.0),
 	]
 	t.monsters = list
 	return t
@@ -121,7 +125,7 @@ func _build_xp_curve() -> XPCurve:
 		4: ["slot_4", "skill_roll", "rune_system", "tier2_weapon"],
 		5: ["slot_5", "skill_valkyrie", "passive_slot_1"],
 		6: ["rune_batch_2", "passive_pool"],
-		7: ["passive_slot_2", "rune_batch_3"],
+		7: ["passive_slot_2", "rune_batch_3", "tier3_weapon"],
 		8: ["rune_ultimate", "passive_ultimate"],
 	}
 	return x
