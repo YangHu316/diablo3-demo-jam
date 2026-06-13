@@ -16,11 +16,13 @@ func _ck(cond: bool, msg: String) -> void:
 		print("  FAIL- ", msg)
 
 func _make_enemy(mid: String, mlevel: int, dsrc: int) -> Node3D:
-	# 模拟战斗组 spawn_trigger._on_enemy_spawned 的 set_meta 三连
+	# 模拟战斗组 spawn_trigger._on_enemy_spawned 的 set_meta 三连。
+	# 注意:战斗组已把 key 归一为普通 String 字面量("monster_id"),
+	# 这里也用 String key,忠实复现当前生产路径。
 	var e := Node3D.new()
-	e.set_meta(&"monster_id", StringName(mid))
-	e.set_meta(&"monster_level", mlevel)
-	e.set_meta(&"drop_source", dsrc)
+	e.set_meta("monster_id", StringName(mid))
+	e.set_meta("monster_level", mlevel)
+	e.set_meta("drop_source", dsrc)
 	return e
 
 func _init() -> void:
@@ -61,12 +63,16 @@ func _init() -> void:
 	# --- meta 读取链路: 模拟挂 meta 的怪, 验证 has_meta/get_meta 口径 ---
 	print("\n=== 判定③: 怪物 meta 读取口径与接收端一致 ===")
 	var boss := _make_enemy("butcher", 7, DS.Source.BUTCHER)
+	# 战斗组写 String key("monster_id"),系统组接收端也用 String key 读 —— 完全对齐
+	_ck(boss.has_meta("monster_id") and StringName(boss.get_meta("monster_id")) == &"butcher",
+		"monster_id (String key) 可被 ProgressionManager has_meta(\"monster_id\") 读取")
+	_ck(boss.has_meta("monster_level") and int(boss.get_meta("monster_level")) == 7,
+		"monster_level (String key) = 7 (屠夫固定级)")
+	_ck(boss.has_meta("drop_source") and int(boss.get_meta("drop_source")) == DS.Source.BUTCHER,
+		"drop_source (String key) 可被 LootManager has_meta(\"drop_source\") 读取")
+	# 交叉验证: 写 String key 后用 StringName key 仍可读到(Godot 4 meta key 内部归一)
 	_ck(boss.has_meta(&"monster_id") and StringName(boss.get_meta(&"monster_id")) == &"butcher",
-		"monster_id meta 可被 ProgressionManager 读取")
-	_ck(boss.has_meta(&"monster_level") and int(boss.get_meta(&"monster_level")) == 7,
-		"monster_level meta = 7 (屠夫固定级)")
-	_ck(boss.has_meta(&"drop_source") and int(boss.get_meta(&"drop_source")) == DS.Source.BUTCHER,
-		"drop_source meta 可被 LootManager 读取")
+		"String 写入 / StringName 读取互通 (归一不破坏任何读取路径)")
 	boss.free()
 
 	print("\n========================================")
