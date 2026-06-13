@@ -173,5 +173,69 @@ func _execute_summon(sd: Resource) -> void:
 
 # ── 近战类(预留) ───────────────────────────────────────
 func _execute_melee(sd: Resource) -> void:
-	# TODO: 近战 hitbox。
-	push_warning("SkillExecutor: melee skill not implemented yet (%s)" % sd.skill_id)
+	# 圆形 AOE:在玩家脚下爆发,半径 sd.aoe_radius,伤害用 DamageCalculator。
+	# 用例:女武神之击(原召唤大招,改为一次性 AOE 伤害)。
+	if _player == null or not is_instance_valid(_player):
+		return
+	var radius: float = float(sd.aoe_radius) if "aoe_radius" in sd and sd.aoe_radius > 0.0 else 6.0
+	var center: Vector3 = _player.global_position
+	# 用 DamageCalculator 算一次伤害(吃暴击 / 武器均伤 / 敏捷),全场内敌人共享同一卷点
+	var DC = preload("res://scripts/skills/damage_calculator.gd")
+	var hit: Dictionary = DC.compute(sd)
+	var dmg: int = int(hit.get("damage", 0))
+	var is_crit: bool = bool(hit.get("is_crit", false))
+	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var hit_count: int = 0
+	for e in enemies:
+		if not is_instance_valid(e) or not (e is Node3D):
+			continue
+		var dist: float = (e as Node3D).global_position.distance_to(center)
+		if dist > radius:
+			continue
+		if not e.has_method("take_damage"):
+			continue
+		e.take_damage(dmg, _player)
+		hit_count += 1
+		# 飘字 + 命中信号
+		var pool: Node = get_node_or_null("/root/DamageNumberPool")
+		if pool != null and pool.has_method("show_damage"):
+			var p: Vector3 = (e as Node3D).global_position + Vector3(0, 1.6, 0)
+			pool.show_damage(p, dmg, is_crit)
+		var cm: Node = get_node_or_null("/root/CombatManager")
+		if cm != null and cm.has_signal("hit_landed"):
+			var dir: Vector3 = ((e as Node3D).global_position - center).normalized()
+			cm.hit_landed.emit(_player, e, dmg, is_crit, String(sd.element), (e as Node3D).global_position, dir)
+	# 视觉:黄色光环 + 短屏震
+	_spawn_blast_ring(center, radius)
+	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
+	if cjm != null and cjm.has_method("_trigger_screen_shake"):
+		cjm._trigger_screen_shake()
+
+func _spawn_blast_ring(center: Vector3, radius: float) -> void:
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(1.0, 0.95, 0.4, 0.85)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.85, 0.2, 1.0)
+	ring_mat.emission_energy_multiplier = 5.0
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = max(0.1, radius - 0.3)
+	torus.outer_radius = radius
+	torus.ring_segments = 48
+	torus.material = ring_mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.mesh = torus
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	scene_root.add_child(mi)
+	mi.global_position = center + Vector3(0, 0.05, 0)
+	# 0.4s 由小变大 + 淡出
+	mi.scale = Vector3.ONE * 0.3
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3.ONE * 1.0, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ring_mat, "albedo_color:a", 0.0, 0.4)
+	tw.tween_property(ring_mat, "emission_energy_multiplier", 0.0, 0.4)
+	tw.chain().tween_callback(Callable(mi, "queue_free"))
