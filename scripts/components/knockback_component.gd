@@ -61,6 +61,11 @@ func _physics_process(delta: float) -> void:
 	if _body == null or not is_instance_valid(_body):
 		_remaining = 0.0
 		return
+	# 防御:本体正在销毁(死亡演出会把 scale 补间到 0)时停止接管物理,
+	# 否则对退化基底(det==0)调 move_and_slide 会每帧刷屏报错。
+	if _body.is_queued_for_deletion():
+		cancel()
+		return
 
 	_remaining = max(0.0, _remaining - delta)
 	# 线性衰减:t = remaining / total in [0, 1],speed = v0 * t
