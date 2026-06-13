@@ -5,17 +5,24 @@ class_name ItemInstance
 # Produced by the item/affix generator (任务2). Not authored in editor — runtime only.
 # Source: 04-Demo装备与掉落 §3.1 品质规则.
 
-enum Quality { MAGIC, RARE, LEGENDARY }   # 蓝 / 黄 / 橙
+# 5 档稀有度阶梯 (扩展层, 数值表/扩展-稀有度-掉落-敌人差异化.md §一).
+# 枚举值按 劣→优 单调递增 (COMMON=0 … LEGENDARY=4), 故可直接比大小判优劣 / 决定光柱强度.
+# demo 主线仍可只跑 3 档 (精良/稀有/传说); 普通+史诗为 opt-in 扩展档.
+enum Quality { COMMON, MAGIC, RARE, EPIC, LEGENDARY }   # 白 / 蓝 / 黄 / 紫 / 橙
 
 const QUALITY_NAMES: Dictionary = {
+	Quality.COMMON: "普通",
 	Quality.MAGIC: "魔法",
 	Quality.RARE: "稀有",
+	Quality.EPIC: "史诗",
 	Quality.LEGENDARY: "传奇"
 }
 
 const QUALITY_COLORS: Dictionary = {
+	Quality.COMMON: Color(0.62, 0.62, 0.62),   # 白/灰
 	Quality.MAGIC: Color(0.30, 0.45, 1.0),     # 蓝
 	Quality.RARE: Color(1.0, 0.92, 0.25),      # 黄
+	Quality.EPIC: Color(0.64, 0.21, 0.93),     # 紫
 	Quality.LEGENDARY: Color(1.0, 0.55, 0.0)   # 橙
 }
 

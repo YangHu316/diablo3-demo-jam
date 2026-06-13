@@ -19,15 +19,16 @@ enum Source {
 	CHEST_FANCY,      # 华丽宝箱
 }
 
-# 每个掉落源的配置: 装备掉落率 / 件数[min,max] / 蓝黄橙基础权重 / 是否保底载体.
-# 数值严格对齐策划 §6.1.
+# 每个掉落源的配置: 装备掉落率 / 件数[min,max] / 5 档品质权重 / 是否保底载体.
+# 权重事实源 = 数值表/drop_table.csv (扩展层 5 档: [普通,精良,稀有,史诗,传说], 每行和=100).
+# 旧 3 元权重已作废 (扩展层 §五#2). demo 主线消费同一表; 普通/史诗自然按权重出现.
 const SOURCE_CONFIG := {
-	Source.TRASH:           { "drop_rate": 0.18, "count": [1, 1], "w": [85.0, 14.5, 0.5],  "pity_carrier": false },
-	Source.ELITE_BLUE:      { "drop_rate": 1.00, "count": [1, 2], "w": [60.0, 37.0, 3.0],  "pity_carrier": true  },
-	Source.CHAMPION_YELLOW: { "drop_rate": 1.00, "count": [2, 2], "w": [48.0, 47.0, 5.0],  "pity_carrier": true  },
-	Source.BUTCHER:         { "drop_rate": 1.00, "count": [4, 4], "w": [0.0, 75.0, 25.0],  "pity_carrier": true  },
-	Source.CHEST_COMMON:    { "drop_rate": 0.35, "count": [1, 1], "w": [90.0, 10.0, 0.0],  "pity_carrier": false },
-	Source.CHEST_FANCY:     { "drop_rate": 1.00, "count": [2, 2], "w": [40.0, 55.0, 5.0],  "pity_carrier": true  },
+	Source.TRASH:           { "drop_rate": 0.18, "count": [1, 1], "w": [55.0, 33.0, 10.0, 1.5, 0.5], "pity_carrier": false },
+	Source.ELITE_BLUE:      { "drop_rate": 1.00, "count": [1, 2], "w": [10.0, 48.0, 33.0, 6.0, 3.0], "pity_carrier": true  },
+	Source.CHAMPION_YELLOW: { "drop_rate": 1.00, "count": [2, 2], "w": [5.0, 35.0, 43.0, 12.0, 5.0], "pity_carrier": true  },
+	Source.BUTCHER:         { "drop_rate": 1.00, "count": [4, 4], "w": [0.0, 20.0, 50.0, 22.0, 8.0], "pity_carrier": true  },
+	Source.CHEST_COMMON:    { "drop_rate": 0.35, "count": [1, 1], "w": [70.0, 25.0, 5.0, 0.0, 0.0], "pity_carrier": false },
+	Source.CHEST_FANCY:     { "drop_rate": 1.00, "count": [2, 2], "w": [10.0, 40.0, 38.0, 10.0, 2.0], "pity_carrier": true  },
 }
 
 # 首橙白名单 (§7.3): 本局第 1 件传奇必从这三件核心件抽.
@@ -115,21 +116,32 @@ func roll_drop(source: int, player_level: int) -> Array[ItemInstance]:
 	return out
 
 # 按权重(叠梦魇系数+软保底)掷品质. force=true 直接出橙.
+# base_w = [普通,精良,稀有,史诗,传说] (drop_table.csv 行); 梦魇系数+软保底只加到「传说」权重.
 func _roll_quality(base_w: Array, force_orange: bool) -> int:
 	if force_orange:
 		return ItemInstance.Quality.LEGENDARY
-	var w_blue: float = float(base_w[0])
-	var w_yellow: float = float(base_w[1])
+	var w_common: float = float(base_w[0])
+	var w_magic: float = float(base_w[1])
+	var w_rare: float = float(base_w[2])
+	var w_epic: float = float(base_w[3])
 	# P(橙) = 基础 × 梦魇系数 + pity_stack×2% (§2.3).
-	var w_orange: float = float(base_w[2]) * _nightmare_mult() + float(pity_stack) * 2.0
-	var total: float = w_blue + w_yellow + w_orange
+	var w_leg: float = float(base_w[4]) * _nightmare_mult() + float(pity_stack) * 2.0
+	var total: float = w_common + w_magic + w_rare + w_epic + w_leg
 	if total <= 0.0:
 		return ItemInstance.Quality.MAGIC
 	var r: float = _rng.randf() * total
-	if r < w_blue:
+	var acc: float = w_common
+	if r < acc:
+		return ItemInstance.Quality.COMMON
+	acc += w_magic
+	if r < acc:
 		return ItemInstance.Quality.MAGIC
-	if r < w_blue + w_yellow:
+	acc += w_rare
+	if r < acc:
 		return ItemInstance.Quality.RARE
+	acc += w_epic
+	if r < acc:
+		return ItemInstance.Quality.EPIC
 	return ItemInstance.Quality.LEGENDARY
 
 # 由品质生成一件具体物品; 传奇走白名单/查重定向.

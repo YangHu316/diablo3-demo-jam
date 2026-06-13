@@ -12,16 +12,22 @@ class_name ItemGenerator
 #   var leg  := gen.generate_legendary(&"windforce_boots", 8)    # 指定传奇
 
 # 品质 -> [最少词缀, 最多词缀] 条数. 传奇固定 4 条普通 + 1 橙字(不占位).
+# 5 档 (扩展层): 普通 0~1 / 精良 1~2 / 稀有 3~4 / 史诗 4~5(保送1顶值) / 传说 4.
 const AFFIX_COUNT := {
+	ItemInstance.Quality.COMMON: [0, 1],
 	ItemInstance.Quality.MAGIC: [1, 2],
 	ItemInstance.Quality.RARE: [3, 4],
+	ItemInstance.Quality.EPIC: [4, 5],
 	ItemInstance.Quality.LEGENDARY: [4, 4],
 }
 
-# 普通掉落品质权重 (普通怪基准, 04-Demo §3.1). 不含保底/精英特殊表.
+# 普通掉落品质权重 (普通怪基准, drop_table.csv「缓行走尸」行: 55/33/10/1.5/0.5).
+# 不含保底/精英特殊表; 精英/Boss/箱的 5 元权重在 drop_system.SOURCE_CONFIG.
 const QUALITY_WEIGHTS := {
-	ItemInstance.Quality.MAGIC: 85.0,
-	ItemInstance.Quality.RARE: 14.5,
+	ItemInstance.Quality.COMMON: 55.0,
+	ItemInstance.Quality.MAGIC: 33.0,
+	ItemInstance.Quality.RARE: 10.0,
+	ItemInstance.Quality.EPIC: 1.5,
 	ItemInstance.Quality.LEGENDARY: 0.5,
 }
 
@@ -65,7 +71,9 @@ func generate(slot: int, item_level: int, quality: int = -1) -> ItemInstance:
 	item.item_level = item_level
 	item.quality = quality
 	item.tier = _tier_for(item_level)
-	item.affixes = _roll_affixes(slot, item.tier, _count_for(quality))
+	# 史诗: 保送 1 条顶值词缀 (扩展层 §一); 其余正常 roll.
+	var force_top: bool = (quality == ItemInstance.Quality.EPIC)
+	item.affixes = _roll_affixes(slot, item.tier, _count_for(quality), force_top)
 	item.display_name = _make_name(quality, slot)
 	return item
 
@@ -102,7 +110,8 @@ func _tier_for(item_level: int) -> int:
 	return 1
 
 # 从该槽位合法词缀池里, 不重复抽 count 条并 roll 数值.
-func _roll_affixes(slot: int, tier: int, count: int) -> Array[Dictionary]:
+# force_top=true (史诗): 第 1 条词缀直接取该 tier 顶值 (保送1条顶值词缀).
+func _roll_affixes(slot: int, tier: int, count: int, force_top: bool = false) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var slot_name: StringName = _slot_name(slot)
 	var pool: Array = _dt.get_affixes_for_slot(slot_name).duplicate()
@@ -112,7 +121,7 @@ func _roll_affixes(slot: int, tier: int, count: int) -> Array[Dictionary]:
 	for ad in pool:
 		if picked >= count:
 			break
-		var raw: float = ad.roll_value(tier, _rng)
+		var raw: float = (ad.max_value(tier) if (force_top and picked == 0) else ad.roll_value(tier, _rng))
 		# 百分比保留 1 位小数, 绝对值取整.
 		var value: float = (round(raw * 10.0) / 10.0) if ad.is_percent else float(round(raw))
 		out.append({

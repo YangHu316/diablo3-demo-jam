@@ -97,9 +97,10 @@ func _build_monsters() -> MonsterTable:
 		_make_monster(&"trash", "普通怪", 40, 15, 8, 1.0, 1.0, false, 1.0),
 		_make_monster(&"elite_blue", "蓝名精英", 40, 15, 8, 2.5, 1.3, false, 8.0),
 		_make_monster(&"champion_yellow", "黄名首领", 40, 15, 8, 5.0, 1.4, false, 8.0),
-		# 骸骨卫士(盾兵): 白怪 ×1.6 生命 / ×1.3 攻 / ×1.5 经验 (constants.csv / monsters.csv 派生列).
+		# 骸骨卫士(盾兵): 白怪 ×1.0 生命 / ×1.3 攻 / ×1.5 经验 (扩展层 P0 修正: 1.6→1.0,
+		# 靠正面120°非穿透-75%破盾而非堆血; 见 数值表/扩展-稀有度-掉落-敌人差异化.md §四/§五).
 		# 经验靠 base_xp 抬到 12 (=8×1.5) 实现 ×1.5; 生命/攻走 mult.
-		_make_monster(&"skeleton_guard", "骸骨卫士", 40, 15, 12, 1.6, 1.3, false, 1.0),
+		_make_monster(&"skeleton_guard", "骸骨卫士", 40, 15, 12, 1.0, 1.3, false, 1.0),
 		# 屠夫(唯一 Boss, 玩家@7 交战): 生命≈11000 = 白怪@7(≈200)×55; 攻≈75 = 白怪攻@7(≈38.5)×1.95.
 		# (constants.csv: 屠夫生命×约55锁定 / 攻×约2锁定; D1 已修正非 ×5.)
 		_make_monster(&"butcher", "屠夫", 40, 15, 8, 55.0, 1.95, true, 0.0),

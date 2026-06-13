@@ -29,7 +29,6 @@ script = ExtResource("1_f0pji")
 id = &"skeleton_guard"
 display_name = "骸骨卫士"
 base_xp = 12.0
-health_mult = 1.6
 attack_mult = 1.3
 
 [sub_resource type="Resource" id="Resource_15n4t"]

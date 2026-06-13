@@ -49,3 +49,13 @@ func roll_value(tier: int, rng: RandomNumberGenerator) -> float:
 			lo = (t1_min + t3_min) * 0.5
 			hi = (t1_max + t3_max) * 0.5
 	return rng.randf_range(lo, hi)
+
+# 指定 tier 的范围上限 (顶值). 史诗"保送1条顶值词缀"用.
+func max_value(tier: int) -> float:
+	match tier:
+		1:
+			return t1_max
+		3:
+			return t3_max
+		_:
+			return (t1_max + t3_max) * 0.5

@@ -32,10 +32,10 @@ func _init() -> void:
 	print("  掉落率 = %.1f%% (%d/%d)" % [rate, drops, trials])
 	assert(rate > 13.0 and rate < 23.0, "TRASH 掉落率应接近 18%%")
 
-	# === 完成判定②: 精英 100% 掉落 + 品质分布偏蓝 ===
-	print("\n=== 判定②: 蓝名精英(ELITE_BLUE) 100% 掉落, 品质分布 ===")
+	# === 完成判定②: 精英 100% 掉落 + 5 档品质分布 ===
+	print("\n=== 判定②: 蓝名精英(ELITE_BLUE) 100% 掉落, 5 档品质分布 ===")
 	var ds2 = DropSystemScript.new(dt, gen, 42)
-	var qcount := { 0: 0, 1: 0, 2: 0 }
+	var qcount := { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 }
 	var total_items: int = 0
 	for i in range(3000):
 		var r: Array = ds2.roll_drop(DropSystemScript.Source.ELITE_BLUE, 5)
@@ -48,12 +48,17 @@ func _init() -> void:
 		ds2.pity_stack = 0
 		ds2.leg_count = 99   # 跳过传奇定向逻辑干扰(允许重复)
 		ds2._dropped_legendaries.clear()
-	print("  共 %d 件: 蓝=%.0f%% 黄=%.0f%% 橙=%.0f%% (期望 ~60/37/3)" % [
+	print("  共 %d 件: 白=%.0f%% 蓝=%.0f%% 黄=%.0f%% 紫=%.0f%% 橙=%.0f%% (期望 ~10/48/33/6/3)" % [
 		total_items,
 		qcount[0] * 100.0 / total_items,
 		qcount[1] * 100.0 / total_items,
-		qcount[2] * 100.0 / total_items])
-	assert(qcount[0] > qcount[1] and qcount[1] > qcount[2], "应 蓝>黄>橙")
+		qcount[2] * 100.0 / total_items,
+		qcount[3] * 100.0 / total_items,
+		qcount[4] * 100.0 / total_items])
+	# ELITE_BLUE 权重 [白10,蓝48,黄33,紫6,橙3]: 蓝>黄>白>紫>橙.
+	assert(qcount[1] > qcount[2], "蓝应多于黄")
+	assert(qcount[2] > qcount[0], "黄应多于白")
+	assert(qcount[0] > qcount[3] and qcount[3] > qcount[4], "白>紫>橙")
 
 	# === 完成判定③: 首橙白名单 ===
 	print("\n=== 判定③: 首件传奇必∈白名单(女妖弓/冰霜箭袋/疾风靴) ===")
