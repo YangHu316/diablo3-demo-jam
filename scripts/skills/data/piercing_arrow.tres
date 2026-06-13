@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+skill_id = &"piercing_arrow"
+skill_name = "利箭"
+cooldown = 0.3
+focus_cost = 0.0
+focus_gain_on_hit = 4.0
+skill_multiplier = 1.55
+element = &"physical"
+projectile_count = 1
+projectile_spread_angle = 0.0
+can_penetrate = false
+is_movement_skill = false
+skill_type = 0
+description = "标准单发箭。无消耗,命中回复 4 点专注。"

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+skill_id = &"multishot"
+skill_name = "多重射击"
+cooldown = 0.5
+focus_cost = 20.0
+focus_gain_on_hit = 0.0
+skill_multiplier = 1.10
+element = &"physical"
+projectile_count = 5
+projectile_spread_angle = 60.0
+can_penetrate = false
+is_movement_skill = false
+skill_type = 0
+description = "扇形 60° 一次性发射 5 箭。每箭 110% 倍率,消耗 20 专注。"

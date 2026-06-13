@@ -25,6 +25,10 @@ CombatManager="*res://scripts/autoload/combat_manager.gd"
 DataTables="*res://scripts/autoload/data_tables.gd"
 ProgressionManager="*res://scripts/autoload/progression_manager.gd"
 Inventory="*res://scripts/autoload/inventory.gd"
+FocusResource="*res://scripts/autoload/focus_resource.gd"
+DamageNumberPool="*res://scripts/autoload/damage_number_pool.gd"
+CombatJuiceManager="*res://scripts/autoload/combat_juice_manager.gd"
+SpawnManager="*res://scripts/autoload/spawn_manager.gd"
 
 [display]
 
