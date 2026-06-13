@@ -126,6 +126,7 @@ func _ready() -> void:
 	# 系统组的 ProgressionManager 用此 meta 给玩家 XP
 	set_meta("monster_id", &"butcher")
 	set_meta("monster_level", 7)
+	set_meta("drop_source", 3)  # DropSystem.Source.BUTCHER = 3(SpawnTrigger 会覆盖,这是直接实例化的 fallback)
 	current_health = MAX_HEALTH
 	if charge_warning != null:
 		charge_warning.visible = false

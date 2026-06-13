@@ -107,12 +107,13 @@ func _on_enemy_spawned(enemy: Node, wave_id: int) -> void:
 	if wave_id != _my_wave_id or enemy == null:
 		return
 	# 元数据(策划 V2.1 锁定 id 池;ProgressionManager / LootManager 据此结算)
-	enemy.set_meta(&"monster_id", StringName(monster_id))
+	# Key 用普通 String 字面量,与系统组接收端 has_meta("monster_id") 完全对齐
+	enemy.set_meta("monster_id", StringName(monster_id))
 	var lv: int = monster_level
 	if lv <= 0:
 		lv = _get_player_level()
-	enemy.set_meta(&"monster_level", lv)
-	enemy.set_meta(&"drop_source", int(_DROP_SOURCE_MAP.get(drop_source, 0)))
+	enemy.set_meta("monster_level", lv)
+	enemy.set_meta("drop_source", int(_DROP_SOURCE_MAP.get(drop_source, 0)))
 	# 精英词缀
 	if spawn_as_molten and "is_molten" in enemy:
 		enemy.is_molten = true
