@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://bmhm0kap00m5i"]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/level_02_depths.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
+[ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
+[ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
+
+[node name="Level02Play" type="Node3D" unique_id=1539514014]
+
+[node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
+
+[node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83, 0, -7)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=708971309]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, -83, 12, 5)
+current = true
+fov = 62.0
+script = ExtResource("3")
+
+[node name="ScreenShake" type="Node" parent="Camera3D" unique_id=154599739]
+script = ExtResource("4")
