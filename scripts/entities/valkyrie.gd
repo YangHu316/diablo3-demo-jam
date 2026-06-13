@@ -139,7 +139,7 @@ func _expire() -> void:
 	_alive = false
 	expired.emit(self)
 	var tw: Tween = create_tween()
-	tw.tween_property(self, "scale", Vector3.ZERO, 0.4)
+	tw.tween_property(self, "scale", Vector3.ONE * 0.001, 0.4)
 	tw.tween_callback(Callable(self, "queue_free"))
 
 # 公共 API:被 SkillExecutor 提前移除(召唤上限超出时)
