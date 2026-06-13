@@ -69,6 +69,8 @@ func _ready() -> void:
 	if debug_unlock_all:
 		for unlock_id in UNLOCK_ID_TO_SKILL.keys():
 			_apply_unlock(String(unlock_id))
+		# 调试模式同时打开占位被动(精准)
+		_apply_unlock("passive_precision")
 
 	# 监听系统组的升级信号,据 unlocked 字段填充技能槽
 	var pm: Node = get_node_or_null("/root/ProgressionManager")
@@ -82,6 +84,11 @@ func _on_level_up(_new_level: int, unlocked: Array) -> void:
 
 # 把 unlock id 解析为"装技能 .tres 到对应槽";slot_N 类条目无效果(我们的槽一直在)
 func _apply_unlock(unlock_id: String) -> void:
+	# 被动:致命精准(策划 §4.3 a)— 占位实现,等系统组 Inventory.stats_changed 落地再改
+	if unlock_id == "passive_precision":
+		var DC = preload("res://scripts/skills/damage_calculator.gd")
+		DC.apply_precision_passive()
+		return
 	if not UNLOCK_ID_TO_SKILL.has(unlock_id):
 		# slot_N / passive_X / rune_X 等不影响主动技能槽,跳过
 		return
