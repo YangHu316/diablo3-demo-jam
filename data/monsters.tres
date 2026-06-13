@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="MonsterTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/monster_def.gd" id="1_f0pji"]
+[ext_resource type="Script" path="res://scripts/data/monster_table.gd" id="2_ael0v"]
+
+[sub_resource type="Resource" id="Resource_1lehl"]
+script = ExtResource("1_f0pji")
+id = &"trash"
+display_name = "普通怪"
+
+[sub_resource type="Resource" id="Resource_trg0k"]
+script = ExtResource("1_f0pji")
+id = &"elite_blue"
+display_name = "蓝名精英"
+health_mult = 2.5
+attack_mult = 1.3
+gold_per_kill_mult = 8.0
+
+[sub_resource type="Resource" id="Resource_q5rdt"]
+script = ExtResource("1_f0pji")
+id = &"champion_yellow"
+display_name = "黄名首领"
+health_mult = 5.0
+attack_mult = 1.4
+gold_per_kill_mult = 8.0
+
+[sub_resource type="Resource" id="Resource_j14jh"]
+script = ExtResource("1_f0pji")
+id = &"butcher"
+display_name = "屠夫"
+health_mult = 41.5
+attack_mult = 5.0
+is_boss = true
+gold_per_kill_mult = 0.0
+
+[resource]
+script = ExtResource("2_ael0v")
+monsters = Array[ExtResource("1_f0pji")]([SubResource("Resource_1lehl"), SubResource("Resource_trg0k"), SubResource("Resource_q5rdt"), SubResource("Resource_j14jh")])

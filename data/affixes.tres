@@ -1,0 +1,125 @@
+[gd_resource type="Resource" script_class="AffixTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/affix_def.gd" id="1_woljv"]
+[ext_resource type="Script" path="res://scripts/data/affix_table.gd" id="2_d8bop"]
+
+[sub_resource type="Resource" id="Resource_hv25b"]
+script = ExtResource("1_woljv")
+id = &"agility"
+display_name = "敏捷"
+t1_min = 2.0
+t1_max = 4.0
+t3_min = 10.0
+t3_max = 18.0
+
+[sub_resource type="Resource" id="Resource_x137i"]
+script = ExtResource("1_woljv")
+id = &"crit_chance"
+display_name = "暴击率"
+stat_kind = 1
+is_percent = true
+t1_min = 1.0
+t1_max = 2.0
+t3_min = 3.0
+t3_max = 6.0
+allowed_slots = Array[StringName]([&"gloves", &"ring", &"amulet", &"head"])
+
+[sub_resource type="Resource" id="Resource_jiucf"]
+script = ExtResource("1_woljv")
+id = &"crit_damage"
+display_name = "暴击伤害"
+stat_kind = 2
+is_percent = true
+t1_min = 10.0
+t1_max = 15.0
+t3_min = 25.0
+t3_max = 50.0
+allowed_slots = Array[StringName]([&"amulet", &"gloves", &"ring"])
+
+[sub_resource type="Resource" id="Resource_752e3"]
+script = ExtResource("1_woljv")
+id = &"attack_speed"
+display_name = "攻击速度"
+stat_kind = 3
+is_percent = true
+t1_min = 3.0
+t1_max = 4.0
+t3_min = 5.0
+t3_max = 7.0
+allowed_slots = Array[StringName]([&"bow", &"gloves", &"ring"])
+
+[sub_resource type="Resource" id="Resource_l3pmp"]
+script = ExtResource("1_woljv")
+id = &"weapon_damage"
+display_name = "武器伤害"
+stat_kind = 4
+t1_min = 1.0
+t1_max = 2.0
+t3_min = 4.0
+t3_max = 9.0
+allowed_slots = Array[StringName]([&"bow"])
+
+[sub_resource type="Resource" id="Resource_vgdim"]
+script = ExtResource("1_woljv")
+id = &"skill_damage"
+display_name = "技能伤害"
+stat_kind = 5
+is_percent = true
+t1_min = 5.0
+t1_max = 8.0
+t3_min = 10.0
+t3_max = 20.0
+allowed_slots = Array[StringName]([&"head", &"chest", &"boots", &"quiver"])
+
+[sub_resource type="Resource" id="Resource_h070i"]
+script = ExtResource("1_woljv")
+id = &"vitality"
+display_name = "体能"
+category = 1
+stat_kind = 6
+t1_min = 2.0
+t1_max = 4.0
+t3_min = 10.0
+t3_max = 18.0
+
+[sub_resource type="Resource" id="Resource_rqv1x"]
+script = ExtResource("1_woljv")
+id = &"armor"
+display_name = "护甲"
+category = 1
+stat_kind = 7
+t1_min = 4.0
+t1_max = 8.0
+t3_min = 15.0
+t3_max = 30.0
+allowed_slots = Array[StringName]([&"head", &"shoulder", &"chest", &"wrist", &"gloves", &"waist", &"legs", &"boots"])
+
+[sub_resource type="Resource" id="Resource_w8htq"]
+script = ExtResource("1_woljv")
+id = &"all_resist"
+display_name = "全抗性"
+category = 1
+stat_kind = 8
+t1_min = 2.0
+t1_max = 3.0
+t3_min = 6.0
+t3_max = 12.0
+allowed_slots = Array[StringName]([&"head", &"shoulder", &"chest", &"wrist", &"gloves", &"waist", &"legs", &"boots", &"amulet", &"ring"])
+
+[sub_resource type="Resource" id="Resource_knj3v"]
+script = ExtResource("1_woljv")
+id = &"move_speed"
+display_name = "移动速度"
+category = 2
+stat_kind = 9
+is_percent = true
+max_per_item = 1
+t1_min = 4.0
+t1_max = 6.0
+t3_min = 8.0
+t3_max = 12.0
+allowed_slots = Array[StringName]([&"boots"])
+
+[resource]
+script = ExtResource("2_d8bop")
+affixes = Array[ExtResource("1_woljv")]([SubResource("Resource_hv25b"), SubResource("Resource_x137i"), SubResource("Resource_jiucf"), SubResource("Resource_752e3"), SubResource("Resource_l3pmp"), SubResource("Resource_vgdim"), SubResource("Resource_h070i"), SubResource("Resource_rqv1x"), SubResource("Resource_w8htq"), SubResource("Resource_knj3v")])

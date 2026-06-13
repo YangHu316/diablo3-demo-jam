@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="XPCurve" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/xp_curve.gd" id="1_855b4"]
+
+[resource]
+script = ExtResource("1_855b4")
+xp_to_next = PackedInt32Array(300, 480, 768, 1229, 1966, 3146, 5033)
+unlocks = {
+1: ["slot_1", "skill_puncture"],
+2: ["slot_2", "skill_multishot"],
+3: ["slot_3", "skill_frost_arrow"],
+4: ["slot_4", "skill_roll", "rune_system", "tier2_weapon"],
+5: ["slot_5", "skill_valkyrie", "passive_slot_1"],
+6: ["rune_batch_2", "passive_pool"],
+7: ["passive_slot_2", "rune_batch_3"],
+8: ["rune_ultimate", "passive_ultimate"]
+}

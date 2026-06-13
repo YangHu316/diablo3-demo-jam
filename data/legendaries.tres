@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="LegendaryTable" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/legendary_def.gd" id="1_j188b"]
+[ext_resource type="Script" path="res://scripts/data/legendary_table.gd" id="2_pj7vn"]
+
+[sub_resource type="Resource" id="Resource_d2ma4"]
+script = ExtResource("1_j188b")
+id = &"banshee_bow"
+display_name = "女妖之弓"
+slot = &"bow"
+effect_text = "多重射击额外 +2 投射物"
+effect_id = &"multishot_plus2"
+is_first_orange_whitelist = true
+
+[sub_resource type="Resource" id="Resource_073i4"]
+script = ExtResource("1_j188b")
+id = &"frost_quiver"
+display_name = "冰霜之箭袋"
+slot = &"quiver"
+effect_text = "冰冻/冻缓状态目标受到的伤害 +30%"
+effect_id = &"frozen_take_30"
+is_first_orange_whitelist = true
+
+[sub_resource type="Resource" id="Resource_vm3qf"]
+script = ExtResource("1_j188b")
+id = &"windforce_boots"
+display_name = "疾风之靴"
+slot = &"boots"
+effect_text = "翻滚回避无 CD(改为消耗 25 专注);翻滚留下诱饵"
+effect_id = &"roll_no_cd_decoy"
+is_first_orange_whitelist = true
+
+[sub_resource type="Resource" id="Resource_dajrn"]
+script = ExtResource("1_j188b")
+id = &"valkyrie_crown"
+display_name = "女武神之冠"
+slot = &"head"
+effect_text = "女武神召唤数 +1, 持续时间 +50%"
+effect_id = &"valkyrie_plus1"
+
+[sub_resource type="Resource" id="Resource_4bsi6"]
+script = ExtResource("1_j188b")
+id = &"focus_engine"
+display_name = "专注引擎"
+slot = &"amulet"
+effect_text = "暴击回 6 专注"
+effect_id = &"crit_restore_focus"
+
+[resource]
+script = ExtResource("2_pj7vn")
+legendaries = Array[ExtResource("1_j188b")]([SubResource("Resource_d2ma4"), SubResource("Resource_073i4"), SubResource("Resource_vm3qf"), SubResource("Resource_dajrn"), SubResource("Resource_4bsi6")])
