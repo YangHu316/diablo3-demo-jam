@@ -32,6 +32,20 @@ func _initialize() -> void:
 		for n in ap.get_animation_list():
 			var anim: Animation = ap.get_animation(n)
 			print("  - %s   length=%.2fs   loop=%s" % [n, anim.length, anim.loop_mode])
+	# 列骨骼名(找肩膀/手臂骨骼用,程序压 T-pose)
+	var skel: Skeleton3D = root.get_node_or_null("Skeleton3D")
+	if skel != null:
+		print("\n=== Skeleton3D 骨骼清单(共 %d 根)===" % skel.get_bone_count())
+		for i in range(skel.get_bone_count()):
+			var bname: String = skel.get_bone_name(i)
+			var key: String = bname.to_lower()
+			# 标记手臂相关的骨骼
+			var tag := ""
+			if key.contains("shoulder") or key.contains("clavic") or key.contains("upper") and (key.contains("arm") or key.contains("l_") or key.contains("r_")):
+				tag = "  ← arm?"
+			elif key.contains("arm") or key.contains("hand") or key.contains("forearm"):
+				tag = "  ← arm?"
+			print("  [%2d] %s%s" % [i, bname, tag])
 	quit(0)
 
 func _dump(node: Node, depth: int) -> void:
