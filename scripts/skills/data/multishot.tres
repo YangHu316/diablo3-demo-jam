@@ -6,7 +6,7 @@
 script = ExtResource("1")
 skill_id = &"multishot"
 skill_name = "多重射击"
-cooldown = 0.5
+cooldown = 0.0
 focus_cost = 20.0
 focus_gain_on_hit = 0.0
 skill_multiplier = 1.10

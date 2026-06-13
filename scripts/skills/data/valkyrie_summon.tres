@@ -1,21 +1,22 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/skills/skill_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/companions/valkyrie.tscn" id="2"]
 
 [resource]
 script = ExtResource("1")
-skill_id = &"valkyrie_blast"
-skill_name = "女武神之击"
-cooldown = 12.0
+skill_id = &"valkyrie_summon"
+skill_name = "女武神"
+cooldown = 45.0
 focus_cost = 0.0
 focus_gain_on_hit = 0.0
-skill_multiplier = 3.0
+skill_multiplier = 0.0
 element = &"physical"
-skill_type = 3
+skill_type = 2
 projectile_count = 1
 projectile_spread_angle = 0.0
 can_penetrate = false
-aoe_radius = 6.0
+aoe_radius = 0.0
 status_effect = &""
 status_duration = 0.0
 is_movement_skill = false
@@ -23,4 +24,7 @@ move_distance = 0.0
 move_duration = 0.0
 grants_invuln = false
 cancels_attack_cooldowns = false
-description = "在脚下爆发圣光圆形 AOE,300% 武器伤害,半径 6m。CD 12s,免费。"
+summon_scene = ExtResource("2")
+summon_duration = 20.0
+summon_max_count = 1
+description = "召唤女武神协战 20s。AI 追最近敌人近战(1.5s 间隔,武器均伤×2)。同时上限 1 个。CD 45s。"

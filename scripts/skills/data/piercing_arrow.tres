@@ -6,14 +6,14 @@
 script = ExtResource("1")
 skill_id = &"piercing_arrow"
 skill_name = "利箭"
-cooldown = 0.3
+cooldown = 0.0
 focus_cost = 0.0
 focus_gain_on_hit = 4.0
 skill_multiplier = 1.55
 element = &"physical"
 projectile_count = 1
 projectile_spread_angle = 0.0
-can_penetrate = true
+can_penetrate = false
 is_movement_skill = false
 skill_type = 0
-description = "标准单发箭。无消耗,命中回复 4 点专注。穿透成排敌人。"
+description = "标准单发箭。无消耗,命中回复 4 点专注,无 CD。Lv4 解锁穿透箭符文。"
