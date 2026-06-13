@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/components/screen_shake.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 
 [node name="Main" type="Node3D" unique_id=1204650071]
 
@@ -23,3 +24,5 @@ script = ExtResource("3")
 script = ExtResource("4")
 
 [node name="HUD" parent="." instance=ExtResource("5")]
+
+[node name="InventoryPanel" parent="." instance=ExtResource("6")]
