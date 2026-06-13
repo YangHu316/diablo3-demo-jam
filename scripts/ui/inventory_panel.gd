@@ -6,7 +6,7 @@ extends CanvasLayer
 #   下: 主属性聚合 (敏捷/体能 + 词缀加成), 监听 Inventory.stats_changed 实时刷新
 #
 # 完全程序化生成 Control 树, 与 hud.gd 同风格。
-# 开关: toggle_inventory 动作 (默认 E 键; 缺省时 _unhandled_key_input 兜底 KEY_E)。
+# 开关: toggle_inventory 动作 (默认 B 键; 缺省时 _unhandled_key_input 兜底 KEY_B)。
 
 const COLS: int = 8
 const ROWS: int = 5   # 8*5 = 40
@@ -130,7 +130,7 @@ func _build_ui() -> void:
 
 	# 关闭提示.
 	var hint := Label.new()
-	hint.text = "[ E ] 关闭"
+	hint.text = "[ B ] 关闭"
 	hint.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	right.add_child(hint)
 
@@ -156,7 +156,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if InputMap.has_action("toggle_inventory"):
 		if event.is_action_pressed("toggle_inventory"):
 			toggled = true
-	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
 		toggled = true
 	if toggled:
 		_set_open(not _open)
