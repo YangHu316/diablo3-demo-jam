@@ -24,10 +24,24 @@ var equipped: Dictionary = {}                     # EquipSlots.Slot -> ItemInsta
 func _ready() -> void:
 	pass
 
-# 任务3/4 实现占位 —— 签名先定, 下游可对接.
-func add_item(_item: ItemInstance) -> bool:
-	return false
+# 任务3: 拾取入包. 满包返回 false (不丢弃, 物品留在地面).
+func add_item(item: ItemInstance) -> bool:
+	if item == null:
+		return false
+	if bag.size() >= BAG_CAPACITY:
+		return false
+	bag.append(item)
+	item_picked_up.emit(item)
+	return true
 
+# 当前背包占用 / 是否已满.
+func bag_count() -> int:
+	return bag.size()
+
+func is_full() -> bool:
+	return bag.size() >= BAG_CAPACITY
+
+# 任务4 实现占位 —— 签名先定, 下游可对接.
 func equip(_slot: int, _item: ItemInstance) -> void:
 	pass
 
