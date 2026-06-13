@@ -1,0 +1,27 @@
+# 行尾规范 —— 覆盖 core.autocrlf,避免 Godot 重写资源后反复抖动 LF/CRLF
+# Godot 始终用 LF 写项目文本文件,这里统一锁为 LF。
+
+* text=auto eol=lf
+
+# Godot 文本资源 / 工程文件 —— 强制 LF
+*.gd        text eol=lf
+*.gdshader  text eol=lf
+*.import    text eol=lf
+*.tres      text eol=lf
+*.tscn      text eol=lf
+*.godot     text eol=lf
+*.cfg       text eol=lf
+*.uid       text eol=lf
+*.svg       text eol=lf
+
+# 二进制资源 —— 不做行尾转换
+*.png  binary
+*.fbx  binary
+*.tga  binary
+*.ttf  binary
+*.otf  binary
+*.wav  binary
+*.ogg  binary
+*.mp3  binary
+*.res  binary
+*.scn  binary
