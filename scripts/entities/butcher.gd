@@ -378,6 +378,10 @@ func _enter_wall_stun() -> void:
 	_charge_substate = 2
 	_charge_phase_timer = 0.0
 	damage_multiplier = WALL_STUN_DAMAGE_MULT
+	# 撞墙屏震(策划 §3 P0 三大震动触发之一)
+	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
+	if cjm != null and cjm.has_method("_trigger_screen_shake"):
+		cjm._trigger_screen_shake()
 
 # ── ROAR(P2 切换演出)─────────────────────────────────
 func _tick_roar(delta: float) -> void:
@@ -497,10 +501,22 @@ func _die(source, overkill: int) -> void:
 				kill_dir = d.normalized()
 		cm.enemy_killed.emit(self, source, overkill, kill_dir)
 	died.emit(self)
-	# 死亡演出:大屏震 + 缩放
+	# 死亡演出:全屏白闪 + 大屏震 + 慢放缩放(策划 §3 P0 + §6 屠夫死亡走脚本演出)
+	var hud: Node = get_tree().get_first_node_in_group("hud") if get_tree() != null else null
+	if hud == null:
+		# 兜底:按节点名找
+		hud = get_node_or_null("/root/Main/HUD")
+	if hud != null and hud.has_method("boss_killed_flash"):
+		hud.boss_killed_flash()
 	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
 	if cjm != null and cjm.has_method("_trigger_screen_shake"):
 		cjm._trigger_screen_shake()
+		# 加强:0.15s 后再震一次,凑成"撞击 + 余震"
+		await get_tree().create_timer(0.15).timeout
+		if cjm != null and is_instance_valid(cjm) and cjm.has_method("_trigger_screen_shake"):
+			cjm._trigger_screen_shake()
+	# 慢动作 0.3s + 缩放消失(原本 0.7s,加长到 1.2s 给"句号感")
 	var tw: Tween = create_tween()
-	tw.tween_property(self, "scale", Vector3.ZERO, 0.7)
+	tw.tween_property(self, "scale", Vector3.ONE * 1.15, 0.2)  # 短暂膨胀
+	tw.tween_property(self, "scale", Vector3.ZERO, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_callback(Callable(self, "queue_free"))

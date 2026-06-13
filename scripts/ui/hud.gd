@@ -31,6 +31,7 @@ var _is_dead: bool = false
 
 func _ready() -> void:
 	layer = 100
+	add_to_group("hud")
 	_build_ui()
 	_connect_signals()
 	_initial_refresh()
@@ -329,6 +330,21 @@ func _on_player_died() -> void:
 	_death_hint.visible = true
 	var tw: Tween = create_tween()
 	tw.tween_property(_death_overlay, "color:a", 0.55, 0.5)
+
+# Boss 死亡演出:全屏短暂白闪(由 butcher.gd 调用)
+func boss_killed_flash() -> void:
+	var root: Control = get_node_or_null("Root")
+	if root == null:
+		return
+	var flash: ColorRect = ColorRect.new()
+	flash.color = Color(1, 1, 1, 0.85)
+	flash.anchor_right = 1.0
+	flash.anchor_bottom = 1.0
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(flash)
+	var tw: Tween = create_tween()
+	tw.tween_property(flash, "color:a", 0.0, 0.6)
+	tw.tween_callback(Callable(flash, "queue_free"))
 
 func _process(_delta: float) -> void:
 	if _is_dead and Input.is_key_pressed(KEY_R):
