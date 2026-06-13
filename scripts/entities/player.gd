@@ -24,6 +24,12 @@ var is_dodging: bool = false
 var _dodge_velocity: Vector3 = Vector3.ZERO
 var _dodge_timer: float = 0.0
 
+# ── 被动:闪避本能(策划 02 §4.3 b)─────────────────
+# 翻滚结束后 EVADE_BUFFER_TIME 内受到伤害 -EVADE_DAMAGE_REDUCTION
+const EVADE_BUFFER_TIME: float = 2.0
+const EVADE_DAMAGE_REDUCTION: float = 0.20  # 20% 减伤
+var _evade_buffer_timer: float = 0.0
+
 var _last_forward: Vector3 = Vector3.FORWARD
 var _camera: Camera3D = null
 var _ground_plane: Plane = Plane(Vector3.UP, 0.0)
@@ -38,6 +44,10 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+
+	# 闪避本能 buffer 衰减(独立于状态机)
+	if _evade_buffer_timer > 0.0:
+		_evade_buffer_timer -= delta
 
 	# 翻滚优先级最高:期间不响应 WASD/鼠标朝向,只走 dodge 速度
 	if is_dodging:
@@ -157,17 +167,23 @@ func _end_dodge() -> void:
 	is_invulnerable = false
 	_dodge_velocity = Vector3.ZERO
 	velocity = Vector3.ZERO
+	# 闪避本能:翻滚结束后 2s 内受伤减 20%
+	_evade_buffer_timer = EVADE_BUFFER_TIME
 	dodge_ended.emit()
 
 # ── 受伤 / 死亡 ─────────────────────────────────────────
 func take_damage(amount: int, source = null) -> void:
 	if is_dead or is_invulnerable or amount <= 0:
 		return
-	current_health = clamp(current_health - amount, 0, max_health)
+	# 闪避本能:翻滚后 2s 内受伤 -20%
+	var actual: int = amount
+	if _evade_buffer_timer > 0.0:
+		actual = max(1, int(round(float(amount) * (1.0 - EVADE_DAMAGE_REDUCTION))))
+	current_health = clamp(current_health - actual, 0, max_health)
 	health_changed.emit(current_health, max_health)
 	var cm = get_node_or_null("/root/CombatManager")
 	if cm != null:
-		cm.player_damaged.emit(amount, source)
+		cm.player_damaged.emit(actual, source)
 	if current_health <= 0:
 		_die()
 

@@ -20,21 +20,31 @@ const SLOT_ACTIONS: Array = [
 	"skill_3",
 ]
 
-# 默认槽位 -> 技能资源路径。Inspector 里若已填 slot_skills 则覆盖。
-const DEFAULT_SKILL_PATHS: Dictionary = {
-	0: "res://scripts/skills/data/piercing_arrow.tres",     # 左键 利箭
-	1: "res://scripts/skills/data/multishot.tres",          # 右键 多重射击
-	2: "res://scripts/skills/data/frost_arrow.tres",        # 键1 冰冻箭
-	3: "res://scripts/skills/data/dodge_roll.tres",         # 键2 翻滚
-	4: "res://scripts/skills/data/valkyrie_summon.tres",    # 键3 女武神
+# L1 默认装在槽 0 的技能(必出,玩家从一开始就能左键攻击)
+# 其他 4 槽通过 ProgressionManager.level_up 解锁后填入。
+const DEFAULT_L1_SKILL_PATH: String = "res://scripts/skills/data/piercing_arrow.tres"
+
+# 系统组 ProgressionManager.level_up.unlocked 字符串 → (槽位, 技能 .tres 路径) 映射。
+# unlock id 来自 data/xp_curve.tres 的 unlocks 字段(系统组维护)。
+# 战斗组 skill_id 与 unlock id 不完全一致(piercing_arrow vs skill_puncture 等),
+# 在这里桥接,避免改动数据表或 .tres 文件名。
+# slot_N 类的解锁不在此表,因为我们的槽一直存在,只是没技能就响应失败 → 忽略 slot_N。
+const UNLOCK_ID_TO_SKILL: Dictionary = {
+	"skill_puncture":     [0, "res://scripts/skills/data/piercing_arrow.tres"],
+	"skill_multishot":    [1, "res://scripts/skills/data/multishot.tres"],
+	"skill_frost_arrow":  [2, "res://scripts/skills/data/frost_arrow.tres"],
+	"skill_roll":         [3, "res://scripts/skills/data/dodge_roll.tres"],
+	"skill_valkyrie":     [4, "res://scripts/skills/data/valkyrie_summon.tres"],
 }
 
-# 注:这里不用 Array[SkillData] 强类型,避免跨文件 class_name 解析问题。
-# 元素期望是 SkillData 资源(skill_data.gd 实例)。
+# Inspector 里若已填 slot_skills 则覆盖默认行为(便于关卡 / 调试摆置)
 @export var slot_skills: Array[Resource] = []
 # 是否在 Hold(按住)模式下持续触发。射击类 hold=true 让玩家按住连发(CD 限速);
 # 翻滚/召唤这类一次性技能改 just_pressed,避免按住反复触发。
 @export var slot_hold_trigger: Array[bool] = [true, true, true, false, false]
+# Day1 灰盒调试开关:为 true 时,_ready 直接装满 5 槽不等 level_up(便于测全部技能)。
+# 集成阶段切回 false 验"L1 只能左键 → 升级解锁"流程。可以在 Inspector 覆盖。
+@export var debug_unlock_all: bool = true
 
 var _cooldowns: PackedFloat32Array = PackedFloat32Array()
 
@@ -49,16 +59,46 @@ func _ready() -> void:
 	if slot_skills.size() > SLOT_COUNT:
 		slot_skills.resize(SLOT_COUNT)
 
-	# 用默认路径填空槽
-	for slot_key in DEFAULT_SKILL_PATHS.keys():
-		var slot: int = int(slot_key)
-		if slot_skills[slot] != null:
-			continue
-		var path: String = DEFAULT_SKILL_PATHS[slot_key]
-		if ResourceLoader.exists(path):
-			var sd: Resource = load(path)
-			if sd != null:
-				slot_skills[slot] = sd
+	# 默认装 L1 技能(利箭 → 槽 0),其余 4 槽留空,等 ProgressionManager.level_up 解锁
+	if slot_skills[0] == null and ResourceLoader.exists(DEFAULT_L1_SKILL_PATH):
+		var sd0: Resource = load(DEFAULT_L1_SKILL_PATH)
+		if sd0 != null:
+			slot_skills[0] = sd0
+
+	# 调试模式:一键装满 5 槽(便于测试,不等升级)
+	if debug_unlock_all:
+		for unlock_id in UNLOCK_ID_TO_SKILL.keys():
+			_apply_unlock(String(unlock_id))
+
+	# 监听系统组的升级信号,据 unlocked 字段填充技能槽
+	var pm: Node = get_node_or_null("/root/ProgressionManager")
+	if pm != null and pm.has_signal("level_up"):
+		pm.level_up.connect(_on_level_up)
+
+# 系统组 ProgressionManager.level_up.unlocked 是 Array[String](xp_curve.unlocks_at(level))
+func _on_level_up(_new_level: int, unlocked: Array) -> void:
+	for raw in unlocked:
+		_apply_unlock(String(raw))
+
+# 把 unlock id 解析为"装技能 .tres 到对应槽";slot_N 类条目无效果(我们的槽一直在)
+func _apply_unlock(unlock_id: String) -> void:
+	if not UNLOCK_ID_TO_SKILL.has(unlock_id):
+		# slot_N / passive_X / rune_X 等不影响主动技能槽,跳过
+		return
+	var pair: Array = UNLOCK_ID_TO_SKILL[unlock_id]
+	var slot: int = int(pair[0])
+	var path: String = String(pair[1])
+	if slot < 0 or slot >= SLOT_COUNT:
+		return
+	if not ResourceLoader.exists(path):
+		push_warning("SkillSlotManager: skill resource missing: %s" % path)
+		return
+	var sd: Resource = load(path)
+	if sd == null:
+		return
+	slot_skills[slot] = sd
+	_cooldowns[slot] = 0.0  # 解锁瞬间 CD 清零,首次可立即用
+	cooldown_changed.emit(slot, 0.0, float(sd.cooldown))
 
 func _process(delta: float) -> void:
 	# 更新 CD

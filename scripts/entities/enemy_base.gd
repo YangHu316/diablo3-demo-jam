@@ -26,6 +26,13 @@ const DEATH_DURATION: float = 0.35
 # 用 Resource 弱类型避免跨文件 class_name 解析问题。
 @export var data: Resource = null
 
+# ── 精英词缀(策划 03 §5.1)─────────────────────────
+# 关卡组在场景里勾上对应词缀;运行时 _die() 触发对应行为。
+# 熔火 = 死亡 1.0s 后在尸体处生成"地面延爆"(molten_pool)。
+@export var is_molten: bool = false
+const MOLTEN_POOL_PATH: String = "res://scenes/enemies/molten_pool.tscn"
+const MOLTEN_DELAY: float = 1.0
+
 # ── 运行时数值(从 data 复制,允许运行时改) ──────────
 var max_health: int = 80
 var current_health: int = 80
@@ -325,6 +332,9 @@ func _die(source, overkill: int) -> void:
 				kill_dir = d.normalized()
 		cm.enemy_killed.emit(self, source, overkill, kill_dir)
 	died.emit(self)
+	# 熔火词缀:延迟 1s 后在尸体处生成地面延爆
+	if is_molten:
+		_spawn_molten_pool_deferred()
 	if was_frozen:
 		_spawn_freeze_shatter()
 		# 立刻消失,不走缩放动画(碎裂代替)
@@ -334,6 +344,31 @@ func _die(source, overkill: int) -> void:
 		var tw: Tween = create_tween()
 		tw.tween_property(self, "scale", Vector3.ZERO, DEATH_DURATION)
 		tw.tween_callback(Callable(self, "queue_free"))
+
+# 熔火词缀:延迟 MOLTEN_DELAY 秒后在尸体位置生成 molten_pool。
+# 用一个 Timer + 当前场景树驻留(死亡后 self 会 queue_free,所以位置要先抓快照)
+func _spawn_molten_pool_deferred() -> void:
+	if not ResourceLoader.exists(MOLTEN_POOL_PATH):
+		return
+	var scn: PackedScene = load(MOLTEN_POOL_PATH)
+	if scn == null:
+		return
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	var pos_snapshot: Vector3 = global_position
+	var t: Timer = Timer.new()
+	t.one_shot = true
+	t.wait_time = MOLTEN_DELAY
+	scene_root.add_child(t)
+	t.timeout.connect(func() -> void:
+		var inst: Node = scn.instantiate()
+		if inst is Node3D:
+			scene_root.add_child(inst)
+			(inst as Node3D).global_position = pos_snapshot
+		t.queue_free()
+	)
+	t.start()
 
 # 冰冻碎裂:在死亡位置生成几个蓝色碎块向外飞散并淡出
 func _spawn_freeze_shatter() -> void:
