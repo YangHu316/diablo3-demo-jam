@@ -1,0 +1,7 @@
+[gd_resource type="AtlasTexture" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/inventory/2DInventoryBows.png" id="1_mtoau"]
+
+[resource]
+atlas = ExtResource("1_mtoau")
+region = Rect2(0, 0, 128, 128)

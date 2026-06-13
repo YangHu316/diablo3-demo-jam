@@ -519,5 +519,5 @@ func _die(source, overkill: int) -> void:
 	# 慢动作 0.3s + 缩放消失(原本 0.7s,加长到 1.2s 给"句号感")
 	var tw: Tween = create_tween()
 	tw.tween_property(self, "scale", Vector3.ONE * 1.15, 0.2)  # 短暂膨胀
-	tw.tween_property(self, "scale", Vector3.ZERO, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "scale", Vector3.ONE * 0.001, 1.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_callback(Callable(self, "queue_free"))

@@ -341,9 +341,7 @@ func _die(source, overkill: int) -> void:
 	var was_frozen: bool = is_frozen
 	_set_state(State.DEATH)
 	velocity = Vector3.ZERO
-	# 立即停止击退:否则 KnockbackComponent._physics_process 会在死亡缩放动画
-	# (scale -> Vector3.ZERO) 期间继续对本体 move_and_slide,基底退化导致
-	# 每帧刷屏 "det == 0"(Transform 不可逆)。
+	# 取消击退,防止死亡缩放 + knockback move_and_slide 同时跑触发 det==0 spam
 	if knockback_comp != null and knockback_comp.has_method("cancel"):
 		knockback_comp.cancel()
 	# 广播击杀事件给 CombatManager(juice/掉落系统监听)
@@ -367,7 +365,7 @@ func _die(source, overkill: int) -> void:
 	else:
 		# 普通死亡:缩放消失(简易死亡演出,后续接动画)
 		var tw: Tween = create_tween()
-		tw.tween_property(self, "scale", Vector3.ZERO, DEATH_DURATION)
+		tw.tween_property(self, "scale", Vector3.ONE * 0.001, DEATH_DURATION)
 		tw.tween_callback(Callable(self, "queue_free"))
 
 # 熔火词缀:延迟 MOLTEN_DELAY 秒后在尸体位置生成 molten_pool。
