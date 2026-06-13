@@ -1,7 +1,7 @@
-[gd_scene format=4]
+[gd_scene format=4 uid="uid://di6gln1p60o7k"]
 
-[ext_resource type="PackedScene" path="res://assets/characters/plant/CarnivorousPlant_FREE.fbx" id="1_glgcw"]
-[ext_resource type="Texture2D" path="res://assets/characters/plant/Plant.png" id="2_e0bf4"]
+[ext_resource type="PackedScene" uid="uid://c0uveqglsuv3w" path="res://assets/characters/plant/CarnivorousPlant_FREE.fbx" id="1_glgcw"]
+[ext_resource type="Texture2D" uid="uid://bsmm0a24ueopj" path="res://assets/characters/plant/Plant.png" id="2_e0bf4"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ynmi2"]
 resource_name = "Plant"
@@ -346,24 +346,24 @@ _data = {
 
 [node name="Body" type="Node3D" parent="." unique_id=943506144]
 
-[node name="Mesh" type="Node3D" parent="Body" unique_id=1321251208 instance=ExtResource("1_glgcw")]
+[node name="Mesh" parent="Body" unique_id=1321251208 instance=ExtResource("1_glgcw")]
 
-[node name="Base" type="MeshInstance3D" parent="Body/Mesh" unique_id=1877646301]
+[node name="Base2" type="MeshInstance3D" parent="Body/Mesh" unique_id=1877646301]
 transform = Transform3D(100, 0, 0, 0, -2.3841858e-05, 99.99999, 0, -99.99999, -2.3841858e-05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_8fab8")
 skeleton = NodePath("")
 
-[node name="Sprout1" type="MeshInstance3D" parent="Body/Mesh" unique_id=1326557515]
+[node name="Sprout3" type="MeshInstance3D" parent="Body/Mesh" unique_id=1326557515]
 transform = Transform3D(100, 0, 0, 0, -2.3841858e-05, 99.99999, 0, -99.99999, -2.3841858e-05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_kc1qe")
 skeleton = NodePath("")
 
-[node name="Sprout2" type="MeshInstance3D" parent="Body/Mesh" unique_id=1665625875]
+[node name="Sprout4" type="MeshInstance3D" parent="Body/Mesh" unique_id=1665625875]
 transform = Transform3D(100, 0, 0, 0, -2.3841858e-05, 99.99999, 0, -99.99999, -2.3841858e-05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_saw3k")
 skeleton = NodePath("")
 
-[node name="Stem" type="MeshInstance3D" parent="Body/Mesh" unique_id=514573111]
+[node name="Stem2" type="MeshInstance3D" parent="Body/Mesh" unique_id=514573111]
 transform = Transform3D(100, 0, 0, 0, -2.3841858e-05, 99.99999, 0, -99.99999, -2.3841858e-05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_kvr07")
 skeleton = NodePath("")
