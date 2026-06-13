@@ -365,7 +365,7 @@ func _die(source, overkill: int) -> void:
 	else:
 		# 普通死亡:缩放消失(简易死亡演出,后续接动画)
 		var tw: Tween = create_tween()
-		tw.tween_property(self, "scale", Vector3.ZERO, DEATH_DURATION)
+		tw.tween_property(self, "scale", Vector3.ONE * 0.001, DEATH_DURATION)
 		tw.tween_callback(Callable(self, "queue_free"))
 
 # 熔火词缀:延迟 MOLTEN_DELAY 秒后在尸体位置生成 molten_pool。
