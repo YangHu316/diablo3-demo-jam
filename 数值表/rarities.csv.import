@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cktu4jqega6yu"
+
+[deps]
+
+files=["res://数值表/rarities.英文.translation", "res://数值表/rarities.颜色.translation", "res://数值表/rarities.词缀条数.translation", "res://数值表/rarities.白值档(Tier区间内位置).translation", "res://数值表/rarities.词缀roll强度.translation", "res://数值表/rarities.掉落表现.translation", "res://数值表/rarities.售价系数.translation", "res://数值表/rarities.Demo3档对应.translation", "res://数值表/rarities.备注.translation"]
+
+source_file="res://数值表/rarities.csv"
+dest_files=["res://数值表/rarities.英文.translation", "res://数值表/rarities.颜色.translation", "res://数值表/rarities.词缀条数.translation", "res://数值表/rarities.白值档(Tier区间内位置).translation", "res://数值表/rarities.词缀roll强度.translation", "res://数值表/rarities.掉落表现.translation", "res://数值表/rarities.售价系数.translation", "res://数值表/rarities.Demo3档对应.translation", "res://数值表/rarities.备注.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

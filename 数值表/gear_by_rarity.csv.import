@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://tsxoe0f3ptfp"
+
+[deps]
+
+files=["res://数值表/gear_by_rarity.词缀条数.translation", "res://数值表/gear_by_rarity.T1武器DPS.translation", "res://数值表/gear_by_rarity.T2武器DPS.translation", "res://数值表/gear_by_rarity.T3武器DPS.translation", "res://数值表/gear_by_rarity.T1护甲.translation", "res://数值表/gear_by_rarity.T2护甲.translation", "res://数值表/gear_by_rarity.T3护甲.translation", "res://数值表/gear_by_rarity.T1售价金.translation", "res://数值表/gear_by_rarity.T2售价金.translation", "res://数值表/gear_by_rarity.T3售价金.translation"]
+
+source_file="res://数值表/gear_by_rarity.csv"
+dest_files=["res://数值表/gear_by_rarity.词缀条数.translation", "res://数值表/gear_by_rarity.T1武器DPS.translation", "res://数值表/gear_by_rarity.T2武器DPS.translation", "res://数值表/gear_by_rarity.T3武器DPS.translation", "res://数值表/gear_by_rarity.T1护甲.translation", "res://数值表/gear_by_rarity.T2护甲.translation", "res://数值表/gear_by_rarity.T3护甲.translation", "res://数值表/gear_by_rarity.T1售价金.translation", "res://数值表/gear_by_rarity.T2售价金.translation", "res://数值表/gear_by_rarity.T3售价金.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

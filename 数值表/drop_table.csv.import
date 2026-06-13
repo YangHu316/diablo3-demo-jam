@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c0devw7lwhq1d"
+
+[deps]
+
+files=["res://数值表/drop_table.原型键.translation", "res://数值表/drop_table.装备掉落率.translation", "res://数值表/drop_table.件数.translation", "res://数值表/drop_table.普通%.translation", "res://数值表/drop_table.精良%.translation", "res://数值表/drop_table.稀有%.translation", "res://数值表/drop_table.史诗%.translation", "res://数值表/drop_table.传说%.translation", "res://数值表/drop_table.附加保底/说明.translation"]
+
+source_file="res://数值表/drop_table.csv"
+dest_files=["res://数值表/drop_table.原型键.translation", "res://数值表/drop_table.装备掉落率.translation", "res://数值表/drop_table.件数.translation", "res://数值表/drop_table.普通%.translation", "res://数值表/drop_table.精良%.translation", "res://数值表/drop_table.稀有%.translation", "res://数值表/drop_table.史诗%.translation", "res://数值表/drop_table.传说%.translation", "res://数值表/drop_table.附加保底/说明.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
