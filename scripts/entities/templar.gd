@@ -27,8 +27,11 @@ const HEAL_PCT: float = 0.10              # 治疗 = 玩家 max_health × 10%
 
 # 敌人 enemy_base.State.DEATH 的整数值(避免硬依赖)
 const ENEMY_DEATH_STATE: int = 4
+const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
+# 圣堂武士伤害 = 玩家武器均伤 × 1.5(策划随从口径)。
+const DAMAGE_MULT: float = 1.5
 
-@export var attack_damage: int = 22       # 武器均伤 × ~1.5 占位;Day2 接系统数值
+@export var attack_damage: int = 22       # 跟随玩家武器伤:weapon_avg × 1.5。未接装备回退基底 15 → ~22
 @export var heal_enabled: bool = true     # 砍量梯子开关
 
 enum State { FOLLOW, ATTACK }
@@ -167,8 +170,9 @@ func _do_strike() -> void:
 		return
 	if global_position.distance_to(_target.global_position) > ATTACK_RANGE * 1.25:
 		return
+	var dmg: int = _current_damage()
 	if _target.has_method("take_damage"):
-		_target.take_damage(attack_damage, self)
+		_target.take_damage(dmg, self)
 	# 通过 CombatManager 让 juice 系统接管闪白/飘字/僵直
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null:
@@ -179,7 +183,14 @@ func _do_strike() -> void:
 			hit_dir = hit_dir.normalized()
 		else:
 			hit_dir = -global_transform.basis.z
-		cm.hit_landed.emit(self, _target, attack_damage, false, "physical", hit_pos, hit_dir)
+		cm.hit_landed.emit(self, _target, dmg, false, "physical", hit_pos, hit_dir)
+
+# 实时跟随玩家武器均伤 × 倍率(装备/升级即时反映)。
+func _current_damage() -> int:
+	var wa: float = DamageCalculator.weapon_avg
+	if wa <= 0.0:
+		return attack_damage
+	return int(round(wa * DAMAGE_MULT))
 
 # ── 目标选择 ─────────────────────────────────────────
 func _target_valid() -> bool:

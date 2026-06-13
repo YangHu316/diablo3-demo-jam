@@ -35,6 +35,19 @@ func _ready() -> void:
 	else:
 		push_error("SkillExecutor: SkillSlotManager not found at %s" % slot_manager_path)
 
+	# 接系统组装备聚合:换装/升级 → Inventory.stats_changed → 重算伤害面板。
+	# (战斗进展 §5.1 "唯一未联通" close:weapon_avg / dexterity / crit_rate / crit_dmg)
+	var inv: Node = get_node_or_null("/root/Inventory")
+	if inv != null and inv.has_signal("stats_changed"):
+		inv.stats_changed.connect(_on_stats_changed)
+		# 拉一次初值(可能装备/升级已先于本节点就绪)。
+		if inv.has_method("get_total_stats"):
+			DamageCalculator.refresh_from_stats(inv.get_total_stats())
+
+# 系统组 Inventory.stats_changed(total_stats) → 整体重算伤害面板属性。
+func _on_stats_changed(total_stats: Dictionary) -> void:
+	DamageCalculator.refresh_from_stats(total_stats)
+
 # sd 期望是 SkillData 资源
 func _on_skill_activated(slot_index: int, sd: Resource) -> void:
 	if sd == null:
