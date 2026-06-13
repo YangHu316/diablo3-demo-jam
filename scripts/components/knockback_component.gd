@@ -61,10 +61,13 @@ func _physics_process(delta: float) -> void:
 	if _body == null or not is_instance_valid(_body):
 		_remaining = 0.0
 		return
-	# 防御:本体正在销毁(死亡演出会把 scale 补间到 0)时停止接管物理,
-	# 否则对退化基底(det==0)调 move_and_slide 会每帧刷屏报错。
-	if _body.is_queued_for_deletion():
-		cancel()
+	# 死亡防护:body 处于死亡缩放(scale 接近 0)时不再 move_and_slide,
+	# 否则父节点 basis 的 determinant 趋近 0 → 引擎每帧报 det==0 / invert 失败
+	var s: Vector3 = _body.scale
+	if abs(s.x) < 0.05 or abs(s.y) < 0.05 or abs(s.z) < 0.05:
+		_remaining = 0.0
+		_body.velocity = Vector3.ZERO
+		knockback_ended.emit()
 		return
 
 	_remaining = max(0.0, _remaining - delta)

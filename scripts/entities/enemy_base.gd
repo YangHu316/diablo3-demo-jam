@@ -341,9 +341,7 @@ func _die(source, overkill: int) -> void:
 	var was_frozen: bool = is_frozen
 	_set_state(State.DEATH)
 	velocity = Vector3.ZERO
-	# 立即停止击退:否则 KnockbackComponent._physics_process 会在死亡缩放动画
-	# (scale -> Vector3.ZERO) 期间继续对本体 move_and_slide,基底退化导致
-	# 每帧刷屏 "det == 0"(Transform 不可逆)。
+	# 取消击退,防止死亡缩放 + knockback move_and_slide 同时跑触发 det==0 spam
 	if knockback_comp != null and knockback_comp.has_method("cancel"):
 		knockback_comp.cancel()
 	# 广播击杀事件给 CombatManager(juice/掉落系统监听)
