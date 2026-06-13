@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" path="res://scenes/arena/test_arena.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/components/screen_shake.gd" id="4"]
 
 [node name="Main" type="Node3D" unique_id=1204650071]
 
@@ -16,3 +17,6 @@ transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 
 current = true
 fov = 60.0
 script = ExtResource("3")
+
+[node name="ScreenShake" type="Node" parent="Camera3D"]
+script = ExtResource("4")

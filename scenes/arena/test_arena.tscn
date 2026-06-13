@@ -1,6 +1,8 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_zombie.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/components/spawn_trigger.gd" id="2"]
+[ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="3"]
 
 [sub_resource type="StandardMaterial3D" id="floor_mat"]
 albedo_color = Color(0.227451, 0.227451, 0.227451, 1)
@@ -44,6 +46,9 @@ ssao_intensity = 1.5
 glow_enabled = true
 glow_intensity = 0.4
 
+[sub_resource type="SphereShape3D" id="trigger_shape"]
+radius = 3.0
+
 [node name="TestArena" type="Node3D"]
 
 [node name="Floor" type="StaticBody3D" parent="."]
@@ -69,19 +74,38 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("env")
 
-[node name="Enemies" type="Node3D" parent="."]
+[node name="SpawnTrigger_Wave1" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -4)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+script = ExtResource("2")
+enemy_scene = ExtResource("1")
+enemy_data = ExtResource("3")
+count = 5
+formation = "surround"
+spawn_radius = 6.0
+spawn_at_self = false
+one_shot = true
+target_player = true
 
-[node name="EnemyZombie1" parent="Enemies" instance=ExtResource("1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpawnTrigger_Wave1"]
+shape = SubResource("trigger_shape")
 
-[node name="EnemyZombie2" parent="Enemies" instance=ExtResource("1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 5)
+[node name="SpawnTrigger_Wave2" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.5, 0)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+script = ExtResource("2")
+enemy_scene = ExtResource("1")
+enemy_data = ExtResource("3")
+count = 8
+formation = "cluster"
+spawn_radius = 4.0
+spawn_at_self = true
+one_shot = true
+target_player = true
 
-[node name="EnemyZombie3" parent="Enemies" instance=ExtResource("1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, -5)
-
-[node name="EnemyZombie4" parent="Enemies" instance=ExtResource("1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -5)
-
-[node name="EnemyZombie5" parent="Enemies" instance=ExtResource("1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpawnTrigger_Wave2"]
+shape = SubResource("trigger_shape")

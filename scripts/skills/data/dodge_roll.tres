@@ -1,0 +1,28 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+skill_id = &"dodge_roll"
+skill_name = "翻滚"
+cooldown = 6.0
+focus_cost = 0.0
+focus_gain_on_hit = 0.0
+skill_multiplier = 0.0
+element = &"physical"
+skill_type = 1
+projectile_count = 1
+projectile_spread_angle = 0.0
+can_penetrate = false
+aoe_radius = 0.0
+status_effect = &""
+status_duration = 0.0
+is_movement_skill = true
+move_distance = 4.0
+move_duration = 0.4
+grants_invuln = true
+cancels_attack_cooldowns = true
+summon_duration = 0.0
+summon_max_count = 1
+description = "朝移动方向(无输入则面前方向)滚 4m / 0.4s。期间无敌、穿怪。取消左/右键攻击冷却。"

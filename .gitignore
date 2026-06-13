@@ -19,6 +19,10 @@ desktop.ini
 # AI assistant local settings
 .claude/
 .codebuddy/
+.mcp.json
+
+# MCP / dev-only addons (per-user, not part of the game)
+addons/godot_mcp/
 
 # Export builds
 export/
