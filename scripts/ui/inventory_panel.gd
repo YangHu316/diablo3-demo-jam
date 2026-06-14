@@ -169,8 +169,9 @@ func _build_ui() -> void:
 
 	_build_bag(vbox)
 	_build_bottom_bar(vbox)
-	# 关闭键独立浮层,anchor 到 panel 右上角,绝对显眼(放最后保证渲染在最上层)
-	_build_close_button(panel)
+	# 关闭键独立浮层,挂在 _root(Control)上而非 panel(PanelContainer 会强制 child 填满)
+	# 用 viewport 中心 + 偏移定位到 panel 右上角(panel 是 anchor 0.5 + offset_left/right=-480/480)
+	_build_close_button(_root)
 
 	# tooltip 浮层 (最后加, 盖在所有控件之上; 默认隐藏).
 	_build_tooltip()
@@ -193,10 +194,11 @@ func _build_header(vbox: VBoxContainer) -> void:
 	spacer_r.custom_minimum_size = Vector2(46, 46)
 	header.add_child(spacer_r)
 
-# V3.13:面板右上角独立浮层关闭键(脱离 header 布局,绝对定位到 panel 右上 corner)。
-# 用户反馈"加一个真的关闭键" — 之前的 X 嵌在 header 里小且被 panel 内部 padding 推走。
-# 这版直接 anchor 到 panel 右上,大尺寸 + 红底 + 白字,绝对显眼可点。
-func _build_close_button(panel: PanelContainer) -> void:
+# V3.13:面板右上角独立浮层关闭键(挂在 _root Control 上,而非 panel PanelContainer)。
+# PanelContainer 是 Container,会强制 child 填满 → 之前 close 被撑成 960×628 巨型 X 盖住整个面板。
+# 这版直接挂 _root,用 anchor=0.5(viewport 中心)+ offset 定位到 panel 右上角内侧。
+# panel 在 viewport 中心 ±480/±314,close 在 panel 右上 = (center+480-64, center-314+8)
+func _build_close_button(parent: Control) -> void:
 	var close := Button.new()
 	close.text = "✕"
 	close.custom_minimum_size = Vector2(56, 56)
@@ -204,22 +206,22 @@ func _build_close_button(panel: PanelContainer) -> void:
 	close.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.85))
 	close.add_theme_color_override("font_pressed_color", Color(1, 0.8, 0.6))
 	close.add_theme_font_size_override("font_size", 28)
-	# 红底深红描边,hover/press 加亮
 	close.add_theme_stylebox_override("normal", _sbox(Color(0.55, 0.10, 0.08), 3, Color(0.85, 0.30, 0.22), 4, 0))
 	close.add_theme_stylebox_override("hover", _sbox(Color(0.78, 0.18, 0.12), 3, Color(1.0, 0.6, 0.4), 4, 0))
 	close.add_theme_stylebox_override("pressed", _sbox(Color(0.40, 0.06, 0.05), 3, Color(1.0, 0.6, 0.4), 4, 0))
-	# anchor 到 panel 右上角,向左下 8px 内缩一点不顶边
-	close.anchor_left = 1.0
-	close.anchor_top = 0.0
-	close.anchor_right = 1.0
-	close.anchor_bottom = 0.0
-	close.offset_left = -64
-	close.offset_top = 8
-	close.offset_right = -8
-	close.offset_bottom = 64
+	# anchor 到 viewport 中心(panel 同样以中心定位 ±480/±314)
+	# 右上角内 8px 内缩
+	close.anchor_left = 0.5
+	close.anchor_top = 0.5
+	close.anchor_right = 0.5
+	close.anchor_bottom = 0.5
+	close.offset_left = 480 - 64       # panel 右边 - 按钮宽 56 - 留白 8 = +416
+	close.offset_top = -314 + 8        # panel 顶 + 留白 8 = -306
+	close.offset_right = 480 - 8       # +472
+	close.offset_bottom = -314 + 64    # -250
 	close.pressed.connect(func(): Sfx.play("ui_decline"); _set_open(false))
 	close.mouse_entered.connect(func(): Sfx.play("ui_hover"))
-	panel.add_child(close)
+	parent.add_child(close)
 
 func _gold_rule() -> Panel:
 	var r := Panel.new()

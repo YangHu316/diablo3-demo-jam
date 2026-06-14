@@ -32,43 +32,31 @@ func _ready() -> void:
 
 # ── 视觉构建 (石像 NPC) ───────────────────────────────────────
 func _build_visual() -> void:
-	# 身体: Synty 石像模型 (替代原程序化胶囊). 保留 Y=0 贴地, 略放大让神秘感.
+	# 身体: Synty 石像模型 (替代原程序化胶囊).
 	var body: Node = ROCK_GOLEM_SCENE.instantiate()
 	body.name = "Body"
 	add_child(body)
 	if body is Node3D:
-		(body as Node3D).scale = Vector3(1.2, 1.2, 1.2)   # 比玩家略大,体现"古老守护者"压迫感
-		# V3.13f:Synty 石像 default 朝 +Z (玩家从南门 +Z 方向走来), 无需旋转.
-		# 之前 PI(180°) 反而让石像背对玩家.
-	# V3.13e:Synty 模型默认 T-pose(双臂张开), 注入 UAL Idle 让它站立呼吸.
+		(body as Node3D).scale = Vector3(1.2, 1.2, 1.2)
+		# Synty 石像 default 朝 +Z (玩家从南门 +Z 方向走来), 无需旋转.
+	# Synty 模型默认 T-pose, 注入 UAL Idle 让它站立呼吸.
 	var ap: AnimationPlayer = _find_animation_player(body)
 	if ap != null:
 		var anim_lib: Node = get_node_or_null("/root/AnimLib")
 		if anim_lib != null and anim_lib.has_method("inject_library"):
 			anim_lib.inject_library(ap, "ual1")
 			if ap.has_animation("ual1/Idle"):
-				# 设循环(UAL 导入默认非循环, 必须显式设)
 				var idle: Animation = ap.get_animation("ual1/Idle")
 				if idle != null:
 					idle.loop_mode = Animation.LOOP_LINEAR
 				ap.play("ual1/Idle")
 
-# 递归找 AnimationPlayer (Synty 模型层级里 AnimationPlayer 是直接子节点, 但保险起见递归).
-func _find_animation_player(n: Node) -> AnimationPlayer:
-	if n is AnimationPlayer:
-		return n as AnimationPlayer
-	for c in n.get_children():
-		var r: AnimationPlayer = _find_animation_player(c)
-		if r != null:
-			return r
-	return null
-
 	# 地面光环 (扁圆柱, 半透明金).
 	var halo := MeshInstance3D.new()
 	halo.name = "Halo"
 	var cyl := CylinderMesh.new()
-	cyl.top_radius = 1.1
-	cyl.bottom_radius = 1.1
+	cyl.top_radius = 1.4
+	cyl.bottom_radius = 1.4
 	cyl.height = 0.04
 	var hm := StandardMaterial3D.new()
 	hm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -83,14 +71,13 @@ func _find_animation_player(n: Node) -> AnimationPlayer:
 
 	# 暖光源.
 	var light := OmniLight3D.new()
-	light.position = Vector3(0, 1.6, 0)
+	light.position = Vector3(0, 2.0, 0)
 	light.light_color = Color(1.0, 0.82, 0.45)
 	light.light_energy = 2.4
 	light.omni_range = 8.0
 	add_child(light)
 
 	# 点击碰撞体 (胶囊, 覆盖整个石像;石像 1.2x 缩放后约 2.4m 高 / 1.0m 宽).
-	# V3.13f:之前 r=0.6 h=2.2 太小, 玩家点石像头/肩膀超出胶囊范围 → PhysicsPicking 不触发.
 	var cs := CollisionShape3D.new()
 	var sh := CapsuleShape3D.new()
 	sh.radius = 1.2
@@ -113,6 +100,16 @@ func _find_animation_player(n: Node) -> AnimationPlayer:
 	plate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	plate.position = Vector3(0, 4.0, 0)
 	add_child(plate)
+
+# 递归找 AnimationPlayer (Synty 模型层级里 AnimationPlayer 是直接子节点, 但保险起见递归).
+func _find_animation_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n as AnimationPlayer
+	for c in n.get_children():
+		var r: AnimationPlayer = _find_animation_player(c)
+		if r != null:
+			return r
+	return null
 
 # 出场演出: 从地面淡入 + 轻微浮起.
 func _play_appear() -> void:
