@@ -238,21 +238,33 @@ func _do_draw(canvas: Control) -> void:
 	# 无边框、无装饰（大地图风格简洁）
 
 
-# ── 迷雾：点是否在探索圆内 ───────────────────────────────────────────────
-func _in_fog_local(wx: float, wz: float, fog: Array, explore_r: float) -> bool:
+# ── 空间哈希候选圆心（复用 minimap 的 _fog_spatial）────────────────────
+func _spatial_candidates(wx: float, wz: float) -> Array:
+	if _mm == null or not ("_fog_spatial" in _mm):
+		return []
+	var cell: float = _mm.SPATIAL_CELL
+	var key := Vector2i(int(wx / cell), int(wz / cell))
+	var spatial: Dictionary = _mm._fog_spatial
+	if spatial.has(key):
+		return spatial[key] as Array
+	return []
+
+
+# ── 迷雾：点是否在探索圆内（O(1) 空间哈希）──────────────────────────────
+func _in_fog_local(wx: float, wz: float, _fog: Array, explore_r: float) -> bool:
 	var p := Vector2(wx, wz)
-	for c in fog:
+	for c in _spatial_candidates(wx, wz):
 		if p.distance_squared_to(c) <= explore_r * explore_r:
 			return true
 	return false
 
 
-# ── 迷雾：计算渐变 alpha ──────────────────────────────────────────────────
-func _fog_alpha_local(wx: float, wz: float, fog: Array, explore_r: float, fade_w: float) -> float:
+# ── 迷雾：计算渐变 alpha（O(1) 空间哈希）────────────────────────────────
+func _fog_alpha_local(wx: float, wz: float, _fog: Array, explore_r: float, fade_w: float) -> float:
 	var p := Vector2(wx, wz)
 	var min_dist: float = INF
 	var inner: float = explore_r - fade_w
-	for c in fog:
+	for c in _spatial_candidates(wx, wz):
 		var d: float = p.distance_to(c)
 		if d < min_dist:
 			min_dist = d
