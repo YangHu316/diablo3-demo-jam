@@ -225,18 +225,40 @@ func _pick_enemy_under_cursor() -> Node3D:
 	var space := get_world_3d().direct_space_state
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + dir * 200.0, 2)  # 2 = 敌人层
 	var hit: Dictionary = space.intersect_ray(query)
-	if hit.is_empty():
-		return null
-	var col: Object = hit.get("collider")
-	if col == null:
-		return null
-	# 优先返回 enemies group 的成员(可能本身就是 collider 或其祖先)
-	var n: Node = col as Node
-	while n != null:
-		if n.is_in_group("enemies") and n is Node3D:
-			return n
-		n = n.get_parent()
-	return null
+	if not hit.is_empty():
+		var col: Object = hit.get("collider")
+		var n: Node = col as Node
+		while n != null:
+			if n.is_in_group("enemies") and n is Node3D:
+				return n
+			n = n.get_parent()
+	# V3.13:射线没命中 → 用鼠标投地点 + 容差圆找最近敌人。
+	# 根因:Synty 骷髅卫士视觉(头盔红缨/盾牌/剑)伸出胶囊(r=0.3m)外很远,
+	# 玩家对着视觉部分点击时细射线常擦过胶囊 → _attack_target=null → LMB 不响应。
+	# 兜底:鼠标投地点 → 半径容差内最近 enemy 视为目标。
+	# V3.13b:容差从 1.5 收紧到 0.6 — 1.5 太大会把附近走尸/弓手当成最近 enemy 抢锁,
+	# 导致用户对着远处红盔骷髅点击,实际锁定到近处的走尸 → 箭射走尸不射红盔。
+	# 0.6m = 胶囊半径 0.3 + 视觉模型(头盔/盾)外伸 ~0.3,刚够补偿,不会越界抢。
+	var ground_pt: Vector3 = _get_mouse_ground_point()
+	const PICK_TOLERANCE: float = 0.6
+	var best: Node3D = null
+	var best_d: float = PICK_TOLERANCE
+	var enemies: Array = []
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and "enemies" in reg:
+		enemies = reg.enemies
+	else:
+		enemies = get_tree().get_nodes_in_group("enemies")
+	for e in enemies:
+		if not is_instance_valid(e) or not (e is Node3D):
+			continue
+		var ep: Vector3 = (e as Node3D).global_position
+		ep.y = ground_pt.y
+		var d: float = ep.distance_to(ground_pt)
+		if d < best_d:
+			best_d = d
+			best = e as Node3D
+	return best
 
 func _move_toward(target: Vector3, _delta: float) -> void:
 	if is_frozen:
@@ -333,6 +355,16 @@ func get_arrow_spawn_position() -> Vector3:
 # 当前光标方向(投到地面平面 → 玩家 → 光标的水平单位向量)。
 # RMB / Q / E 等"朝光标释放"的技能用这个,而不是玩家当前 basis(避免边走边射时方向歪)。
 func get_aim_direction() -> Vector3:
+	# V3.13:Q/E 等 slot>=1 技能的瞄准方向。
+	# 之前一律取"鼠标→地面点 - 玩家"方向 → 玩家对着骷髅头盔点 Q,
+	# 地面点其实落在骷髅身后(topdown 透视),箭擦过 0.3m 胶囊 → miss。
+	# 修法:如果光标已经锁定敌人(含 1.5m 容差兜底),直接朝敌人胸口方向。
+	var locked: Node3D = _pick_enemy_under_cursor()
+	if locked != null and is_instance_valid(locked):
+		var to_enemy: Vector3 = locked.global_position - global_position
+		to_enemy.y = 0.0
+		if to_enemy.length() > 0.001:
+			return to_enemy.normalized()
 	var aim: Vector3 = _get_mouse_ground_point()
 	var to: Vector3 = aim - global_position
 	to.y = 0.0

@@ -66,6 +66,10 @@ var run_failed: bool = false
 var run_start_ms: int = 0
 var kill_count: int = 0
 
+# 计时冻结: 进入守门人(=切 boss 关)时, 把"本局已用时(秒)"快照到此并停止计时.
+# <0 = 未冻结(计时进行中). >=0 = 已冻结, get_clear_time/get_time_remaining 返回此快照对应值.
+var _frozen_clear_sec: float = -1.0
+
 # 已计数的 enemy 实例 id (防同一只怪重复加权).
 var _counted: Dictionary = {}
 
@@ -84,6 +88,7 @@ func reset_rift() -> void:
 	_counted.clear()
 	run_start_ms = Time.get_ticks_msec()
 	kill_count = 0
+	_frozen_clear_sec = -1.0
 	progress_changed.emit(progress, goal)
 
 # 每帧检测超时: 倒计时归零 且 进度未满 (未触发守门人) → 任务失败.
@@ -148,6 +153,8 @@ func _trigger_guardian() -> void:
 	if guardian_triggered:
 		return
 	guardian_triggered = true
+	# 进入守门人 = 切 boss 关: 立即冻结计时 (快照本局已用时), 此后 get_time_remaining 返回定值.
+	_frozen_clear_sec = float(Time.get_ticks_msec() - run_start_ms) / 1000.0
 	guardian_ready.emit()
 	# 满进度 → 切守门人房 (八边形房复用). 延一帧避免在信号回调中切场.
 	call_deferred("_go_boss")
@@ -166,6 +173,9 @@ func get_kill_count() -> int:
 	return kill_count
 
 func get_clear_time() -> float:
+	# 已冻结 (进 boss 关后) → 返回快照值, 计时静止; 否则按实时流逝.
+	if _frozen_clear_sec >= 0.0:
+		return _frozen_clear_sec
 	return float(Time.get_ticks_msec() - run_start_ms) / 1000.0
 
 # 大秘境时限总长 (秒). HUD 时间球读此作满刻度.

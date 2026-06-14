@@ -16,10 +16,12 @@ var _slot_mgr: Node = null
 
 # ── 节点引用(对应 hud.tscn 里的节点;美术换素材改的是这些节点本身)──
 @onready var _buff_box: HBoxContainer = $Root/BuffBox
-@onready var _rift_label: Label = $Root/RiftBox/RiftLabel
-@onready var _rift_bar: ProgressBar = $Root/RiftBox/RiftBar
-@onready var _time_orb_fill: ColorRect = $Root/TimeOrb/Fill
-@onready var _time_orb_label: Label = $Root/TimeOrb/TimeLabel
+# 大秘境进度条(D3 风格横条, 右上角小地图正下方; 位置由 _reposition_rift_panel 动态算)
+@onready var _rift_panel: Control = $Root/RiftPanel
+@onready var _rift_pct_label: Label = $Root/RiftPanel/PctLabel
+@onready var _rift_fill: ColorRect = $Root/RiftPanel/Frame/Track/Fill
+@onready var _rift_track: Control = $Root/RiftPanel/Frame/Track
+@onready var _time_label: Label = $Root/RiftPanel/TimeLabel
 @onready var _hp_fill: Control = $Root/LifeOrb/OrbClip
 @onready var _hp_label: Label = $Root/LifeOrb/LifeLabel
 @onready var _focus_fill: Control = $Root/FocusOrb/OrbClip
@@ -31,6 +33,10 @@ var _slot_mgr: Node = null
 @onready var _death_hint: Label = $Root/DeathHint
 
 var _time_orb_accum: float = 0.0
+# 进度条当前填充比例(0~1), 缓存供重定位/分辨率变化后重算填充宽度.
+var _rift_ratio: float = 0.0
+# 填充重算一次性重试标志(防 Track 首帧 size=0 时 call_deferred 自递归爆栈).
+var _rift_fill_retry: bool = false
 # 功能塔 buff 图标(运行时按需建,挂在 BuffBox 下)
 var _tower_buff_panel: Panel = null
 var _tower_buff_fill: ColorRect = null
@@ -65,6 +71,38 @@ func _ready() -> void:
 	get_tree().root.call_deferred("add_child", minimap)
 	var tab_map := TabMap.new()
 	get_tree().root.call_deferred("add_child", tab_map)
+	# 进度条对齐到小地图正下方; 分辨率变化时重定位.
+	_reposition_rift_panel()
+	get_viewport().size_changed.connect(_reposition_rift_panel)
+	# Track 布局尺寸变化(首帧/分辨率变化)时重算填充宽度, 保证填充随条宽自适应.
+	if _rift_track != null:
+		_rift_track.resized.connect(_apply_rift_fill)
+
+# 把大秘境进度条对齐到右上角小地图的正下方.
+# 与 minimap_panel.gd 同款公式: 小地图边长 = 屏幕宽 × 0.14, 距右/上边距 16px;
+# 小地图底边 = 16 + map_size, 进度条紧贴其下方留 GAP, 宽度=小地图宽度.
+func _reposition_rift_panel() -> void:
+	if _rift_panel == null:
+		return
+	const MAP_SIZE_RATIO: float = 0.14   # 同 minimap_panel.gd
+	const MARGIN: float = 16.0           # 同 minimap_panel.gd
+	const GAP: float = 8.0               # 小地图与进度条之间的竖向间隙
+	const TEXT_ROW: float = 14.0         # 进度条上方文字行(骷髅/百分比/时间)高度
+	const BAR_HEIGHT: float = 60.0       # 进度条本体(Frame)厚度; 调这个改 Y 方向粗细
+	var vw: float = float(get_viewport().size.x)
+	var map_size: float = vw * MAP_SIZE_RATIO
+	var minimap_bottom: float = MARGIN + map_size
+	# 右上角锚定: 右边距 MARGIN, 宽度=小地图宽度(X 不变).
+	_rift_panel.anchor_left = 1.0
+	_rift_panel.anchor_top = 0.0
+	_rift_panel.anchor_right = 1.0
+	_rift_panel.anchor_bottom = 0.0
+	_rift_panel.offset_left = -(map_size + MARGIN)
+	_rift_panel.offset_right = -MARGIN
+	_rift_panel.offset_top = minimap_bottom + GAP
+	_rift_panel.offset_bottom = minimap_bottom + GAP + TEXT_ROW + BAR_HEIGHT
+	# 重定位后 Track 宽度变了, 重算填充宽度.
+	call_deferred("_apply_rift_fill")
 
 # F3 调试标签(挂 Root 左上,默认隐藏)
 func _build_debug_label() -> void:
@@ -103,9 +141,10 @@ func _collect_slots() -> void:
 		_slot_cd_overlays.append(slot.get_node("Cd"))
 		_slot_cd_labels.append(slot.get_node("CdLabel"))
 
-# 读 RiftManager 剩余时间, 刷新时间球填充高度与 MM:SS 文字.
+# 读 RiftManager 剩余时间, 刷新进度条右侧 MM:SS 计时文字.
+# 进 boss 关后 RiftManager 冻结计时 → get_time_remaining 返回定值, 文字静止.
 func _refresh_time_orb() -> void:
-	if _time_orb_fill == null:
+	if _time_label == null:
 		return
 	var rm: Node = get_node_or_null("/root/RiftManager")
 	if rm == null or not rm.has_method("get_time_remaining"):
@@ -113,13 +152,10 @@ func _refresh_time_orb() -> void:
 	var remaining: float = float(rm.get_time_remaining())
 	var limit: float = float(rm.get_time_limit()) if rm.has_method("get_time_limit") else 120.0
 	var ratio: float = clampf(remaining / maxf(limit, 1.0), 0.0, 1.0)
-	_time_orb_fill.anchor_top = 1.0 - ratio
-	_time_orb_fill.offset_top = 0.0
+	var secs: int = int(ceil(remaining))
+	_time_label.text = "%d:%02d" % [secs / 60, secs % 60]
 	# 时间紧迫(<20%)转红, 提示玩家.
-	_time_orb_fill.color = Color(0.85, 0.20, 0.20, 0.92) if ratio < 0.2 else Color(0.62, 0.42, 1.0, 0.92)
-	if _time_orb_label != null:
-		var secs: int = int(ceil(remaining))
-		_time_orb_label.text = "%d:%02d" % [secs / 60, secs % 60]
+	_time_label.add_theme_color_override("font_color", Color(1.0, 0.35, 0.3, 1.0) if ratio < 0.2 else Color(1.0, 0.95, 0.8, 1.0))
 
 # ── 信号连接(沿用系统组契约,未改)──────────────────────
 func _connect_signals() -> void:
@@ -202,13 +238,26 @@ func _refresh_xp(current_xp: int, xp_to_next: int, lvl: int) -> void:
 		_xp_bar.value = current_xp
 
 func _on_rift_progress(value: float, goal: float) -> void:
-	if _rift_bar == null:
+	_rift_ratio = clampf(value / maxf(goal, 1.0), 0.0, 1.0)
+	_apply_rift_fill()
+	var pct: int = int(_rift_ratio * 100.0)
+	if _rift_pct_label != null:
+		_rift_pct_label.text = "降临!" if value >= goal else "%d%%" % pct
+
+# 按当前比例设填充条宽度(锚到 Track 左侧, 宽=比例×Track宽). 满进度转金黄高亮.
+# 首帧 Track 可能尚未布局(size=0), 用一次性重试避免 call_deferred 自递归爆栈.
+func _apply_rift_fill() -> void:
+	if _rift_fill == null or _rift_track == null:
 		return
-	_rift_bar.max_value = maxf(goal, 1.0)
-	_rift_bar.value = value
-	var pct: int = int(clampf(value / maxf(goal, 1.0), 0.0, 1.0) * 100.0)
-	if _rift_label != null:
-		_rift_label.text = "守门人降临!" if value >= goal else "大秘境进度  %d%%" % pct
+	var track_w: float = _rift_track.size.x - 2.0   # 减去 Fill 左右各 1px 内缩
+	if track_w <= 0.0:
+		if not _rift_fill_retry:
+			_rift_fill_retry = true
+			call_deferred("_apply_rift_fill")
+		return
+	_rift_fill_retry = false
+	_rift_fill.offset_right = _rift_fill.offset_left + track_w * _rift_ratio
+	_rift_fill.color = Color(1.0, 0.82, 0.25, 1.0) if _rift_ratio >= 1.0 else Color(0.55, 0.32, 0.95, 1.0)
 
 # 功能塔 buff 显示(TopLeft _buff_box). 互斥 = 最多一个图标:激活/刷新更新, 清除移除.
 func _on_tower_buff_changed(tower_id: StringName, buff_type: StringName, remaining: float, duration: float) -> void:

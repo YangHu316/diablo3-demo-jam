@@ -28,17 +28,17 @@ var _hit_targets: Array = []  # 穿透/AOE 去重,避免反复伤害/上状态
 
 func _ready() -> void:
 	# Forward 由 spawner 通过 look_at 设置;以 -basis.z 为初始方向。
+	# V3.13:之前强制 y=0 让箭只能水平飞,关卡组把骷髅卫士摆在 y=1.18 高台上时
+	# 箭从脚底擦过 → miss。改成保留 y 分量,让 SkillExecutor 的 aim 决定俯仰角。
 	var fwd: Vector3 = -global_transform.basis.z
-	fwd.y = 0.0
 	if fwd.length() > 0.001:
 		_direction = fwd.normalized()
 	# 注:body_entered / area_entered 已在 arrow.tscn 通过编辑器连接,无需重复 connect。
 
 func set_direction(dir: Vector3) -> void:
-	var d: Vector3 = dir
-	d.y = 0.0
-	if d.length() > 0.001:
-		_direction = d.normalized()
+	# V3.13:不再强制 y=0,允许斜向飞(命中 y=1.18 高台上的骷髅卫士)
+	if dir.length() > 0.001:
+		_direction = dir.normalized()
 
 # 由 SkillExecutor 调用:把技能数据 + 已计算的伤害打包注入箭矢。
 func configure_from_skill(sd, dmg_info: Dictionary) -> void:
@@ -168,8 +168,30 @@ func _physics_process(delta: float) -> void:
 	if _consumed:
 		return
 	var step: float = SPEED * delta
+	# V3.13 反穿透:速度 30m/s × 1/60s = 0.5m/帧,敌人胶囊半径 0.3m,
+	# Area3D body_entered 是离散重叠检测,不做位移扫掠 → 高速箭会穿过小敌人不命中。
+	# 修法:沿前进方向打一条射线 (prev → next),命中 layer=2 的物理体补一次 _apply_hit。
+	var prev_pos: Vector3 = global_position
 	global_position += _direction * step
 	_travelled += step
+	# 扫掠射线(只在主体物理碰撞还没消耗时跑;穿透箭跑完整段)
+	if not _consumed:
+		var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+		var query := PhysicsRayQueryParameters3D.create(prev_pos, global_position)
+		query.collision_mask = 2  # enemies layer
+		query.collide_with_areas = false
+		query.collide_with_bodies = true
+		# 已命中过的不再算(穿透模式下 _hit_targets 累积)
+		var excludes: Array[RID] = []
+		for h in _hit_targets:
+			if is_instance_valid(h) and h is CollisionObject3D:
+				excludes.append((h as CollisionObject3D).get_rid())
+		query.exclude = excludes
+		var hit: Dictionary = space.intersect_ray(query)
+		if not hit.is_empty():
+			var collider: Object = hit.get("collider", null)
+			if collider is Node and (collider as Node).is_in_group("enemies"):
+				_apply_hit(collider as Node)
 	if lifetime > 0.0:
 		_life_timer += delta
 		if _life_timer >= lifetime:

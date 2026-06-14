@@ -70,7 +70,10 @@ var is_frozen: bool = false
 # ── 生命周期 ─────────────────────────────────────────
 func _ready() -> void:
 	add_to_group("enemies")
-	EntityRegistry.register_enemy(self)
+	# V3.13:用 /root 路径访问,绕开偶发的"Identifier not found: EntityRegistry"编译错
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and reg.has_method("register_enemy"):
+		reg.register_enemy(self)
 	_apply_data()
 	# 接 stagger 信号(L2 才打断 AI;L1 是纯视觉抖)
 	if stagger_comp != null:
@@ -87,7 +90,9 @@ func _acquire_player() -> void:
 		_player = arr[0] as Node3D
 
 func _exit_tree() -> void:
-	EntityRegistry.unregister_enemy(self)
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and reg.has_method("unregister_enemy"):
+		reg.unregister_enemy(self)
 	# 断开 stagger 信号，防止信号泄漏（敌人死亡/释放后回调仍然触发）
 	if stagger_comp != null:
 		if stagger_comp.has_signal("stagger_started") and stagger_comp.stagger_started.is_connected(_on_stagger_started):
