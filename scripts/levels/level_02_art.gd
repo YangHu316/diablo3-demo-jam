@@ -192,6 +192,10 @@ func _add_wall_collision() -> void:
 	for w in walls.get_children():
 		if not (w is Node3D):
 			continue
+		# 跳过门/拱门/门框/通道类:它们中间是开口,用实心 AABB 盒会把过道堵死。
+		var wname := String(w.name)
+		if wname.findn("door") != -1 or wname.findn("arch") != -1 or wname.findn("frame") != -1 or wname.findn("gate") != -1:
+			continue
 		var aabb: AABB = _world_aabb(w as Node3D)
 		if aabb.size.x <= 0.01 and aabb.size.z <= 0.01:
 			continue
