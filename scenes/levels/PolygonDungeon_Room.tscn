@@ -56,7 +56,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.31820297, 0, -16.8626
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.31820297, 0, -6.862606)
 
 [node name="Floor_4_0" parent="." unique_id=791801588 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(99.99884, 0.26443094, 0.4027231, -0.26459292, 99.99964, 0.039697718, -0.40261677, -0.040762477, 99.999176, 5.318203, 0, -26.862606)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.318203, 0, -26.862606)
 
 [node name="Floor_4_0" parent="Floor_4_0" unique_id=747806982 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(99.99884, 0.26443094, 0.4027231, -0.26459292, 99.99964, 0.039697718, -0.40261677, -0.040762477, 99.999176, 5.318203, 0, 0)
@@ -107,7 +107,7 @@ transform = Transform3D(-4.371139e-06, 0, 100, 0, 100, 0, -100, 0, -4.371139e-06
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.100069, -0.05082512, -41.9993)
 
 [node name="Wall_S_4" parent="." unique_id=1859447262 instance=ExtResource("2_hxbvr")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 10.506603, 0, -27.106354)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 9.960735, 0, -27.106354)
 
 [node name="Wall_W_4" parent="." unique_id=741452622 instance=ExtResource("2_hxbvr")]
 transform = Transform3D(-4.371139e-06, 0, 100, 0, 100, 0, -100, 0, -4.371139e-06, 0, 0.013349533, -6.862606)
@@ -174,7 +174,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -4.302849, -1.9073486e-
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.5452547, 0, -41.771027)
 
 [node name="SM_Env_Tiles_020" parent="." unique_id=797745031 instance=ExtResource("7_rcnhm")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.421073, -0.16288471, -41.66967)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.421073, 0.16488075, -41.66967)
 
 [node name="SM_Env_Tiles_021" parent="." unique_id=474938272 instance=ExtResource("7_rcnhm")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 10.3652935, 0.157938, -41.598747)
@@ -345,10 +345,10 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 20.187634, 0, -2.281090
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 9.921235, 0, 2.549862)
 
 [node name="SM_Env_Tiles_51" parent="." unique_id=1392079382 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 15.202804, 0, 2.7045612)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 14.890094, 0, 2.7045612)
 
 [node name="SM_Env_Tiles_52" parent="." unique_id=1522590280 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 20.537975, 0, 2.6820145)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 19.97996, 0, 2.6820145)
 
 [node name="SM_Env_Tiles_53" parent="." unique_id=179799728 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.09976947, 0, 56.123684)
@@ -501,7 +501,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 47.984585, 0.30465126, 
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 52.940624, 0, 65.88782)
 
 [node name="SM_Env_Tiles_103" parent="." unique_id=633307620 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 48.746395, 0, 71.25323)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 48.746395, 0, 71.00109)
 
 [node name="SM_Env_Tiles_104" parent="." unique_id=1514300203 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 53.532227, 0, 70.93385)
@@ -510,19 +510,19 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 53.532227, 0, 70.93385)
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 47.95002, 0, 75.68968)
 
 [node name="SM_Env_Tiles_106" parent="." unique_id=1459297099 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 53.331112, -1.9073486e-06, 75.88211)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 52.866985, -1.9073486e-06, 75.88211)
 
 [node name="SM_Env_Tiles_107" parent="." unique_id=491730565 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 58.228928, 5.722046e-06, 75.71917)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 57.90534, 5.722046e-06, 75.71917)
 
 [node name="SM_Env_Tiles_108" parent="." unique_id=385056347 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 48.3468, 0, 80.57978)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 48.068012, 0, 80.57978)
 
 [node name="SM_Env_Tiles_109" parent="." unique_id=1096945740 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 53.97292, 0, 80.85251)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 53.23483, 0, 80.521706)
 
 [node name="SM_Env_Tiles_110" parent="." unique_id=2049799035 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 58.66266, 0, 80.71382)
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 58.262257, 0, 80.71382)
 
 [node name="SM_Env_Tiles_111" parent="." unique_id=781981110 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -9.766334, 0, 64.11192)
