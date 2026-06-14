@@ -160,7 +160,7 @@ func _process(delta: float) -> void:
 # 边缘细格子：同 minimap_panel，复用其常量
 # ═════════════════════════════════════════════════════════════════════════
 func _do_draw(canvas: Control) -> void:
-	if _mm == null:
+	if _mm == null or not is_instance_valid(_mm):
 		return
 
 	var ms: float = _map_size

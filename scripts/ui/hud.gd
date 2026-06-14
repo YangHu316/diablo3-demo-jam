@@ -53,6 +53,12 @@ func _ready() -> void:
 	_connect_signals()
 	_initial_refresh()
 	# 常驻小地图 / Tab 大地图(独立 CanvasLayer,挂到场景根)
+	# 重载场景时 minimap/tab_map 挂在 root 下不会自动销毁，需先清理旧实例再创建新的，防止叠加
+	for node in get_tree().root.get_children():
+		if is_instance_valid(node) and node.get_script() != null:
+			var sp: String = str(node.get_script().resource_path)
+			if "minimap_panel" in sp or "tab_map" in sp:
+				node.queue_free()
 	var minimap := MinimapPanel.new()
 	get_tree().root.call_deferred("add_child", minimap)
 	var tab_map := TabMap.new()

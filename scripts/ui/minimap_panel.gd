@@ -406,7 +406,7 @@ func _do_draw(canvas: Control) -> void:
 		_draw_landmark(canvas, uv, lm["kind"])
 
 	# 3. 玩家三角形（始终居中）
-	if _player != null:
+	if _player != null and is_instance_valid(_player):
 		_draw_player_triangle(canvas, ms)
 
 
