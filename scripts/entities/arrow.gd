@@ -82,6 +82,14 @@ func _apply_element_tint(elem: String) -> void:
 	var pivot: Node = get_node_or_null("ModelPivot")
 	if pivot != null:
 		_tint_meshes(pivot, tint, emit)
+		# V3.6:冰箭整体放大,看着更"沉",和普通利箭区分
+		if elem == "frost" and pivot is Node3D:
+			# arrow.tscn 里 ModelPivot 是 Y 翻转(基矩阵 -1,1,-1),保持符号只放大模长
+			(pivot as Node3D).scale = (pivot as Node3D).scale * 1.8
+		# V3.6:冰箭整体放大,看着更"沉",和普通利箭区分
+		if elem == "frost" and pivot is Node3D:
+			# arrow.tscn 里 ModelPivot 是 Y 翻转(基矩阵 -1,1,-1),保持符号只放大模长
+			(pivot as Node3D).scale = (pivot as Node3D).scale * 1.8
 
 func _tint_meshes(node: Node, tint: Color, emit: Color) -> void:
 	if node is MeshInstance3D:

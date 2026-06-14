@@ -35,6 +35,10 @@ var _orbit_arrows: Array = []
 var _orbit_time: float = 0.0
 var _orbit_arrow_scene: PackedScene = null
 var _orbit_trail_scene: PackedScene = null
+# V3.6:E AOE 边界指引环(细圆环,持续显示直到松手)
+var _channel_boundary: MeshInstance3D = null
+# V3.6:E AOE 边界指引环(细圆环,持续显示直到松手)
+var _channel_boundary: MeshInstance3D = null
 
 func _ready() -> void:
 	_arrow_scene = load(ARROW_SCENE_PATH)
@@ -95,6 +99,10 @@ func _on_channel_started(slot: int, sd: Resource) -> void:
 		_player.set_channeling(true, float(sd.channel_movement_mult))
 	# V3.2:生成 5~6 支绕身公转的箭(纯视觉,伤害还是 _emit_channel_tick 的 AOE)
 	_spawn_orbit_arrows(float(sd.channel_radius))
+	# V3.6:AOE 边界细环指引(持续显示)
+	_spawn_channel_boundary(float(sd.channel_radius))
+	# V3.6:AOE 边界细环指引(持续显示)
+	_spawn_channel_boundary(float(sd.channel_radius))
 	# SFX:开始引导(咏唱声)
 	var sfx_start: Node = get_node_or_null("/root/Sfx")
 	if sfx_start != null and sfx_start.has_method("play") and _player is Node3D:
@@ -110,6 +118,7 @@ func _on_channel_stopped(slot: int, _sd: Resource) -> void:
 	if _player != null and _player.has_method("set_channeling"):
 		_player.set_channeling(false, 1.0)
 	_despawn_orbit_arrows()
+	_despawn_channel_boundary()
 
 func _process(delta: float) -> void:
 	if _channel_skill == null or _channeling_slot < 0:
@@ -129,6 +138,12 @@ func _process(delta: float) -> void:
 				return
 	# 2) 公转箭跟随玩家 + 旋转
 	_update_orbit_arrows(delta)
+	# 2.5) 边界环跟随玩家
+	if _channel_boundary != null and is_instance_valid(_channel_boundary) and _player != null and is_instance_valid(_player):
+		_channel_boundary.global_position = (_player as Node3D).global_position + Vector3(0, 0.02, 0)
+	# 2.5) 边界环跟随玩家
+	if _channel_boundary != null and is_instance_valid(_channel_boundary) and _player != null and is_instance_valid(_player):
+		_channel_boundary.global_position = (_player as Node3D).global_position + Vector3(0, 0.02, 0)
 	# 3) tick 命中
 	_channel_tick_timer -= delta
 	if _channel_tick_timer <= 0.0:
@@ -199,42 +214,14 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		# V3.4:加回一条魔法尾迹 — 但用程序化 CPUParticles3D(冰蓝拉丝)替代 mprojectile
 		# 火焰拖尾。火粒子是 fire-base 模板很难调出"圣箭"质感,所以自己拼一个简短的
 		# 冷光蓝白拖尾,挂在 anchor 上,跟着箭走。
-		# V3.5:CPUParticles3D 必须设 mesh,否则什么都不画(这就是上一版"公转箭特效不见了"的原因)
-		var trail: CPUParticles3D = CPUParticles3D.new()
-		# 粒子用一个小 quad billboard,unshaded + 加色混合 → 像光斑
-		var quad: QuadMesh = QuadMesh.new()
-		quad.size = Vector2(0.25, 0.25)
-		var pmat: StandardMaterial3D = StandardMaterial3D.new()
-		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		pmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-		pmat.albedo_color = Color(0.7, 0.95, 1.0, 1.0)
-		pmat.emission_enabled = true
-		pmat.emission = Color(0.55, 0.85, 1.0, 1.0)
-		pmat.emission_energy_multiplier = 3.0
-		pmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-		pmat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		quad.material = pmat
-		trail.mesh = quad
-		trail.amount = 32
-		trail.lifetime = 0.45
-		trail.local_coords = false   # 世界坐标,粒子留在身后不被 anchor 旋转拽走
-		trail.emitting = true
-		trail.one_shot = false
-		trail.explosiveness = 0.0
-		trail.spread = 6.0
-		trail.initial_velocity_min = 0.0
-		trail.initial_velocity_max = 0.3
-		trail.gravity = Vector3.ZERO
-		trail.scale_amount_min = 0.6
-		trail.scale_amount_max = 1.0
-		trail.color = Color(0.7, 0.95, 1.0, 1.0)   # 冷光蓝白
-		# 简单淡出曲线(CPUParticles3D.color_ramp 在 Godot 4 直接接 Gradient)
-		var ramp: Gradient = Gradient.new()
-		ramp.add_point(0.0, Color(0.85, 0.97, 1.0, 1.0))
-		ramp.add_point(1.0, Color(0.4, 0.7, 1.0, 0.0))
-		trail.color_ramp = ramp
-		anchor.add_child(trail)
+		# V3.6:用户反馈程序化粒子太丑,改回原版 mprojectile_basic 火光拖尾
+		var trail: Node = null
+		if _orbit_trail_scene != null:
+			trail = _orbit_trail_scene.instantiate()
+			if trail != null and trail is Node3D:
+				anchor.add_child(trail)
+				# VFX 内部 +X 是飞行轴 → 切向飞行方向,缩小到 0.5x 让长度合身
+				(trail as Node3D).scale = Vector3.ONE * 0.5
 		# 随机参数(V3.3:速度上调,V3.4:再加一档)
 		var ang_speed: float = randf_range(3.0, 5.8)        # rad/s
 		if randf() < 0.5:
@@ -285,6 +272,36 @@ func _despawn_orbit_arrows() -> void:
 		if pivot != null and is_instance_valid(pivot):
 			pivot.queue_free()
 	_orbit_arrows.clear()
+
+# V3.6:E AOE 边界细环 — 让玩家清楚知道范围,持续显示直到松手
+func _spawn_channel_boundary(radius: float) -> void:
+	_despawn_channel_boundary()
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null or _player == null:
+		return
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.65, 0.2, 0.9)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.55, 0.15, 1.0)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = max(0.02, radius - 0.06)   # 极细的环(0.06m 厚)
+	torus.outer_radius = radius
+	torus.ring_segments = 64
+	torus.material = mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.mesh = torus
+	scene_root.add_child(mi)
+	mi.global_position = (_player as Node3D).global_position + Vector3(0, 0.02, 0)
+	_channel_boundary = mi
+
+func _despawn_channel_boundary() -> void:
+	if _channel_boundary != null and is_instance_valid(_channel_boundary):
+		_channel_boundary.queue_free()
+	_channel_boundary = null
 
 func _disable_emitters(node: Node) -> void:
 	if node is GPUParticles3D:
