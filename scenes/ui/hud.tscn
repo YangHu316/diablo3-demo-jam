@@ -1,7 +1,668 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_abbni"]
+[ext_resource type="Texture2D" path="res://assets/ui/skills/2DUI_Skills_DemonHunter.png" id="2_2fdox"]
 
-[node name="HUD" type="CanvasLayer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_enl5e"]
+bg_color = Color(0.04, 0.04, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 33
+corner_radius_top_right = 33
+corner_radius_bottom_right = 33
+corner_radius_bottom_left = 33
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xl2ol"]
+bg_color = Color(0.04, 0.04, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 48
+corner_radius_top_right = 48
+corner_radius_bottom_right = 48
+corner_radius_bottom_left = 48
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rsrq4"]
+bg_color = Color(0.04, 0.04, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 48
+corner_radius_top_right = 48
+corner_radius_bottom_right = 48
+corner_radius_bottom_left = 48
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gj4ex"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7oc2b"]
+atlas = ExtResource("2_2fdox")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1b73h"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0c22p"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ja7eg"]
+atlas = ExtResource("2_2fdox")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdkql"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1gsdf"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4vkf6"]
+atlas = ExtResource("2_2fdox")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jjlpq"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0srh3"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ls6t1"]
+atlas = ExtResource("2_2fdox")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ighds"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o8tgt"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.26, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_joddv"]
+atlas = ExtResource("2_2fdox")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ieuvm"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="HUD" type="CanvasLayer" unique_id=864773421]
 layer = 100
-script = ExtResource("1")
+script = ExtResource("1_abbni")
+
+[node name="Root" type="Control" parent="." unique_id=134367005]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="BuffBox" type="HBoxContainer" parent="Root" unique_id=2030941920]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 14.0
+offset_right = 16.0
+offset_bottom = 14.0
+mouse_filter = 2
+theme_override_constants/separation = 5
+
+[node name="RiftBox" type="VBoxContainer" parent="Root" unique_id=1359989841]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_top = 12.0
+offset_right = 180.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="RiftLabel" type="Label" parent="Root/RiftBox" unique_id=752788471]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.6, 1, 1)
+text = "大秘境进度  0%"
+horizontal_alignment = 1
+
+[node name="RiftBar" type="ProgressBar" parent="Root/RiftBox" unique_id=1851348932]
+modulate = Color(0.65, 0.45, 1, 1)
+custom_minimum_size = Vector2(360, 12)
+layout_mode = 2
+mouse_filter = 2
+max_value = 106.0
+show_percentage = false
+
+[node name="TimeOrb" type="Panel" parent="Root" unique_id=1427405047]
+clip_contents = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -33.0
+offset_top = 54.0
+offset_right = 33.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_enl5e")
+
+[node name="Fill" type="ColorRect" parent="Root/TimeOrb" unique_id=1313073209]
+layout_mode = 0
+anchor_top = 0.0019333333
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.62, 0.42, 1, 0.92)
+
+[node name="TimeLabel" type="Label" parent="Root/TimeOrb" unique_id=1646516773]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.97, 0.85, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "2:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LifeOrb" type="Panel" parent="Root" unique_id=1044223349]
+clip_contents = true
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -118.0
+offset_right = 116.0
+offset_bottom = -22.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xl2ol")
+
+[node name="Fill" type="ColorRect" parent="Root/LifeOrb" unique_id=1612258210]
+layout_mode = 0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.64, 0.1, 0.07, 1)
+
+[node name="LifeLabel" type="Label" parent="Root" unique_id=2077294045]
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -46.0
+offset_right = 116.0
+offset_bottom = -28.0
+theme_override_colors/font_color = Color(1, 0.92, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "生命"
+horizontal_alignment = 1
+
+[node name="FocusOrb" type="Panel" parent="Root" unique_id=1824173133]
+clip_contents = true
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -116.0
+offset_top = -118.0
+offset_right = -20.0
+offset_bottom = -22.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rsrq4")
+
+[node name="Fill" type="ColorRect" parent="Root/FocusOrb" unique_id=744718169]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.16, 0.3, 0.55, 1)
+
+[node name="FocusLabel" type="Label" parent="Root" unique_id=1827488907]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -128.0
+offset_top = -46.0
+offset_right = -8.0
+offset_bottom = -28.0
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "专注 1500/1500"
+horizontal_alignment = 1
+
+[node name="Skills" type="HBoxContainer" parent="Root" unique_id=1818893699]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -157.0
+offset_top = -88.0
+offset_right = 157.0
+offset_bottom = -30.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Slot0" type="Panel" parent="Root/Skills" unique_id=581325207]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gj4ex")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot0" unique_id=558365394]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_7oc2b")
+expand_mode = 1
+
+[node name="KeyBg" type="Panel" parent="Root/Skills/Slot0" unique_id=1851711711]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -16.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1b73h")
+
+[node name="KeyLabel" type="Label" parent="Root/Skills/Slot0/KeyBg" unique_id=1968326285]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.95, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "LMB"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cd" type="ColorRect" parent="Root/Skills/Slot0" unique_id=529517477]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CdLabel" type="Label" parent="Root/Skills/Slot0" unique_id=838602876]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot1" type="Panel" parent="Root/Skills" unique_id=1467178932]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0c22p")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot1" unique_id=625660683]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_ja7eg")
+expand_mode = 1
+
+[node name="KeyBg" type="Panel" parent="Root/Skills/Slot1" unique_id=586896647]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -16.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pdkql")
+
+[node name="KeyLabel" type="Label" parent="Root/Skills/Slot1/KeyBg" unique_id=498085489]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.95, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "RMB"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cd" type="ColorRect" parent="Root/Skills/Slot1" unique_id=89644446]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CdLabel" type="Label" parent="Root/Skills/Slot1" unique_id=678138546]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot2" type="Panel" parent="Root/Skills" unique_id=199648931]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1gsdf")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot2" unique_id=22920523]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_4vkf6")
+expand_mode = 1
+
+[node name="KeyBg" type="Panel" parent="Root/Skills/Slot2" unique_id=353111834]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -16.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jjlpq")
+
+[node name="KeyLabel" type="Label" parent="Root/Skills/Slot2/KeyBg" unique_id=509413803]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.95, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "Q"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cd" type="ColorRect" parent="Root/Skills/Slot2" unique_id=10560807]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CdLabel" type="Label" parent="Root/Skills/Slot2" unique_id=1912787706]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot3" type="Panel" parent="Root/Skills" unique_id=667410497]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0srh3")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot3" unique_id=62360213]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_ls6t1")
+expand_mode = 1
+
+[node name="KeyBg" type="Panel" parent="Root/Skills/Slot3" unique_id=156743399]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -16.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ighds")
+
+[node name="KeyLabel" type="Label" parent="Root/Skills/Slot3/KeyBg" unique_id=1953594443]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.95, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "W"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cd" type="ColorRect" parent="Root/Skills/Slot3" unique_id=10120632]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CdLabel" type="Label" parent="Root/Skills/Slot3" unique_id=1979652563]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot4" type="Panel" parent="Root/Skills" unique_id=723538563]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_o8tgt")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot4" unique_id=681946673]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+texture = SubResource("AtlasTexture_joddv")
+expand_mode = 1
+
+[node name="KeyBg" type="Panel" parent="Root/Skills/Slot4" unique_id=1923449920]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -16.0
+offset_right = -2.0
+offset_bottom = -2.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ieuvm")
+
+[node name="KeyLabel" type="Label" parent="Root/Skills/Slot4/KeyBg" unique_id=2016151633]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.95, 0.55, 1)
+theme_override_font_sizes/font_size = 12
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cd" type="ColorRect" parent="Root/Skills/Slot4" unique_id=1903931134]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CdLabel" type="Label" parent="Root/Skills/Slot4" unique_id=2074653365]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="XpBox" type="VBoxContainer" parent="Root" unique_id=323938106]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -24.0
+offset_right = 250.0
+offset_bottom = -6.0
+mouse_filter = 2
+theme_override_constants/separation = 1
+
+[node name="XpBar" type="ProgressBar" parent="Root/XpBox" unique_id=1297983956]
+modulate = Color(1, 0.85, 0.4, 1)
+custom_minimum_size = Vector2(500, 8)
+layout_mode = 2
+mouse_filter = 2
+max_value = 1.0
+show_percentage = false
+
+[node name="XpLabel" type="Label" parent="Root/XpBox" unique_id=304785320]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 11
+text = "Lv 1   0/-1"
+horizontal_alignment = 1
+
+[node name="DeathOverlay" type="ColorRect" parent="Root" unique_id=1435041120]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.55, 0.05, 0.05, 0)
+
+[node name="DeathLabel" type="Label" parent="Root" unique_id=850837102]
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -80.0
+offset_right = 240.0
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 80
+text = "你死了"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DeathHint" type="Label" parent="Root" unique_id=1704919730]
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(1, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 28
+text = "按 R 重新开始"
+horizontal_alignment = 1

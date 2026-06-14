@@ -1,348 +1,70 @@
 extends CanvasLayer
 
-# HUD(角色D 美术布局,按 D3 参考重排;数据绑定沿用系统组契约,未改信号)
-#   TopLeft   : 状态/Buff 占位容器(无 buff 系统前留空)
-#   TopCenter : 大秘境进度条 (RiftManager.progress_changed)
-#   TopRight  : 小地图框(占位)
-#   BottomLeft: 生命球 (Player.health_changed)
-#   BottomRight: 资源球·复仇/专注 (FocusResource.focus_changed)
-#   BottomCenter: 5 技能槽(D3 图标 + 金框 + CD 扫描遮罩 + 按键)(SkillSlotManager.cooldown_changed)
-#   Bottom    : 经验条 + 等级 (ProgressionManager.xp_gained/level_up)
-# 信号:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager
-
-const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
-# 技能图标:从 D3 恶魔猎手图集(1024×512,8 col × 4 row,每格 128px)按 (列,行) 取区域
-# 修:原 SKILL_CELL=64 错了,实际单格 128;原 region(9,0) 越界,且其他 region 都切到 1/4 角 → 图标剧烈歪。
-# 5 个图:利箭 / 多重 / 冰冻 / 翻滚 / 箭雨,用 row0~row1 前 5 个挑选合适样式。
-const SKILL_SHEET: String = "res://assets/ui/skills/2DUI_Skills_DemonHunter.png"
-const SKILL_CELL: int = 128
-const SKILL_REGIONS: Array = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0)]
-const GOLD := Color(0.72, 0.56, 0.26)
-const DARK := Color(0.06, 0.05, 0.04, 0.92)
-
-var _player: Node = null
-var _slot_mgr: Node = null
-
-var _hp_fill: ColorRect = null
-var _hp_label: Label = null
-var _focus_fill: ColorRect = null
-var _focus_label: Label = null
-var _xp_label: Label = null
-var _xp_bar: ProgressBar = null
-var _rift_label: Label = null
-var _rift_bar: ProgressBar = null
-var _time_orb_fill: ColorRect = null
-var _time_orb_label: Label = null
-var _time_orb_accum: float = 0.0
-var _buff_box: HBoxContainer = null
-var _tower_buff_panel: Panel = null
-var _tower_buff_fill: ColorRect = null
-var _tower_buff_label: Label = null
-var _slot_panels: Array = []
-var _slot_cd_overlays: Array = []
-var _slot_cd_labels: Array = []
-var _death_overlay: ColorRect = null
-var _death_label: Label = null
-var _death_hint: Label = null
-var _is_dead: bool = false
+# HUD —— 视觉布局已外置到 hud.tscn 节点树(美术可在编辑器里直接对各节点拖 PNG 换素材),
+# 本脚本只负责"引用节点 + 数据绑定 + 动态特效",逻辑/信号契约未改。
+#   节点树(hud.tscn):Root/{BuffBox, RiftBox, TimeOrb, LifeOrb+LifeLabel,
+#     FocusOrb+FocusLabel, Skills/Slot0..4{Icon,KeyBg,Cd,CdLabel}, XpBox, Death*}
+#   换素材落点:Slot*/Icon(技能图标 AtlasTexture)、各 *Orb 的 Panel(可换 StyleBoxTexture/
+#     塞 TextureRect)、各 Bar、BuffBox。改外观不用动这个脚本。
+#   数据源:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager / TowerBuffManager
 
 const MinimapPanel := preload("res://scripts/ui/minimap_panel.gd")
 const TabMap := preload("res://scripts/ui/tab_map.gd")
 
+var _player: Node = null
+var _slot_mgr: Node = null
+
+# ── 节点引用(对应 hud.tscn 里的节点;美术换素材改的是这些节点本身)──
+@onready var _buff_box: HBoxContainer = $Root/BuffBox
+@onready var _rift_label: Label = $Root/RiftBox/RiftLabel
+@onready var _rift_bar: ProgressBar = $Root/RiftBox/RiftBar
+@onready var _time_orb_fill: ColorRect = $Root/TimeOrb/Fill
+@onready var _time_orb_label: Label = $Root/TimeOrb/TimeLabel
+@onready var _hp_fill: ColorRect = $Root/LifeOrb/Fill
+@onready var _hp_label: Label = $Root/LifeLabel
+@onready var _focus_fill: ColorRect = $Root/FocusOrb/Fill
+@onready var _focus_label: Label = $Root/FocusLabel
+@onready var _xp_bar: ProgressBar = $Root/XpBox/XpBar
+@onready var _xp_label: Label = $Root/XpBox/XpLabel
+@onready var _death_overlay: ColorRect = $Root/DeathOverlay
+@onready var _death_label: Label = $Root/DeathLabel
+@onready var _death_hint: Label = $Root/DeathHint
+
+var _time_orb_accum: float = 0.0
+# 功能塔 buff 图标(运行时按需建,挂在 BuffBox 下)
+var _tower_buff_panel: Panel = null
+var _tower_buff_fill: ColorRect = null
+var _tower_buff_label: Label = null
+# 5 技能槽(_ready 时从 hud.tscn 收集)
+var _slot_panels: Array = []
+var _slot_cd_overlays: Array = []
+var _slot_cd_labels: Array = []
+var _is_dead: bool = false
+
 func _ready() -> void:
 	layer = 100
 	add_to_group("hud")
-	_build_ui()
+	_collect_slots()
 	_connect_signals()
 	_initial_refresh()
-	# 常驻小地图（独立 CanvasLayer layer=105，挂到场景根）
+	# 常驻小地图 / Tab 大地图(独立 CanvasLayer,挂到场景根)
 	var minimap := MinimapPanel.new()
 	get_tree().root.call_deferred("add_child", minimap)
 	var tab_map := TabMap.new()
 	get_tree().root.call_deferred("add_child", tab_map)
 
-# ── UI 构建 ───────────────────────────────────────────────────
-func _build_ui() -> void:
-	var root: Control = Control.new()
-	root.name = "Root"
-	root.anchor_right = 1.0
-	root.anchor_bottom = 1.0
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(root)
-
-	# ── TopLeft: 状态/Buff 占位容器(留空,等 buff 系统)──
-	_buff_box = HBoxContainer.new()
-	_buff_box.position = Vector2(16, 14)
-	_buff_box.add_theme_constant_override("separation", 5)
-	_buff_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(_buff_box)
-
-	# ── TopCenter: 大秘境进度条 ──
-	var tc: VBoxContainer = VBoxContainer.new()
-	tc.anchor_left = 0.5
-	tc.anchor_right = 0.5
-	tc.offset_left = -180
-	tc.offset_top = 12
-	tc.offset_right = 180
-	tc.add_theme_constant_override("separation", 2)
-	tc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(tc)
-	_rift_label = Label.new()
-	_rift_label.text = "大秘境进度  0%"
-	_rift_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_rift_label.add_theme_color_override("font_color", Color(0.78, 0.6, 1.0))
-	_rift_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tc.add_child(_rift_label)
-	_rift_bar = ProgressBar.new()
-	_rift_bar.show_percentage = false
-	_rift_bar.custom_minimum_size = Vector2(360, 12)
-	_rift_bar.modulate = Color(0.65, 0.45, 1.0, 1)
-	_rift_bar.max_value = 100.0
-	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tc.add_child(_rift_bar)
-
-	# ── TopCenter 下方: 大秘境时间球(倒计时) ──
-	# 圆形球, 紫色填充随剩余时间从满到空(从下往上消), 中央显示 MM:SS.
-	_build_time_orb(root)
-
-	# ── BottomLeft: 生命球 ──
-	_hp_fill = _make_orb(root, Vector2(0, 1), Vector2(20, -118), 96, Color(0.64, 0.10, 0.07))
-	_hp_label = _make_anchored_label(root, Vector2(20, -46), Vector2(96, 18),
-			"生命", Color(1, 0.92, 0.92), Vector2(0, 1))
-	_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
-	# ── BottomRight: 资源球(复仇/专注)──
-	_focus_fill = _make_orb(root, Vector2(1, 1), Vector2(-116, -118), 96, Color(0.16, 0.30, 0.55))
-	_focus_label = _make_anchored_label(root, Vector2(-128, -46), Vector2(120, 18),
-			"专注", Color(0.85, 0.92, 1), Vector2(1, 1))
-	_focus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
-	# ── BottomCenter: 5 技能槽 ──
-	var slots: HBoxContainer = HBoxContainer.new()
-	var slot_size: float = 58.0
-	var spacing: int = 6
-	var total_w: float = slot_size * 5 + spacing * 4
-	slots.anchor_left = 0.5
-	slots.anchor_top = 1.0
-	slots.anchor_right = 0.5
-	slots.anchor_bottom = 1.0
-	slots.offset_left = -total_w * 0.5
-	slots.offset_top = -slot_size - 30
-	slots.offset_right = total_w * 0.5
-	slots.offset_bottom = -30
-	slots.add_theme_constant_override("separation", spacing)
-	slots.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(slots)
-
+# 从 hud.tscn 的 Skills 容器收集 5 个技能槽的 CD 蒙板/文字引用.
+func _collect_slots() -> void:
+	var skills: Node = $Root/Skills
+	if skills == null:
+		return
 	for i in range(5):
-		var panel: Panel = Panel.new()
-		panel.custom_minimum_size = Vector2(slot_size, slot_size)
-		# 关键:HBoxContainer 默认 fill 高度,显式指定 size_flags 强制 panel 不被压扁/拉伸
-		panel.size_flags_horizontal = Control.SIZE_FILL
-		panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_theme_stylebox_override("panel", _frame_box(DARK, 4))
-		slots.add_child(panel)
-		_slot_panels.append(panel)
-
-		# 技能图标(最底层):从图集切区域 — 改为完全填充(STRETCH_SCALE)
-		var icon: TextureRect = TextureRect.new()
-		if ResourceLoader.exists(SKILL_SHEET):
-			var at: AtlasTexture = AtlasTexture.new()
-			at.atlas = load(SKILL_SHEET)
-			var rc: Vector2i = SKILL_REGIONS[i]
-			at.region = Rect2(rc.x * SKILL_CELL, rc.y * SKILL_CELL, SKILL_CELL, SKILL_CELL)
-			icon.texture = at
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		# SCALE 拉伸到 panel 大小(不留 letterbox)
-		icon.stretch_mode = TextureRect.STRETCH_SCALE
-		icon.anchor_right = 1.0
-		icon.anchor_bottom = 1.0
-		icon.offset_left = 3
-		icon.offset_top = 3
-		icon.offset_right = -3
-		icon.offset_bottom = -3
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(icon)
-
-		# 按键标签:右下角 + 半透明黑底 stylebox(避免和图标颜色混)
-		var key_bg: Panel = Panel.new()
-		key_bg.add_theme_stylebox_override("panel", _solid_box(Color(0, 0, 0, 0.7), 2))
-		key_bg.anchor_right = 1.0
-		key_bg.anchor_bottom = 1.0
-		key_bg.offset_left = -22
-		key_bg.offset_top = -16
-		key_bg.offset_right = -2
-		key_bg.offset_bottom = -2
-		key_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(key_bg)
-
-		var key_lbl: Label = Label.new()
-		key_lbl.text = SKILL_KEY_LABELS[i]
-		key_lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.55))
-		key_lbl.add_theme_font_size_override("font_size", 12)
-		key_lbl.anchor_right = 1.0
-		key_lbl.anchor_bottom = 1.0
-		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		key_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		key_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		key_bg.add_child(key_lbl)
-
-		# CD 灰蒙板(从下往上消)
-		var cd_overlay: ColorRect = ColorRect.new()
-		cd_overlay.color = Color(0, 0, 0, 0.7)
-		cd_overlay.anchor_right = 1.0
-		cd_overlay.anchor_bottom = 1.0
-		cd_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		cd_overlay.visible = false
-		panel.add_child(cd_overlay)
-		_slot_cd_overlays.append(cd_overlay)
-
-		# CD 剩余秒数
-		var cd_lbl: Label = Label.new()
-		cd_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
-		cd_lbl.add_theme_font_size_override("font_size", 18)
-		cd_lbl.anchor_right = 1.0
-		cd_lbl.anchor_bottom = 1.0
-		cd_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		cd_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		cd_lbl.text = ""
-		cd_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(cd_lbl)
-		_slot_cd_labels.append(cd_lbl)
-
-	# ── Bottom: 经验条 + 等级(技能栏下方)──
-	var xp_box: VBoxContainer = VBoxContainer.new()
-	xp_box.anchor_left = 0.5
-	xp_box.anchor_top = 1.0
-	xp_box.anchor_right = 0.5
-	xp_box.anchor_bottom = 1.0
-	xp_box.offset_left = -250
-	xp_box.offset_top = -24
-	xp_box.offset_right = 250
-	xp_box.offset_bottom = -6
-	xp_box.add_theme_constant_override("separation", 1)
-	xp_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(xp_box)
-	_xp_bar = ProgressBar.new()
-	_xp_bar.show_percentage = false
-	_xp_bar.custom_minimum_size = Vector2(500, 8)
-	_xp_bar.modulate = Color(1, 0.85, 0.4, 1)
-	_xp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	xp_box.add_child(_xp_bar)
-	_xp_label = Label.new()
-	_xp_label.text = "Lv 1   0/300"
-	_xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_xp_label.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
-	_xp_label.add_theme_font_size_override("font_size", 11)
-	_xp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	xp_box.add_child(_xp_label)
-
-	# ── Death Overlay ──
-	_death_overlay = ColorRect.new()
-	_death_overlay.color = Color(0.55, 0.05, 0.05, 0.0)
-	_death_overlay.anchor_right = 1.0
-	_death_overlay.anchor_bottom = 1.0
-	_death_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_death_overlay.visible = false
-	root.add_child(_death_overlay)
-	_death_label = Label.new()
-	_death_label.text = "你死了"
-	_death_label.anchor_left = 0.5
-	_death_label.anchor_top = 0.5
-	_death_label.anchor_right = 0.5
-	_death_label.anchor_bottom = 0.5
-	_death_label.offset_left = -240
-	_death_label.offset_top = -80
-	_death_label.offset_right = 240
-	_death_label.offset_bottom = 0
-	_death_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_death_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_death_label.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	_death_label.add_theme_font_size_override("font_size", 80)
-	_death_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_death_label.visible = false
-	root.add_child(_death_label)
-	_death_hint = Label.new()
-	_death_hint.text = "按 R 重新开始"
-	_death_hint.anchor_left = 0.5
-	_death_hint.anchor_top = 0.5
-	_death_hint.anchor_right = 0.5
-	_death_hint.anchor_bottom = 0.5
-	_death_hint.offset_left = -200
-	_death_hint.offset_top = 20
-	_death_hint.offset_right = 200
-	_death_hint.offset_bottom = 60
-	_death_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_death_hint.add_theme_color_override("font_color", Color(1, 0.85, 0.85))
-	_death_hint.add_theme_font_size_override("font_size", 28)
-	_death_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_death_hint.visible = false
-	root.add_child(_death_hint)
-
-# ── 工具:哥特金框 StyleBox ──
-func _frame_box(bg: Color, radius: int) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.set_border_width_all(2)
-	sb.border_color = GOLD
-	sb.set_corner_radius_all(radius)
-	return sb
-
-# 纯背景 stylebox(无金边),给小标签底用
-func _solid_box(bg: Color, radius: int) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg
-	sb.set_corner_radius_all(radius)
-	return sb
-
-# ── 工具:圆形球体(返回 fill ColorRect,refresh 时改 anchor_top)──
-func _make_orb(parent: Node, anchor_xy: Vector2, off: Vector2, diam: float, fill_color: Color) -> ColorRect:
-	var orb: Panel = Panel.new()
-	orb.anchor_left = anchor_xy.x
-	orb.anchor_top = anchor_xy.y
-	orb.anchor_right = anchor_xy.x
-	orb.anchor_bottom = anchor_xy.y
-	orb.offset_left = off.x
-	orb.offset_top = off.y
-	orb.offset_right = off.x + diam
-	orb.offset_bottom = off.y + diam
-	orb.clip_contents = true
-	orb.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orb.add_theme_stylebox_override("panel", _frame_box(Color(0.04, 0.04, 0.05, 0.95), int(diam / 2)))
-	parent.add_child(orb)
-	var fill: ColorRect = ColorRect.new()
-	fill.color = fill_color
-	fill.anchor_left = 0.0
-	fill.anchor_top = 0.5
-	fill.anchor_right = 1.0
-	fill.anchor_bottom = 1.0
-	fill.offset_top = 0.0
-	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orb.add_child(fill)
-	return fill
-
-# ── 时间球(倒计时): 居中圆球, 顶部一圈金边, 紫填充 + MM:SS 文字 ──
-# 复用 _make_orb 的"从下往上消"填充语义(anchor_top = 1 - ratio); ratio = 剩余/总时.
-func _build_time_orb(root: Control) -> void:
-	var diam: float = 66.0
-	# 居中略低于进度条(TopCenter 进度条约 y=12~50, 球放其下).
-	var off: Vector2 = Vector2(-diam * 0.5, 54.0)
-	_time_orb_fill = _make_orb(root, Vector2(0.5, 0.0), off, diam, Color(0.62, 0.42, 1.0, 0.92))
-	# 中央倒计时文字(挂在 orb 上, 即 fill 的父节点), 盖在填充之上.
-	var orb: Control = _time_orb_fill.get_parent() as Control
-	_time_orb_label = Label.new()
-	_time_orb_label.text = "2:00"
-	_time_orb_label.add_theme_font_size_override("font_size", 16)
-	_time_orb_label.add_theme_color_override("font_color", Color(1, 0.97, 0.85))
-	_time_orb_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	_time_orb_label.add_theme_constant_override("outline_size", 3)
-	_time_orb_label.anchor_right = 1.0
-	_time_orb_label.anchor_bottom = 1.0
-	_time_orb_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_time_orb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_time_orb_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orb.add_child(_time_orb_label)
+		var slot: Node = skills.get_node_or_null("Slot%d" % i)
+		if slot == null:
+			continue
+		_slot_panels.append(slot)
+		_slot_cd_overlays.append(slot.get_node("Cd"))
+		_slot_cd_labels.append(slot.get_node("CdLabel"))
 
 # 读 RiftManager 剩余时间, 刷新时间球填充高度与 MM:SS 文字.
 func _refresh_time_orb() -> void:
@@ -361,26 +83,6 @@ func _refresh_time_orb() -> void:
 	if _time_orb_label != null:
 		var secs: int = int(ceil(remaining))
 		_time_orb_label.text = "%d:%02d" % [secs / 60, secs % 60]
-
-# anchor_xy: Vector2(left_anchor, top_anchor) ∈ {0,1}
-func _make_anchored_label(parent: Node, off: Vector2, size: Vector2,
-		text: String, color: Color, anchor_xy: Vector2) -> Label:
-	var lbl: Label = Label.new()
-	lbl.text = text
-	lbl.add_theme_color_override("font_color", color)
-	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-	lbl.add_theme_constant_override("outline_size", 3)
-	lbl.anchor_left = anchor_xy.x
-	lbl.anchor_top = anchor_xy.y
-	lbl.anchor_right = anchor_xy.x
-	lbl.anchor_bottom = anchor_xy.y
-	lbl.offset_left = off.x
-	lbl.offset_top = off.y
-	lbl.offset_right = off.x + size.x
-	lbl.offset_bottom = off.y + size.y
-	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	parent.add_child(lbl)
-	return lbl
 
 # ── 信号连接(沿用系统组契约,未改)──────────────────────
 func _connect_signals() -> void:
@@ -472,7 +174,6 @@ func _on_rift_progress(value: float, goal: float) -> void:
 		_rift_label.text = "守门人降临!" if value >= goal else "大秘境进度  %d%%" % pct
 
 # 功能塔 buff 显示(TopLeft _buff_box). 互斥 = 最多一个图标:激活/刷新更新, 清除移除.
-# tower_id 空 或 remaining<=0 = 清除.
 func _on_tower_buff_changed(tower_id: StringName, buff_type: StringName, remaining: float, duration: float) -> void:
 	if _buff_box == null:
 		return
@@ -487,7 +188,6 @@ func _on_tower_buff_changed(tower_id: StringName, buff_type: StringName, remaini
 		var tag: String = "伤害" if String(buff_type) == "damage" else "加速"
 		_tower_buff_label.text = "%s %.0f" % [tag, ceil(remaining)]
 	if _tower_buff_fill != null and duration > 0.0:
-		# 竖向消减:宽度按剩余比例.
 		var ratio: float = clampf(remaining / duration, 0.0, 1.0)
 		_tower_buff_fill.custom_minimum_size = Vector2(44.0 * ratio, 6.0)
 		_tower_buff_fill.size.x = 44.0 * ratio
@@ -519,20 +219,17 @@ func _remove_tower_buff_icon() -> void:
 		_tower_buff_label = null
 
 # 功能塔激活瞬间反馈:屏幕中央大字横幅 + 屏幕边缘染色闪一下(伤害红/加速蓝).
-# 让玩家在割草中也能立刻"感到强化生效", 不靠盯左上角小图标.
 func _on_tower_buff_activated(_tower_id: StringName, buff_type: StringName, duration: float) -> void:
 	var is_dmg: bool = String(buff_type) == "damage"
 	var col: Color = Color(1.0, 0.3, 0.3) if is_dmg else Color(0.3, 0.65, 1.0)
 	var title: String = "伤害强化 +30%" if is_dmg else "极速 +35%"
 	_show_buff_banner(title, col, duration)
 	_flash_screen_edge(col)
-	# 音效:用 charge 类音表达"强化生效"(2D, 非定位).
 	var sfx: Node = get_node_or_null("/root/Sfx")
 	if sfx != null and sfx.has_method("play"):
 		sfx.play("channel_charge")
 
-# 中央横幅:大字上浮淡出(沿用 boss_killed_flash 的 Tween 风格).
-func _show_buff_banner(text: String, col: Color, duration: float) -> void:
+func _show_buff_banner(text: String, col: Color, _duration: float) -> void:
 	var root: Control = get_node_or_null("Root")
 	if root == null:
 		return
@@ -556,7 +253,6 @@ func _show_buff_banner(text: String, col: Color, duration: float) -> void:
 	tw.tween_property(lbl, "modulate:a", 0.0, 0.9).set_delay(0.5)
 	tw.chain().tween_callback(Callable(lbl, "queue_free"))
 
-# 屏幕边缘染色:全屏渐变(中央透明、四周着色)快速闪一下, 表达"全局 buff".
 func _flash_screen_edge(col: Color) -> void:
 	var root: Control = get_node_or_null("Root")
 	if root == null:
@@ -572,7 +268,6 @@ func _flash_screen_edge(col: Color) -> void:
 	tw.tween_property(rect, "color:a", 0.0, 0.5)
 	tw.tween_callback(Callable(rect, "queue_free"))
 
-# buff 自然到期:小提示淡出(可选, 轻量).
 func _on_tower_buff_expired(_tower_id: StringName, buff_type: StringName) -> void:
 	var col: Color = Color(0.8, 0.8, 0.8)
 	var tag: String = "伤害强化" if String(buff_type) == "damage" else "极速"
@@ -640,7 +335,7 @@ func _process(delta: float) -> void:
 	if _is_dead and Input.is_key_pressed(KEY_R):
 		_is_dead = false
 		get_tree().reload_current_scene()
-	# 时间球: 倒计时每帧推进, 节流 0.25s 刷新 UI(MM:SS 整秒粒度足够).
+	# 时间球: 倒计时每帧推进, 节流 0.25s 刷新 UI.
 	_time_orb_accum += delta
 	if _time_orb_accum >= 0.25:
 		_time_orb_accum = 0.0
