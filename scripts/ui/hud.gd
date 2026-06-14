@@ -2,8 +2,9 @@ extends CanvasLayer
 
 # HUD —— 视觉布局已外置到 hud.tscn 节点树(美术可在编辑器里直接对各节点拖 PNG 换素材),
 # 本脚本只负责"引用节点 + 数据绑定 + 动态特效",逻辑/信号契约未改。
-#   节点树(hud.tscn):Root/{BuffBox, RiftBox, TimeOrb, LifeOrb+LifeLabel,
-#     FocusOrb+FocusLabel, Skills/Slot0..4{Icon,KeyBg,Cd,CdLabel}, XpBox, Death*}
+#   节点树(hud.tscn):Root/{BuffBox, RiftPanel, BottomBar/{HpOrb,MpOrb,Frame,HpLabel,MpLabel},
+#     Skills/Slot0..4{Icon,KeyBg,Cd,CdLabel}, XpBox, Death*}
+#     底部 BottomBar = 暗黑3整条框架(hud_frame.png), 血/法力球嵌两端凹槽, 填充由 orb_fill.gdshader 驱动.
 #   换素材落点:Slot*/Icon(技能图标 AtlasTexture)、各 *Orb 的 Panel(可换 StyleBoxTexture/
 #     塞 TextureRect)、各 Bar、BuffBox。改外观不用动这个脚本。
 #   数据源:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager / TowerBuffManager
@@ -22,10 +23,11 @@ var _slot_mgr: Node = null
 @onready var _rift_fill: ColorRect = $Root/RiftPanel/Frame/Track/Fill
 @onready var _rift_track: Control = $Root/RiftPanel/Frame/Track
 @onready var _time_label: Label = $Root/RiftPanel/TimeLabel
-@onready var _hp_fill: Control = $Root/LifeOrb/OrbClip
-@onready var _hp_label: Label = $Root/LifeOrb/LifeLabel
-@onready var _focus_fill: Control = $Root/FocusOrb/OrbClip
-@onready var _focus_label: Label = $Root/FocusOrb/FocusLabel
+# 血/法力球: 底部框架两端凹槽内的 TextureRect, 填充由 orb_fill.gdshader 的 fill_ratio 驱动.
+@onready var _hp_orb: TextureRect = $Root/BottomBar/HpOrb
+@onready var _hp_label: Label = $Root/BottomBar/HpLabel
+@onready var _focus_orb: TextureRect = $Root/BottomBar/MpOrb
+@onready var _focus_label: Label = $Root/BottomBar/MpLabel
 @onready var _xp_bar: ProgressBar = $Root/XpBox/XpBar
 @onready var _xp_label: Label = $Root/XpBox/XpLabel
 @onready var _death_overlay: ColorRect = $Root/DeathOverlay
@@ -359,29 +361,41 @@ func _on_tower_buff_expired(_tower_id: StringName, buff_type: StringName) -> voi
 	var tag: String = "伤害强化" if String(buff_type) == "damage" else "极速"
 	_show_buff_banner("%s 结束" % tag, col, 0.0)
 
+# 法力球: tween shader 的 fill_ratio(液面高度), 沿用 0.3s EASE_OUT/CUBIC 缓动.
 func _on_focus_changed(cur: float, max_focus: float) -> void:
-	if _focus_fill == null:
-		return
 	var ratio: float = clampf(cur / maxf(max_focus, 1.0), 0.0, 1.0)
-	var target_anchor: float = 1.0 - ratio
 	if _focus_tween != null and _focus_tween.is_valid():
 		_focus_tween.kill()
-	_focus_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	_focus_tween.tween_property(_focus_fill, "anchor_top", target_anchor, 0.3)
+	var mat: ShaderMaterial = _focus_orb.material as ShaderMaterial if _focus_orb != null else null
+	if mat != null:
+		var from_v: float = float(mat.get_shader_parameter("fill_ratio"))
+		_focus_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+		_focus_tween.tween_method(_set_focus_fill, from_v, ratio, 0.3)
 	if _focus_label != null:
 		_focus_label.text = "专注 %d/%d" % [int(cur), int(max_focus)]
 
+func _set_focus_fill(v: float) -> void:
+	var mat: ShaderMaterial = _focus_orb.material as ShaderMaterial if _focus_orb != null else null
+	if mat != null:
+		mat.set_shader_parameter("fill_ratio", v)
+
+# 血球: tween shader 的 fill_ratio(液面高度), 沿用 0.3s EASE_OUT/CUBIC 缓动.
 func _on_health_changed(cur: int, mx: int) -> void:
-	if _hp_fill == null:
-		return
 	var ratio: float = clampf(float(cur) / float(max(mx, 1)), 0.0, 1.0)
-	var target_anchor: float = 1.0 - ratio
 	if _hp_tween != null and _hp_tween.is_valid():
 		_hp_tween.kill()
-	_hp_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	_hp_tween.tween_property(_hp_fill, "anchor_top", target_anchor, 0.3)
+	var mat: ShaderMaterial = _hp_orb.material as ShaderMaterial if _hp_orb != null else null
+	if mat != null:
+		var from_v: float = float(mat.get_shader_parameter("fill_ratio"))
+		_hp_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+		_hp_tween.tween_method(_set_hp_fill, from_v, ratio, 0.3)
 	if _hp_label != null:
 		_hp_label.text = "生命 %d" % cur
+
+func _set_hp_fill(v: float) -> void:
+	var mat: ShaderMaterial = _hp_orb.material as ShaderMaterial if _hp_orb != null else null
+	if mat != null:
+		mat.set_shader_parameter("fill_ratio", v)
 
 func _on_cooldown_changed(slot_index: int, remaining: float, total: float) -> void:
 	if slot_index < 0 or slot_index >= _slot_cd_overlays.size():

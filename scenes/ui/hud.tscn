@@ -1,148 +1,15 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bumx10usyvdnn"]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_abbni"]
-[ext_resource type="Texture2D" path="res://assets/ui/skills/2DUI_Skills_DemonHunter.png" id="2_2fdox"]
-[ext_resource type="Texture2D" path="res://assets/ui/hp_orb.png" id="3_hporb"]
-[ext_resource type="Texture2D" path="res://assets/ui/mp_orb.png" id="4_mporb"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xl2ol"]
-bg_color = Color(0.04, 0.04, 0.05, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 48
-corner_radius_top_right = 48
-corner_radius_bottom_right = 48
-corner_radius_bottom_left = 48
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rsrq4"]
-bg_color = Color(0.04, 0.04, 0.05, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 48
-corner_radius_top_right = 48
-corner_radius_bottom_right = 48
-corner_radius_bottom_left = 48
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gj4ex"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_7oc2b"]
-atlas = ExtResource("2_2fdox")
-region = Rect2(0, 0, 128, 128)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1b73h"]
-bg_color = Color(0, 0, 0, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0c22p"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_ja7eg"]
-atlas = ExtResource("2_2fdox")
-region = Rect2(128, 0, 128, 128)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdkql"]
-bg_color = Color(0, 0, 0, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1gsdf"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_4vkf6"]
-atlas = ExtResource("2_2fdox")
-region = Rect2(256, 0, 128, 128)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jjlpq"]
-bg_color = Color(0, 0, 0, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0srh3"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_ls6t1"]
-atlas = ExtResource("2_2fdox")
-region = Rect2(384, 0, 128, 128)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ighds"]
-bg_color = Color(0, 0, 0, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o8tgt"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_joddv"]
-atlas = ExtResource("2_2fdox")
-region = Rect2(512, 0, 128, 128)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ieuvm"]
-bg_color = Color(0, 0, 0, 0.7)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+[ext_resource type="Script" uid="uid://cen72tn8w75on" path="res://scripts/ui/hud.gd" id="1_abbni"]
+[ext_resource type="Texture2D" uid="uid://m134clkjwmhr" path="res://assets/ui/hp_orb_sq.png" id="3_hporb"]
+[ext_resource type="Texture2D" uid="uid://b30hio3kktr68" path="res://assets/ui/mp_orb_sq.png" id="4_mporb"]
+[ext_resource type="Texture2D" uid="uid://bi0o10mnghoui" path="res://assets/ui/hud_frame.png" id="5_frame"]
+[ext_resource type="Shader" uid="uid://cdnsheea43hgb" path="res://assets/ui/orb_fill.gdshader" id="6_orbfill"]
+[ext_resource type="Texture2D" uid="uid://b7n7r8pe0vq3g" path="res://assets/ui/skills/LMB_skill.png" id="7_lmb"]
+[ext_resource type="Texture2D" uid="uid://noeaqeokp8u2" path="res://assets/ui/skills/RMB_skill.png" id="8_rmb"]
+[ext_resource type="Texture2D" uid="uid://m4djgd5tdvil" path="res://assets/ui/skills/Q_skill.png" id="9_q"]
+[ext_resource type="Texture2D" uid="uid://cycn4ehaknj6b" path="res://assets/ui/skills/W_skill.png" id="10_w"]
+[ext_resource type="Texture2D" uid="uid://xdoavuoje4vc" path="res://assets/ui/skills/E_skill.png" id="11_e"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riftframe"]
 bg_color = Color(0.07, 0.055, 0.04, 0.95)
@@ -170,6 +37,63 @@ corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hpfill"]
+shader = ExtResource("6_orbfill")
+shader_parameter/fill_ratio = 1.0
+shader_parameter/wave_amp = 0.012
+shader_parameter/wave_speed = 2.2
+shader_parameter/wave_freq = 11.0
+shader_parameter/empty_tint = Color(0.14, 0.04, 0.04, 1)
+shader_parameter/empty_mix = 0.82
+shader_parameter/edge_soft = 0.006
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mpfill"]
+shader = ExtResource("6_orbfill")
+shader_parameter/fill_ratio = 1.0
+shader_parameter/wave_amp = 0.012
+shader_parameter/wave_speed = 2.0
+shader_parameter/wave_freq = 11.0
+shader_parameter/empty_tint = Color(0.04, 0.05, 0.14, 1)
+shader_parameter/empty_mix = 0.82
+shader_parameter/edge_soft = 0.006
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_slot"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1b73h"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pdkql"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jjlpq"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ighds"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ieuvm"]
+bg_color = Color(0, 0, 0, 0.7)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
 [node name="HUD" type="CanvasLayer" unique_id=864773421]
 layer = 100
 script = ExtResource("1_abbni")
@@ -179,6 +103,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="BuffBox" type="HBoxContainer" parent="Root" unique_id=2030941920]
@@ -191,11 +117,9 @@ mouse_filter = 2
 theme_override_constants/separation = 5
 
 [node name="RiftPanel" type="Control" parent="Root" unique_id=1359989841]
-layout_mode = 0
+anchors_preset = 0
 anchor_left = 1.0
-anchor_top = 0.0
 anchor_right = 1.0
-anchor_bottom = 0.0
 offset_left = -284.0
 offset_top = 300.0
 offset_right = -16.0
@@ -208,6 +132,8 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = 14.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_riftframe")
 
@@ -220,6 +146,8 @@ offset_left = 5.0
 offset_top = 5.0
 offset_right = -5.0
 offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_rifttrack")
 
@@ -231,6 +159,7 @@ offset_left = 1.0
 offset_top = 1.0
 offset_right = 1.0
 offset_bottom = -1.0
+grow_vertical = 2
 mouse_filter = 2
 color = Color(0.55, 0.32, 0.95, 1)
 
@@ -263,12 +192,14 @@ vertical_alignment = 1
 
 [node name="TimeLabel" type="Label" parent="Root/RiftPanel" unique_id=1646516773]
 layout_mode = 1
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -60.0
 offset_top = -3.0
 offset_right = -16.0
 offset_bottom = 17.0
+grow_horizontal = 0
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
@@ -279,12 +210,14 @@ vertical_alignment = 1
 
 [node name="Hourglass" type="Label" parent="Root/RiftPanel" unique_id=1427405047]
 layout_mode = 1
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -16.0
 offset_top = -4.0
 offset_right = 6.0
 offset_bottom = 18.0
+grow_horizontal = 0
 theme_override_colors/font_color = Color(0.9, 0.85, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
@@ -293,159 +226,150 @@ text = "⌛"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LifeOrb" type="Control" parent="Root" unique_id=1044223349]
-layout_mode = 0
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -178.0
-offset_right = 170.0
-offset_bottom = -18.0
-mouse_filter = 2
-
-[node name="OrbBg" type="ColorRect" parent="Root/LifeOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0.04, 0.01, 0.01, 1.0)
-
-[node name="OrbClip" type="Control" parent="Root/LifeOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-clip_contents = true
-mouse_filter = 2
-
-[node name="OrbFill" type="TextureRect" parent="Root/LifeOrb/OrbClip"]
-layout_mode = 0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("3_hporb")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="OrbFrame" type="TextureRect" parent="Root/LifeOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("3_hporb")
-expand_mode = 1
-stretch_mode = 5
-modulate = Color(1, 1, 1, 0.18)
-
-[node name="LifeLabel" type="Label" parent="Root/LifeOrb" unique_id=2077294045]
-layout_mode = 0
-anchor_left = 0.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -22.0
-offset_bottom = 0.0
-theme_override_colors/font_color = Color(1, 0.92, 0.92, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 13
-text = "生命"
-horizontal_alignment = 1
-
-[node name="FocusOrb" type="Control" parent="Root" unique_id=1824173133]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -170.0
-offset_top = -178.0
-offset_right = -10.0
-offset_bottom = -18.0
-mouse_filter = 2
-
-[node name="OrbBg" type="ColorRect" parent="Root/FocusOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0.01, 0.01, 0.06, 1.0)
-
-[node name="OrbClip" type="Control" parent="Root/FocusOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-clip_contents = true
-mouse_filter = 2
-
-[node name="OrbFill" type="TextureRect" parent="Root/FocusOrb/OrbClip"]
-layout_mode = 0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("4_mporb")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="OrbFrame" type="TextureRect" parent="Root/FocusOrb"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-texture = ExtResource("4_mporb")
-expand_mode = 1
-stretch_mode = 5
-modulate = Color(1, 1, 1, 0.18)
-
-[node name="FocusLabel" type="Label" parent="Root/FocusOrb" unique_id=1827488907]
-layout_mode = 0
-anchor_left = 0.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -22.0
-offset_bottom = 0.0
-theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 13
-text = "专注 1500/1500"
-horizontal_alignment = 1
-
-[node name="Skills" type="HBoxContainer" parent="Root" unique_id=1818893699]
-layout_mode = 0
+[node name="BottomBar" type="Control" parent="Root" unique_id=1044223349]
+layout_mode = 1
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -157.0
-offset_top = -88.0
-offset_right = 157.0
-offset_bottom = -30.0
+offset_left = -1000.0
+offset_top = -286.0
+offset_right = 1000.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
-theme_override_constants/separation = 6
 
-[node name="Slot0" type="Panel" parent="Root/Skills" unique_id=581325207]
-custom_minimum_size = Vector2(58, 58)
-layout_mode = 2
-size_flags_vertical = 4
+[node name="HpOrb" type="TextureRect" parent="Root/BottomBar" unique_id=2090001001]
+material = SubResource("ShaderMaterial_hpfill")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1771
+anchor_top = 0.5069
+anchor_right = 0.1771
+anchor_bottom = 0.5069
+offset_left = -124.0
+offset_top = -116.91821
+offset_right = 118.80005
+offset_bottom = 105.000015
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_gj4ex")
+texture = ExtResource("3_hporb")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Icon" type="TextureRect" parent="Root/Skills/Slot0" unique_id=558365394]
-layout_mode = 0
+[node name="MpOrb" type="TextureRect" parent="Root/BottomBar" unique_id=2090001002]
+material = SubResource("ShaderMaterial_mpfill")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.8145
+anchor_top = 0.5069
+anchor_right = 0.8145
+anchor_bottom = 0.5069
+offset_left = -113.0
+offset_top = -112.91821
+offset_right = 125.0
+offset_bottom = 115.000015
+mouse_filter = 2
+texture = ExtResource("4_mporb")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Frame" type="TextureRect" parent="Root/BottomBar" unique_id=2090001003]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = SubResource("AtlasTexture_7oc2b")
+texture = ExtResource("5_frame")
 expand_mode = 1
+stretch_mode = 5
+
+[node name="HpLabel" type="Label" parent="Root/BottomBar" unique_id=2077294045]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1771
+anchor_top = 0.5069
+anchor_right = 0.1771
+anchor_bottom = 0.5069
+offset_left = -60.0
+offset_top = 78.0
+offset_right = 60.0
+offset_bottom = 102.0
+theme_override_colors/font_color = Color(1, 0.92, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 20
+text = "生命"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MpLabel" type="Label" parent="Root/BottomBar" unique_id=1827488907]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.8145
+anchor_top = 0.5069
+anchor_right = 0.8145
+anchor_bottom = 0.5069
+offset_left = -60.0
+offset_top = 78.0
+offset_right = 60.0
+offset_bottom = 102.0
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 20
+text = "专注 1500/1500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Skills" type="Control" parent="Root" unique_id=1818893699]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -1000.0
+offset_top = -286.0
+offset_right = 1000.0
+offset_bottom = -8.0
+mouse_filter = 2
+
+[node name="Slot0" type="Panel" parent="Root/Skills" unique_id=581325207]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.535
+anchor_top = 0.716
+anchor_right = 0.535
+anchor_bottom = 0.716
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = 60.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_slot")
+
+[node name="Icon" type="TextureRect" parent="Root/Skills/Slot0" unique_id=558365394]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -122.0
+offset_top = 6.9520264
+offset_right = -137.0
+offset_bottom = -12.047974
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_lmb")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyBg" type="Panel" parent="Root/Skills/Slot0" unique_id=1851711711]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -475,34 +399,51 @@ mouse_filter = 2
 color = Color(0, 0, 0, 0.7)
 
 [node name="CdLabel" type="Label" parent="Root/Skills/Slot0" unique_id=838602876]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -21.0
+offset_top = -135.04797
+offset_right = -30.0
+offset_bottom = -147.04797
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Slot1" type="Panel" parent="Root/Skills" unique_id=1467178932]
-custom_minimum_size = Vector2(58, 58)
-layout_mode = 2
-size_flags_vertical = 4
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.59
+anchor_top = 0.716
+anchor_right = 0.59
+anchor_bottom = 0.716
+offset_left = -189.0
+offset_top = -68.04797
+offset_right = -69.0
+offset_bottom = 51.952026
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_0c22p")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_slot")
 
 [node name="Icon" type="TextureRect" parent="Root/Skills/Slot1" unique_id=625660683]
-layout_mode = 0
-anchor_right = 1.0
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.127
+anchor_right = 0.85700005
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
+offset_left = 2.0
+offset_top = -2.2400007
+offset_right = -2.840004
 mouse_filter = 2
-texture = SubResource("AtlasTexture_ja7eg")
+texture = ExtResource("8_rmb")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyBg" type="Panel" parent="Root/Skills/Slot1" unique_id=586896647]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -532,34 +473,47 @@ mouse_filter = 2
 color = Color(0, 0, 0, 0.7)
 
 [node name="CdLabel" type="Label" parent="Root/Skills/Slot1" unique_id=678138546]
-layout_mode = 0
-anchor_right = 1.0
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.8
+anchor_top = 0.25100002
 anchor_bottom = 1.0
+offset_left = 153.0
+offset_top = -97.12
+offset_right = 139.0
+offset_bottom = -95.04797
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Slot2" type="Panel" parent="Root/Skills" unique_id=199648931]
-custom_minimum_size = Vector2(58, 58)
-layout_mode = 2
-size_flags_vertical = 4
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.2645
+anchor_top = 0.716
+anchor_right = 0.2645
+anchor_bottom = 0.716
+offset_left = -46.0
+offset_top = -46.0
+offset_right = 46.0
+offset_bottom = 46.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1gsdf")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_slot")
 
 [node name="Icon" type="TextureRect" parent="Root/Skills/Slot2" unique_id=22920523]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
 mouse_filter = 2
-texture = SubResource("AtlasTexture_4vkf6")
+texture = ExtResource("9_q")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyBg" type="Panel" parent="Root/Skills/Slot2" unique_id=353111834]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -598,25 +552,30 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Slot3" type="Panel" parent="Root/Skills" unique_id=667410497]
-custom_minimum_size = Vector2(58, 58)
-layout_mode = 2
-size_flags_vertical = 4
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3155
+anchor_top = 0.716
+anchor_right = 0.3155
+anchor_bottom = 0.716
+offset_left = -46.0
+offset_top = -46.0
+offset_right = 46.0
+offset_bottom = 46.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_0srh3")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_slot")
 
 [node name="Icon" type="TextureRect" parent="Root/Skills/Slot3" unique_id=62360213]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
 mouse_filter = 2
-texture = SubResource("AtlasTexture_ls6t1")
+texture = ExtResource("10_w")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyBg" type="Panel" parent="Root/Skills/Slot3" unique_id=156743399]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -655,25 +614,30 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Slot4" type="Panel" parent="Root/Skills" unique_id=723538563]
-custom_minimum_size = Vector2(58, 58)
-layout_mode = 2
-size_flags_vertical = 4
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3664
+anchor_top = 0.716
+anchor_right = 0.3664
+anchor_bottom = 0.716
+offset_left = -46.0
+offset_top = -46.0
+offset_right = 46.0
+offset_bottom = 46.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_o8tgt")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_slot")
 
 [node name="Icon" type="TextureRect" parent="Root/Skills/Slot4" unique_id=681946673]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
 mouse_filter = 2
-texture = SubResource("AtlasTexture_joddv")
+texture = ExtResource("11_e")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="KeyBg" type="Panel" parent="Root/Skills/Slot4" unique_id=1923449920]
+visible = false
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0

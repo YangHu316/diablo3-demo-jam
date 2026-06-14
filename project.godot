@@ -41,8 +41,8 @@ EntityRegistry="*res://scripts/autoload/entity_registry.gd"
 
 window/size/viewport_width=3840
 window/size/viewport_height=2160
-window/size/window_width_override=1920
-window/size/window_height_override=1080
+window/size/window_width_override=3840
+window/size/window_height_override=2160
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
