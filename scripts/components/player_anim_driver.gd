@@ -11,12 +11,16 @@ extends Node
 @export var anim_player_path: NodePath
 # UAL 状态→动画名(默认对齐 ual1 命名)
 @export var anim_library: String = "ual1"
+# V3.11:同时注入第二个库(用 OverhandThrow 这种 ual2 才有的动作)
+@export var extra_libraries: PackedStringArray = ["ual2"]
 # V3.x 合并:名字采用 78ade47 美术验证过的短名(Godot 导入后 _Loop 后缀被剥掉,
 # Idle_Loop → Idle / Jog_Fwd_Loop → Jog_Fwd 才能命中,否则 _resolve 回退 → T-pose)
 @export var idle_anim: String = "Idle"
 @export var move_anim: String = "Jog_Fwd"
 @export var dodge_anim: String = "Roll"
-@export var attack_anim: String = "Pistol_Shoot"               # 没拉弓动画,用扣扳机替代
+# V3.11:LMB 攻击动画 — UAL 没专门的拉弓,用 ual2 的 OverhandThrow(过肩抛投)
+# 是抬手射姿势最像的;之前的 Pistol_Shoot 是扣扳机不抬手。
+@export var attack_anim: String = "OverhandThrow"
 @export var channel_enter_anim: String = "Spell_Simple_Enter"  # 进引导
 @export var channel_loop_anim: String = "Spell_Simple_Idle"    # 同短名规则,Spell_Simple_Idle_Loop → _Idle
 @export var channel_exit_anim: String = "Spell_Simple_Exit"
@@ -51,6 +55,12 @@ func _ready() -> void:
 			return
 	if anim_library != "":
 		_inject_ual_library()
+	# V3.11:注入额外库(ual2)— OverhandThrow 等动作在 ual2 里
+	for extra in extra_libraries:
+		_inject_extra_library(String(extra))
+	# V3.11:注入额外库(ual2)— OverhandThrow 等动作在 ual2 里
+	for extra in extra_libraries:
+		_inject_extra_library(String(extra))
 	# 调试:启动时列动画清单
 	var loaded_names: PackedStringArray = PackedStringArray()
 	for ln in _ap.get_animation_library_list():
@@ -105,6 +115,24 @@ func _inject_ual_library() -> void:
 	if lib_node == null or not lib_node.has_method("inject_library"):
 		return
 	lib_node.inject_library(_ap, anim_library)
+
+# V3.11:把额外的 UAL 库(如 ual2)也注入到 AnimationPlayer
+func _inject_extra_library(lib_name: String) -> void:
+	if lib_name == "" or lib_name == anim_library:
+		return
+	var lib_node: Node = get_node_or_null("/root/AnimLib")
+	if lib_node == null or not lib_node.has_method("inject_library"):
+		return
+	lib_node.inject_library(_ap, lib_name)
+
+# V3.11:把额外的 UAL 库(如 ual2)也注入到 AnimationPlayer
+func _inject_extra_library(lib_name: String) -> void:
+	if lib_name == "" or lib_name == anim_library:
+		return
+	var lib_node: Node = get_node_or_null("/root/AnimLib")
+	if lib_node == null or not lib_node.has_method("inject_library"):
+		return
+	lib_node.inject_library(_ap, lib_name)
 
 func _process(delta: float) -> void:
 	if _ap == null or _player == null or not is_instance_valid(_player):
@@ -217,10 +245,15 @@ func _on_anim_finished(anim_name: StringName) -> void:
 func _resolve(anim: String) -> String:
 	if anim_library == "":
 		return anim
-	var full: String = "%s/%s" % [anim_library, anim]
-	if _ap != null and _ap.has_animation(full):
-		return full
-	return anim
+	# V3.11:先查主库,再查 extra_libraries(支持 ual1+ual2 混用)
+	var primary: String = "%s/%s" % [anim_library, anim]
+	if _ap != null and _ap.has_animation(primary):
+		return primary
+	for extra in extra_libraries:
+		var full_extra: String = "%s/%s" % [String(extra), anim]
+		if _ap != null and _ap.has_animation(full_extra):
+			return full_extra
+	return anim  # 最终兜底:无 library 前缀
 
 func _play(anim: String) -> void:
 	if _ap == null or anim == "":
