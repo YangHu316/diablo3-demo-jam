@@ -46,7 +46,7 @@ func _ready() -> void:
 # ── BGM(背景音乐)─────────────────────────────────────────────
 # autoload 常驻 → 游戏一启动就放、切场景不中断、循环。改音量调 BGM_VOLUME_DB。
 const BGM_PATH: String = "res://assets/SFX/BGM.wav"
-const BGM_VOLUME_DB: float = -10.0
+const BGM_VOLUME_DB: float = -13.1   # 原 -10dB 的 70% 线性音量(-10 + 20·log10(0.7) ≈ -13.1)
 
 var _bgm: AudioStreamPlayer = null
 
