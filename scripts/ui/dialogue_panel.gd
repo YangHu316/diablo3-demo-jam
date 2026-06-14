@@ -54,7 +54,7 @@ func _build_ui() -> void:
 	_root.gui_input.connect(_on_gui_input)
 	add_child(_root)
 
-	# 底部居中对话框 (V3.13e:之前 top=-260/bottom=-60 与 HUD 技能栏重叠, 整体上移 160px)
+	# 屏幕中下方对话框 (锚定底边, 整体上移到下半屏中部, 避开 HUD 技能栏).
 	var panel := PanelContainer.new()
 	panel.anchor_left = 0.5
 	panel.anchor_right = 0.5
@@ -62,8 +62,8 @@ func _build_ui() -> void:
 	panel.anchor_bottom = 1.0
 	panel.offset_left = -560
 	panel.offset_right = 560
-	panel.offset_top = -420
-	panel.offset_bottom = -220
+	panel.offset_top = -620
+	panel.offset_bottom = -420
 	panel.add_theme_stylebox_override("panel", _sbox(PANEL_FILL, 3, GOLD, 5, 22))
 	# 让点击穿到 _root 的 gui_input (面板本身不吞事件).
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
