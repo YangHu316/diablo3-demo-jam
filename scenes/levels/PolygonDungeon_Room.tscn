@@ -58,9 +58,6 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.31820297, 0, -6.86260
 [node name="Floor_4_0" parent="." unique_id=791801588 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.318203, 0, -26.862606)
 
-[node name="Floor_4_0" parent="Floor_4_0" unique_id=747806982 instance=ExtResource("1_3g2ll")]
-transform = Transform3D(99.99884, 0.26443094, 0.4027231, -0.26459292, 99.99964, 0.039697718, -0.40261677, -0.040762477, 99.999176, 5.318203, 0, 0)
-
 [node name="Floor_4_1" parent="." unique_id=547079280 instance=ExtResource("1_3g2ll")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.0474553, 0, -21.862606)
 
