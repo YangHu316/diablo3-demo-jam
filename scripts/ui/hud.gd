@@ -91,27 +91,6 @@ func _build_ui() -> void:
 	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tc.add_child(_rift_bar)
 
-	# ── TopRight: 小地图框(占位)──
-	var mm: Panel = Panel.new()
-	mm.anchor_left = 1.0
-	mm.anchor_right = 1.0
-	mm.offset_left = -150
-	mm.offset_top = 12
-	mm.offset_right = -14
-	mm.offset_bottom = 148
-	mm.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mm.add_theme_stylebox_override("panel", _frame_box(Color(0.05, 0.07, 0.05, 0.85), 4))
-	root.add_child(mm)
-	var mm_lbl: Label = Label.new()
-	mm_lbl.text = "小地图"
-	mm_lbl.anchor_right = 1.0
-	mm_lbl.anchor_bottom = 1.0
-	mm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mm_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	mm_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
-	mm_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mm.add_child(mm_lbl)
-
 	# ── BottomLeft: 生命球 ──
 	_hp_fill = _make_orb(root, Vector2(0, 1), Vector2(20, -118), 96, Color(0.64, 0.10, 0.07))
 	_hp_label = _make_anchored_label(root, Vector2(20, -46), Vector2(96, 18),
