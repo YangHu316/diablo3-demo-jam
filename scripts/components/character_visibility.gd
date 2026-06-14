@@ -1,8 +1,13 @@
+@tool
 extends Node3D
 
 # character_visibility.gd —— 挂在 Characters.fbx instance 的根节点上(Node 名通常是 Characters)
 # 把所有角色 mesh 隐藏,只露 visible_character;挂件按 visible_attachments 选择性露。
 # 同时把 T-pose(双臂平举)压成 A-pose(自然下垂),策划 §6 美术 D 出动画前的临时方案。
+#
+# @tool: 让编辑器里也执行隐藏/压臂——否则整包 Characters.fbx 的 16 个角色 mesh
+# 会在编辑器视口里全部堆叠显示(运行时本来就靠 _ready 隐藏,所以游戏正常)。
+# 仅做显隐/骨骼姿势,改的是 FBX 实例的子节点(非 editable),不会存进 .tscn、无 git 噪声。
 
 @export var visible_character: String = "Character_Hero_Knight_Female"
 @export var visible_attachments: PackedStringArray = []  # 留空 = 所有挂件都隐藏
