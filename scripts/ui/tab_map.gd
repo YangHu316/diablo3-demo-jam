@@ -22,8 +22,12 @@ const LANDMARK_STYLE := {
 	"gear"       : [Color(0.90, 0.80, 0.30, 0.9), 4.0],
 }
 
-const VIEW_RADIUS: float  = 150.0  # 固定视野半径（世界单位）
-const RECT_INFLATE: float = 1.5
+const VIEW_RADIUS: float   = 150.0  # 固定视野半径（世界单位）
+const RECT_INFLATE: float  = 1.5
+# 大地图格子尺寸：比小地图粗（大地图不需要像素级精细度）
+const TAB_CELL_SIZE: float = 5.0    # 世界单位/格，减少绘制调用次数
+# 大地图绘制节流：每秒最多重绘 N 次（地图打开后不需要每帧全量重绘）
+const DRAW_FPS: float      = 20.0   # 20fps 对静态地图已经足够流畅
 
 # ── 内部绘图节点类 ────────────────────────────────────────────────────────
 class TabMapCanvas extends Control:
@@ -51,6 +55,7 @@ var _is_dragging: bool    = false
 var _drag_start_mouse: Vector2 = Vector2.ZERO
 var _drag_start_offset: Vector2 = Vector2.ZERO
 var _arrow_tex: Texture2D = null
+var _draw_timer: float = 0.0   # 节流计时器
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -158,11 +163,15 @@ func _input(event: InputEvent) -> void:
 # ═════════════════════════════════════════════════════════════════════════
 # 每帧更新
 # ═════════════════════════════════════════════════════════════════════════
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not visible:
 		return
-	if _canvas != null:
-		_canvas.queue_redraw()
+	_draw_timer += delta
+	# 节流：20fps 重绘一次（拖拽时 _gui_input 会直接触发 queue_redraw）
+	if _draw_timer >= 1.0 / DRAW_FPS:
+		_draw_timer = 0.0
+		if _canvas != null:
+			_canvas.queue_redraw()
 
 
 # ── 拖拽输入处理 ──────────────────────────────────────────────────────────
@@ -179,9 +188,11 @@ func _gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and _is_dragging:
 		var mm_ev := event as InputEventMouseMotion
 		var delta_px: Vector2 = mm_ev.position - _drag_start_mouse
-		# 像素偏移转世界单位偏移（负号：拖右 → 地图向右 → 中心向左偏移）
 		var px_per_world: float = (_map_size * 0.5) / VIEW_RADIUS
 		_drag_offset = _drag_start_offset - delta_px / px_per_world
+		# 拖拽时立即重绘，不等节流
+		if _canvas != null:
+			_canvas.queue_redraw()
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -197,18 +208,34 @@ func _do_draw(canvas: Control) -> void:
 	var landmarks:   Array  = _mm._landmarks
 	var explore_r:   float  = _mm.EXPLORE_RADIUS
 	var fade_w:      float  = _mm.FOG_FADE_WIDTH
-	var cell_sz:     float  = _mm.FOG_CELL_SIZE
 
-	# 1. WALK 矩形按格子绘制（带迷雾渐变 alpha）
+	# 大地图用固定较粗格子，减少绘制调用（不需要像素级精细）
+	var cell_sz: float = TAB_CELL_SIZE
+
+	# 视口世界坐标范围（用于裁剪不在视野内的矩形）
+	var px: float = _mm._player_wx + _drag_offset.x
+	var pz: float = _mm._player_wz + _drag_offset.y
+	var vr: float = VIEW_RADIUS * 1.1  # 稍微扩边防止裁剪过激
+
+	# 1. WALK 矩形按格子绘制（带迷雾渐变 alpha，含视口裁剪）
 	for r in walk_rects:
-		var cx: float = r[0]
-		while cx < r[1]:
-			var cx_end: float = minf(cx + cell_sz, r[1])
+		# 矩形完全在视野外 → 跳过整个矩形
+		if r[1] < px - vr or r[0] > px + vr or r[3] < pz - vr or r[2] > pz + vr:
+			continue
+		# 裁剪格子迭代范围到视口内（减少无效格子计算）
+		var ix_start: float = maxf(r[0], px - vr)
+		var ix_end:   float = minf(r[1], px + vr)
+		var iz_start: float = maxf(r[2], pz - vr)
+		var iz_end:   float = minf(r[3], pz + vr)
+
+		var cx: float = ix_start
+		while cx < ix_end:
+			var cx_end: float = minf(cx + cell_sz, ix_end)
 			var cell_cx: float = (cx + cx_end) * 0.5
 
-			var cz: float = r[2]
-			while cz < r[3]:
-				var cz_end: float = minf(cz + cell_sz, r[3])
+			var cz: float = iz_start
+			while cz < iz_end:
+				var cz_end: float = minf(cz + cell_sz, iz_end)
 				var cell_cz: float = (cz + cz_end) * 0.5
 
 				var alpha: float = _fog_alpha_local(cell_cx, cell_cz, fog_circles, explore_r, fade_w)
