@@ -56,6 +56,25 @@ var _stat_labels: Dictionary = {}    # StatKind -> Label
 var _level_label: Label = null
 var _open: bool = false
 
+# tooltip 浮层 (自建富文本; hover 即弹, 离开即隐).
+var _tooltip: PanelContainer = null
+var _tip_box: VBoxContainer = null
+var _tip_border := StyleBoxFlat.new()
+
+# 词缀 stat_kind -> 中文名 (与 STAT_DISPLAY 同源, 供 tooltip 词缀行用).
+const AFFIX_NAMES: Dictionary = {
+	AffixDef.StatKind.AGILITY: "敏捷",
+	AffixDef.StatKind.CRIT_CHANCE: "暴击率",
+	AffixDef.StatKind.CRIT_DAMAGE: "暴击伤害",
+	AffixDef.StatKind.ATTACK_SPEED: "攻击速度",
+	AffixDef.StatKind.WEAPON_DAMAGE: "武器伤害",
+	AffixDef.StatKind.SKILL_DAMAGE: "技能伤害",
+	AffixDef.StatKind.VITALITY: "体能",
+	AffixDef.StatKind.ARMOR: "护甲",
+	AffixDef.StatKind.ALL_RESIST: "全抗性",
+	AffixDef.StatKind.MOVE_SPEED: "移动速度",
+}
+
 func _ready() -> void:
 	layer = 110   # 盖在 HUD(100) 之上
 	add_to_group("inventory_panel")
@@ -152,6 +171,9 @@ func _build_ui() -> void:
 	_build_bottom_bar(vbox)
 	# 关闭键独立浮层,anchor 到 panel 右上角,绝对显眼(放最后保证渲染在最上层)
 	_build_close_button(panel)
+
+	# tooltip 浮层 (最后加, 盖在所有控件之上; 默认隐藏).
+	_build_tooltip()
 
 func _build_header(vbox: VBoxContainer) -> void:
 	var header := HBoxContainer.new()
@@ -309,6 +331,8 @@ func _make_equip_cell(slot_id: int) -> Control:
 	btn.add_theme_stylebox_override("pressed", _slot_style(true))
 	btn.add_theme_stylebox_override("disabled", _slot_style())
 	btn.pressed.connect(_on_equip_slot_pressed.bind(slot_id))
+	btn.mouse_entered.connect(_on_equip_hover.bind(slot_id, btn))
+	btn.mouse_exited.connect(_hide_tooltip)
 	_slot_buttons[slot_id] = btn
 	var cap := Label.new()
 	cap.text = str(EquipSlots.SLOT_DISPLAY.get(slot_id, "?"))
@@ -347,6 +371,8 @@ func _build_bag(vbox: VBoxContainer) -> void:
 		b.add_theme_stylebox_override("pressed", _slot_style(true))
 		b.add_theme_stylebox_override("disabled", _slot_style())
 		b.pressed.connect(_on_bag_slot_pressed.bind(i))
+		b.mouse_entered.connect(_on_bag_hover.bind(i, b))
+		b.mouse_exited.connect(_hide_tooltip)
 		_bag_grid.add_child(b)
 
 # 底: 资源占位栏 (铁砧/材料/金币/血岩 — 暂无数据源, 美术占位, 系统后接).
@@ -381,6 +407,152 @@ func _resource_chip(name_txt: String, val: String) -> HBoxContainer:
 	chip.add_child(n)
 	chip.add_child(v)
 	return chip
+
+# ── tooltip 浮层 ──────────────────────────────────────────────
+# 自建富文本 (项目无 RichTextLabel 用例): 标题(品质色) + 品质描边 + 词缀行 + 传说橙效果 / 套装绿行.
+func _build_tooltip() -> void:
+	_tooltip = PanelContainer.new()
+	_tooltip.name = "Tooltip"
+	_tooltip.z_index = 50                 # 盖在面板内容之上
+	_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE   # 不挡 hover 事件
+	_tooltip.custom_minimum_size = Vector2(220, 0)
+	# 描边色按品质动态改 (在 _show 里设); 这里给个底样式.
+	_tip_border = _sbox(Color(0.06, 0.05, 0.04, 0.98), 2, GOLD, 4, 10)
+	_tooltip.add_theme_stylebox_override("panel", _tip_border)
+	_tip_box = VBoxContainer.new()
+	_tip_box.add_theme_constant_override("separation", 2)
+	_tip_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tooltip.add_child(_tip_box)
+	_tooltip.visible = false
+	_root.add_child(_tooltip)
+
+func _tip_label(txt: String, col: Color, sz: int, center: bool = false) -> Label:
+	var l := Label.new()
+	l.text = txt
+	l.add_theme_color_override("font_color", col)
+	l.add_theme_font_size_override("font_size", sz)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if center:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return l
+
+# 一条词缀的展示文本: "+12% 暴击伤害" / "+340 护甲".
+func _affix_line(a: Dictionary) -> String:
+	var sk: int = int(a.get("stat_kind", -1))
+	var val: float = float(a.get("value", 0.0))
+	var pct: bool = bool(a.get("is_percent", false))
+	var nm: String = String(AFFIX_NAMES.get(sk, "属性"))
+	var num: String
+	if pct:
+		num = "+%.0f%%" % val if val == floor(val) else "+%.1f%%" % val
+	else:
+		num = "+%d" % int(round(val)) if val == floor(val) else "+%.1f" % val
+	return "%s %s" % [num, nm]
+
+func _show_tooltip_for_item(item: ItemInstance, anchor: Control) -> void:
+	if item == null or _tooltip == null:
+		return
+	# 清旧内容.
+	for c in _tip_box.get_children():
+		c.queue_free()
+
+	var qcol: Color = item.display_color()   # 套装绿优先, 否则品质色
+
+	# 标题 = 物品名 (品质/套装色).
+	_tip_box.add_child(_tip_label(item.display_name, qcol, 15, true))
+
+	# 副标题: 品质名 + 槽位名 + 物品等级.
+	var quality_name: String = String(ItemInstance.QUALITY_NAMES.get(item.quality, ""))
+	var slot_name: String = String(EquipSlots.SLOT_DISPLAY.get(item.slot, ""))
+	var sub: String = "%s %s · iLvl %d" % [quality_name, slot_name, item.item_level]
+	_tip_box.add_child(_tip_label(sub.strip_edges(), MUTED, 10, true))
+
+	# 套装标记 (绿).
+	if item.is_set:
+		_tip_box.add_child(_tip_label("【套装】", ItemInstance.SET_COLOR, 11, true))
+
+	# 词缀行.
+	if item.affixes != null and item.affixes.size() > 0:
+		var rule := Panel.new()
+		rule.custom_minimum_size = Vector2(0, 1)
+		var rs := StyleBoxFlat.new()
+		rs.bg_color = GOLD_DIM
+		rule.add_theme_stylebox_override("panel", rs)
+		rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_tip_box.add_child(rule)
+		for a in item.affixes:
+			_tip_box.add_child(_tip_label(_affix_line(a), Color(0.55, 0.7, 1.0), 12))
+
+	# 传说效果 (橙字).
+	if item.is_legendary() and item.legendary_effect_text != "":
+		var rule2 := Panel.new()
+		rule2.custom_minimum_size = Vector2(0, 1)
+		var rs2 := StyleBoxFlat.new()
+		rs2.bg_color = GOLD_DIM
+		rule2.add_theme_stylebox_override("panel", rs2)
+		rule2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_tip_box.add_child(rule2)
+		_tip_box.add_child(_tip_label(item.legendary_effect_text, ItemInstance.QUALITY_COLORS[ItemInstance.Quality.LEGENDARY], 11))
+
+	# 边框色: 套装=绿, 传说=橙, 其余=品质色.
+	_tip_border = _sbox(Color(0.06, 0.05, 0.04, 0.98), 2, qcol, 4, 10)
+	_tooltip.add_theme_stylebox_override("panel", _tip_border)
+
+	_tooltip.visible = true
+	_tooltip.reset_size()
+	_position_tooltip(anchor)
+
+# tooltip 放在锚点右侧; 越界则翻到左侧 / 上移, 始终留在视口内.
+func _position_tooltip(anchor: Control) -> void:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var tip_size: Vector2 = _tooltip.size
+	var arect: Rect2 = anchor.get_global_rect()
+	var pos := Vector2(arect.position.x + arect.size.x + 8.0, arect.position.y)
+	# 右侧放不下 -> 翻到锚点左边.
+	if pos.x + tip_size.x > vp.x:
+		pos.x = arect.position.x - tip_size.x - 8.0
+	pos.x = clampf(pos.x, 4.0, max(4.0, vp.x - tip_size.x - 4.0))
+	pos.y = clampf(pos.y, 4.0, max(4.0, vp.y - tip_size.y - 4.0))
+	_tooltip.global_position = pos
+
+func _hide_tooltip() -> void:
+	if _tooltip != null:
+		_tooltip.visible = false
+
+# 空槽轻提示: 槽位名 + "未装备".
+func _show_empty_tooltip(slot_name: String, anchor: Control) -> void:
+	if _tooltip == null:
+		return
+	for c in _tip_box.get_children():
+		c.queue_free()
+	_tip_box.add_child(_tip_label(slot_name, MUTED, 13, true))
+	_tip_box.add_child(_tip_label("未装备", MUTED, 11, true))
+	_tip_border = _sbox(Color(0.06, 0.05, 0.04, 0.98), 2, GOLD_DIM, 4, 10)
+	_tooltip.add_theme_stylebox_override("panel", _tip_border)
+	_tooltip.visible = true
+	_tooltip.reset_size()
+	_position_tooltip(anchor)
+
+# hover 处理: 装备槽 -> 取已装备件; 背包格 -> 取背包件.
+func _on_equip_hover(slot: int, btn: Button) -> void:
+	var inv: Node = _inv()
+	if inv == null:
+		return
+	var it = inv.get_equipped(slot)
+	if it != null:
+		_show_tooltip_for_item(it, btn)
+	else:
+		# 空槽: 仍弹一个轻提示, 让 hover 行为一致可发现.
+		_show_empty_tooltip(String(EquipSlots.SLOT_DISPLAY.get(slot, "")), btn)
+
+func _on_bag_hover(index: int, btn: Button) -> void:
+	var inv: Node = _inv()
+	if inv == null:
+		return
+	var items: Array = inv.get_bag_items()
+	if index >= 0 and index < items.size() and items[index] != null:
+		_show_tooltip_for_item(items[index], btn)
 
 func _connect_signals() -> void:
 	var inv: Node = _inv()
@@ -423,6 +595,8 @@ func _set_open(v: bool) -> void:
 	_root.visible = v
 	if v:
 		_refresh_all()
+	else:
+		_hide_tooltip()
 
 # ── 交互 ──────────────────────────────────────────────────────
 # 点背包格子 -> 若有物品则 quick_equip 自动装备.
