@@ -17,6 +17,8 @@ func _ready() -> void:
 	# (后期调色 shader 是主视口屏幕特效,编辑器视口里不渲染,故仅运行时加 —— 见 _setup_d3_atmosphere)
 	call_deferred("_setup_d3_atmosphere")
 	call_deferred("_place_wall_torches")
+	# 墙碰撞:仅运行时(物理用),编辑器不需要。在 _fix_wall_scales 之后排队 → 按修好的 scale-100 量尺寸。
+	call_deferred("_add_wall_collision")
 
 # 墙尺寸自愈:LevelArt/Walls 下任何 basis 缩放 ~1 的墙(应为 ~100)自动放大 100 倍,保持旋转/原点。
 func _fix_wall_scales() -> void:
@@ -169,6 +171,59 @@ func _place_wall_torches() -> void:
 		holder.add_child(lt)
 		placed.append(wp)
 	print("[level_02_art] 墙上火把:%d 个" % placed.size())
+
+# ── 墙碰撞(运行时)────────────────────────────────────────────────────
+# 给 LevelArt/Walls 的每段墙建轴对齐 BoxShape(墙在世界里都是轴对齐:NS沿X/EW沿Z)。
+# 用单个 StaticBody3D 挂多个 CollisionShape3D,collision_layer=4(与 depths 一致 → 玩家 mask=4 会被挡)。
+func _add_wall_collision() -> void:
+	if Engine.is_editor_hint():
+		return   # 编辑器无物理,不必加,免得徒增几百节点
+	if get_node_or_null("WallColliders") != null:
+		return
+	var walls: Node = get_node_or_null("Walls")
+	if walls == null:
+		return
+	var body := StaticBody3D.new()
+	body.name = "WallColliders"
+	body.collision_layer = 4
+	body.collision_mask = 0
+	add_child(body, false, Node.INTERNAL_MODE_BACK)
+	var n: int = 0
+	for w in walls.get_children():
+		if not (w is Node3D):
+			continue
+		var aabb: AABB = _world_aabb(w as Node3D)
+		if aabb.size.x <= 0.01 and aabb.size.z <= 0.01:
+			continue
+		var cs := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = aabb.size
+		cs.shape = box
+		cs.position = body.to_local(aabb.position + aabb.size * 0.5)
+		body.add_child(cs)
+		n += 1
+	print("[level_02_art] 墙碰撞:%d 块(layer=4)" % n)
+
+func _world_aabb(root: Node3D) -> AABB:
+	var mn := Vector3(INF, INF, INF)
+	var mx := Vector3(-INF, -INF, -INF)
+	var got := false
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var nd: Node = stack.pop_back()
+		if nd is MeshInstance3D and (nd as MeshInstance3D).mesh != null:
+			got = true
+			var a: AABB = (nd as MeshInstance3D).mesh.get_aabb()
+			var gt: Transform3D = (nd as MeshInstance3D).global_transform
+			for i in 8:
+				var wp: Vector3 = gt * a.get_endpoint(i)
+				mn = mn.min(wp)
+				mx = mx.max(wp)
+		for c in nd.get_children():
+			stack.append(c)
+	if not got:
+		return AABB()
+	return AABB(mn, mx - mn)
 
 func _make_d3_env() -> Environment:
 	var e := Environment.new()
