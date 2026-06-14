@@ -140,12 +140,14 @@ func _connect_signals() -> void:
 		return
 	if inv.has_signal("item_picked_up"):
 		inv.item_picked_up.connect(func(_i): _refresh_bag())
+	# V3.0: 换装只刷新背包/装备槽视觉, 不重算面板属性 (面板写死中期档).
 	if inv.has_signal("item_equipped"):
-		inv.item_equipped.connect(func(_s, _i): _refresh_all())
+		inv.item_equipped.connect(func(_s, _i): _refresh_bag(); _refresh_equip())
 	if inv.has_signal("item_unequipped"):
-		inv.item_unequipped.connect(func(_s, _i): _refresh_all())
-	if inv.has_signal("stats_changed"):
-		inv.stats_changed.connect(func(st): _refresh_stats(st))
+		inv.item_unequipped.connect(func(_s, _i): _refresh_bag(); _refresh_equip())
+
+func _dt() -> Node:
+	return get_node_or_null("/root/DataTables")
 
 func _inv() -> Node:
 	return get_node_or_null("/root/Inventory")
@@ -192,9 +194,14 @@ func _on_equip_slot_pressed(slot: int) -> void:
 func _refresh_all() -> void:
 	_refresh_bag()
 	_refresh_equip()
-	var inv: Node = _inv()
-	if inv != null:
-		_refresh_stats(inv.get_total_stats())
+	_refresh_stats(_fixed_stats())
+
+# V3.0: 面板数字写死中期档 (单一事实源 DataTables.player_loadout); 换装不改.
+func _fixed_stats() -> Dictionary:
+	var dt: Node = _dt()
+	if dt != null and dt.has_method("get_fixed_panel_stats"):
+		return dt.get_fixed_panel_stats()
+	return {}
 
 func _refresh_bag() -> void:
 	var inv: Node = _inv()

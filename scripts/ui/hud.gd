@@ -10,7 +10,7 @@ extends CanvasLayer
 # 监听:ProgressionManager.{xp_gained,level_up}, FocusResource.focus_changed,
 #       Player.health_changed, SkillSlotManager.cooldown_changed
 
-const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "1", "2", "3"]
+const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
 
 var _player: Node = null
 var _slot_mgr: Node = null
@@ -21,6 +21,8 @@ var _focus_label: Label = null
 var _focus_bar: ProgressBar = null
 var _xp_label: Label = null
 var _xp_bar: ProgressBar = null
+var _rift_label: Label = null
+var _rift_bar: ProgressBar = null
 var _slot_panels: Array = []
 var _slot_cd_overlays: Array = []
 var _slot_cd_labels: Array = []
@@ -62,6 +64,33 @@ func _build_ui() -> void:
 	_xp_bar.custom_minimum_size = Vector2(220, 8)
 	_xp_bar.modulate = Color(1, 0.85, 0.4, 1)
 	tl.add_child(_xp_bar)
+
+	# ── TopCenter: 大秘境进度条 (RiftManager) ──────────
+	var tc: VBoxContainer = VBoxContainer.new()
+	tc.anchor_left = 0.5
+	tc.anchor_right = 0.5
+	tc.offset_left = -180
+	tc.offset_top = 12
+	tc.offset_right = 180
+	tc.add_theme_constant_override("separation", 2)
+	tc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(tc)
+
+	_rift_label = Label.new()
+	_rift_label.text = "大秘境进度  0%"
+	_rift_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rift_label.add_theme_color_override("font_color", Color(0.75, 0.55, 1.0))
+	_rift_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tc.add_child(_rift_label)
+
+	_rift_bar = ProgressBar.new()
+	_rift_bar.show_percentage = false
+	_rift_bar.custom_minimum_size = Vector2(360, 12)
+	_rift_bar.modulate = Color(0.65, 0.45, 1.0, 1)
+	_rift_bar.max_value = 100.0
+	_rift_bar.value = 0.0
+	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tc.add_child(_rift_bar)
 
 	# ── BottomLeft: HP ─────────────────────────────────
 	_hp_label = _make_anchored_label(root, Vector2(16, -82), Vector2(220, 22),
@@ -229,6 +258,10 @@ func _connect_signals() -> void:
 	if fr != null and fr.has_signal("focus_changed"):
 		fr.focus_changed.connect(_on_focus_changed)
 
+	var rm: Node = get_node_or_null("/root/RiftManager")
+	if rm != null and rm.has_signal("progress_changed"):
+		rm.progress_changed.connect(_on_rift_progress)
+
 	call_deferred("_acquire_player")
 
 func _acquire_player() -> void:
@@ -263,6 +296,9 @@ func _initial_refresh() -> void:
 	var fr: Node = get_node_or_null("/root/FocusResource")
 	if fr != null and "current" in fr and "max_focus" in fr:
 		_on_focus_changed(float(fr.current), float(fr.max_focus))
+	var rm: Node = get_node_or_null("/root/RiftManager")
+	if rm != null and "progress" in rm:
+		_on_rift_progress(float(rm.progress), float(rm.GOAL))
 	if _player != null and "current_health" in _player and "max_health" in _player:
 		_on_health_changed(int(_player.current_health), int(_player.max_health))
 
@@ -287,6 +323,18 @@ func _refresh_xp(current_xp: int, xp_to_next: int, lvl: int) -> void:
 	if _xp_bar != null:
 		_xp_bar.max_value = max(xp_to_next, 1)
 		_xp_bar.value = current_xp
+
+func _on_rift_progress(value: float, goal: float) -> void:
+	if _rift_bar == null:
+		return
+	_rift_bar.max_value = maxf(goal, 1.0)
+	_rift_bar.value = value
+	var pct: int = int(clampf(value / maxf(goal, 1.0), 0.0, 1.0) * 100.0)
+	if _rift_label != null:
+		if value >= goal:
+			_rift_label.text = "守门人降临!"
+		else:
+			_rift_label.text = "大秘境进度  %d%%" % pct
 
 func _on_focus_changed(cur: float, max_focus: float) -> void:
 	if _focus_bar == null:

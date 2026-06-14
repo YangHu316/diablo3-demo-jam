@@ -20,15 +20,16 @@ enum Source {
 }
 
 # 每个掉落源的配置: 装备掉落率 / 件数[min,max] / 5 档品质权重 / 是否保底载体.
-# 权重事实源 = 数值表/drop_table.csv (扩展层 5 档: [普通,精良,稀有,史诗,传说], 每行和=100).
-# 旧 3 元权重已作废 (扩展层 §五#2). demo 主线消费同一表; 普通/史诗自然按权重出现.
+# V3.0 大秘境(单局固定数值): 小怪全程零掉落; 守门人(复用 BUTCHER 源)死 -> 固定爆装
+# 全表 (boss_drop_list.csv, 见 roll_drop 顶部分支), 不走概率权重. 严禁橙/绿以外品质.
+# 旧概率权重保留为历史档(下方注释), 但 demo 主线 drop_rate 已置 0.
 const SOURCE_CONFIG := {
-	Source.TRASH:           { "drop_rate": 0.18, "count": [1, 1], "w": [55.0, 33.0, 10.0, 1.5, 0.5], "pity_carrier": false },
-	Source.ELITE_BLUE:      { "drop_rate": 1.00, "count": [1, 2], "w": [10.0, 48.0, 33.0, 6.0, 3.0], "pity_carrier": true  },
-	Source.CHAMPION_YELLOW: { "drop_rate": 1.00, "count": [2, 2], "w": [5.0, 35.0, 43.0, 12.0, 5.0], "pity_carrier": true  },
+	Source.TRASH:           { "drop_rate": 0.0, "count": [1, 1], "w": [55.0, 33.0, 10.0, 1.5, 0.5], "pity_carrier": false },
+	Source.ELITE_BLUE:      { "drop_rate": 0.0, "count": [1, 2], "w": [10.0, 48.0, 33.0, 6.0, 3.0], "pity_carrier": false },
+	Source.CHAMPION_YELLOW: { "drop_rate": 0.0, "count": [2, 2], "w": [5.0, 35.0, 43.0, 12.0, 5.0], "pity_carrier": false },
 	Source.BUTCHER:         { "drop_rate": 1.00, "count": [4, 4], "w": [0.0, 20.0, 50.0, 22.0, 8.0], "pity_carrier": true  },
-	Source.CHEST_COMMON:    { "drop_rate": 0.35, "count": [1, 1], "w": [70.0, 25.0, 5.0, 0.0, 0.0], "pity_carrier": false },
-	Source.CHEST_FANCY:     { "drop_rate": 1.00, "count": [2, 2], "w": [10.0, 40.0, 38.0, 10.0, 2.0], "pity_carrier": true  },
+	Source.CHEST_COMMON:    { "drop_rate": 0.0, "count": [1, 1], "w": [70.0, 25.0, 5.0, 0.0, 0.0], "pity_carrier": false },
+	Source.CHEST_FANCY:     { "drop_rate": 0.0, "count": [2, 2], "w": [10.0, 40.0, 38.0, 10.0, 2.0], "pity_carrier": false },
 }
 
 # 首橙白名单 (§7.3): 本局第 1 件传奇必从这三件核心件抽.
@@ -86,6 +87,12 @@ func tick(delta: float) -> void:
 # ---------------------------------------------------------------------------
 func roll_drop(source: int, player_level: int) -> Array[ItemInstance]:
 	var out: Array[ItemInstance] = []
+
+	# V3.0: 守门人(复用 BUTCHER 源)死 -> 一次性固定爆装全表 (boss_drop_list.csv),
+	# 非随机, 无视权重/保底. 这是大秘境唯一掉落出口; 小怪 drop_rate=0 自然不掉.
+	if source == Source.BUTCHER:
+		return boss_drop()
+
 	var cfg: Dictionary = SOURCE_CONFIG.get(source, {})
 	if cfg.is_empty():
 		return out
@@ -113,6 +120,16 @@ func roll_drop(source: int, player_level: int) -> Array[ItemInstance]:
 		# 同一载体单次最多 1 件保底橙.
 		if force_orange and i == 0:
 			force_orange = false
+	return out
+
+# V3.0 守门人固定爆装: 直接取 boss_drop_list.csv 全表 (12 橙 + 2 绿套装), 满地光柱.
+func boss_drop() -> Array[ItemInstance]:
+	var out: Array[ItemInstance] = []
+	if _dt == null or not _dt.has_method("get_boss_drop_items"):
+		return out
+	for it in _dt.get_boss_drop_items():
+		out.append(it)
+	leg_count += out.size()
 	return out
 
 # 按权重(叠梦魇系数+软保底)掷品质. force=true 直接出橙.

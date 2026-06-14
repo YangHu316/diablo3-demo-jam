@@ -26,11 +26,18 @@ const QUALITY_COLORS: Dictionary = {
 	Quality.LEGENDARY: Color(1.0, 0.55, 0.0)   # 橙
 }
 
+# 套装绿 (boss_drop_list.csv: is_set 件渲染色; 优先级 > 橙).
+const SET_COLOR: Color = Color(0.13, 0.85, 0.18)   # 绿
+
 @export var display_name: String = ""
 @export var quality: Quality = Quality.MAGIC
 @export var slot: int = 0                       # EquipSlots.Slot
 @export var item_level: int = 1
 @export var tier: int = 1
+
+# 套装(绿装)旁路 (V3.0 大秘境: boss_drop_list.csv).
+# is_set=true 的件 quality 仍 = LEGENDARY, 但渲染绿光柱(优先级 > 橙), 不新增 Quality 枚举档.
+@export var is_set: bool = false
 
 # Rolled affixes: 每条 = { "stat_kind": int, "value": float, "is_percent": bool, "affix_id": StringName }
 @export var affixes: Array[Dictionary] = []
@@ -42,6 +49,12 @@ const QUALITY_COLORS: Dictionary = {
 
 func is_legendary() -> bool:
 	return quality == Quality.LEGENDARY
+
+# 名牌/光柱显示色: 套装绿优先于橙 (boss_drop_list.csv 约束: 绿柱优先级 > 橙).
+func display_color() -> Color:
+	if is_set:
+		return SET_COLOR
+	return QUALITY_COLORS.get(quality, Color.WHITE)
 
 # 聚合本物品提供的属性 -> { StatKind: total_value }. 供 Inventory 计算面板.
 func aggregate_stats() -> Dictionary:

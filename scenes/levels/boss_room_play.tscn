@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/levels/boss_room.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/components/screen_shake.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="7"]
 
 [node name="BossRoomPlay" type="Node3D"]
 
@@ -21,3 +24,9 @@ height = 24.0
 
 [node name="ScreenShake" type="Node" parent="Camera3D"]
 script = ExtResource("4")
+
+[node name="HUD" parent="." instance=ExtResource("5")]
+
+[node name="InventoryPanel" parent="." instance=ExtResource("6")]
+
+[node name="SettlementPanel" parent="." instance=ExtResource("7")]

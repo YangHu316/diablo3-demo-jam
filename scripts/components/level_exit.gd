@@ -5,8 +5,8 @@ extends Area3D
 
 signal level_completed(level_id: String)
 
-@export var level_id: String = "L1_gate"
-@export var next_hint: String = "大教堂(L2)"
+@export var level_id: String = "L2_depths"
+@export var next_hint: String = "守门人房"
 
 var _done: bool = false
 
