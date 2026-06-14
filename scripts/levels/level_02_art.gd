@@ -12,10 +12,11 @@ func _ready() -> void:
 	# 自愈:墙被队友提交/编辑器回写覆盖回 scale-1(0.05,看不见)时,加载即自动 ×100 修回。
 	# 编辑器+运行时都跑;幂等(已是 scale-100 则跳过,不产生改动/脏标记)。
 	call_deferred("_fix_wall_scales")
-	# D3 氛围+墙上火把只在运行时搭建:编辑器里不创建节点,避免污染/被回写进 .tscn。按 F6 运行可见。
-	if not Engine.is_editor_hint():
-		call_deferred("_setup_d3_atmosphere")
-		call_deferred("_place_wall_torches")
+	# D3 氛围+墙上火把:编辑器+运行时都搭建(这样编辑器预览框也能看到效果)。
+	# 所有新建节点都用 INTERNAL 内部节点,Godot 不会保存进 .tscn → 不污染、不会被覆盖。
+	# (后期调色 shader 是主视口屏幕特效,编辑器视口里不渲染,故仅运行时加 —— 见 _setup_d3_atmosphere)
+	call_deferred("_setup_d3_atmosphere")
+	call_deferred("_place_wall_torches")
 
 # 墙尺寸自愈:LevelArt/Walls 下任何 basis 缩放 ~1 的墙(应为 ~100)自动放大 100 倍,保持旋转/原点。
 func _fix_wall_scales() -> void:
@@ -55,7 +56,8 @@ func _scan_hide(n: Node) -> void:
 		_scan_hide(c)
 
 # ── D3 关卡氛围(雾 / 灯光 / 后期调色 shader)──────────────────────────────
-# 仅运行时;不改 depths 文件、不改 play_art.tscn。队友的 level_02_play 完全不受影响。
+# 编辑器+运行时都搭建(预览框可见);新节点全用 INTERNAL,不存进 .tscn、不污染、不被覆盖。
+# 不改 depths 文件、不改 play_art.tscn 结构。队友的 level_02_play 完全不受影响。
 func _setup_d3_atmosphere() -> void:
 	var p: Node = get_parent()
 	if p == null:
@@ -71,14 +73,14 @@ func _setup_d3_atmosphere() -> void:
 		if dl != null:
 			dl.light_energy = 0.35
 			dl.light_color = Color(0.55, 0.62, 0.85)   # 冷蓝顶光做补光
-	# 2) 我们自己的 D3 WorldEnvironment(雾 + 体积雾光柱 + 辉光 + 调色)
+	# 2) 我们自己的 D3 WorldEnvironment(雾 + 体积雾光柱 + 辉光 + 调色)。INTERNAL → 不入库。
 	if p.get_node_or_null("D3Environment") == null:
 		var we := WorldEnvironment.new()
 		we.name = "D3Environment"
 		we.environment = _make_d3_env()
-		p.add_child(we)
-	# 3) 全屏后期调色 shader
-	if p.get_node_or_null("D3Grade") == null:
+		p.add_child(we, false, Node.INTERNAL_MODE_BACK)
+	# 3) 全屏后期调色 shader —— 仅运行时(屏幕特效在编辑器视口里不渲染,加了反而可能盖黑)
+	if not Engine.is_editor_hint() and p.get_node_or_null("D3Grade") == null:
 		var cl := CanvasLayer.new()
 		cl.name = "D3Grade"
 		cl.layer = 1   # 在 3D 之上、HUD(更高层)之下:只调 3D 画面,不影响 UI
@@ -93,7 +95,7 @@ func _setup_d3_atmosphere() -> void:
 			mat.shader = sh
 			rect.material = mat
 		cl.add_child(rect)
-		p.add_child(cl)
+		p.add_child(cl, false, Node.INTERNAL_MODE_BACK)
 
 # ── 墙上批量火把(运行时)──────────────────────────────────────────────
 # 沿墙按间距均匀布壁挂火把(背靠墙、朝最近地砖即室内方向),每个配暖色火光。
@@ -117,9 +119,11 @@ func _place_wall_torches() -> void:
 			floor_pts.append((f as Node3D).position)
 	if floor_pts.is_empty():
 		return
+	if get_node_or_null("Torches") != null:
+		return   # 已生成(避免编辑器重复 _ready 时叠加)
 	var holder := Node3D.new()
 	holder.name = "Torches"
-	add_child(holder)
+	add_child(holder, false, Node.INTERNAL_MODE_BACK)   # INTERNAL → 不入库
 	var placed: Array[Vector3] = []
 	for w in walls.get_children():
 		if placed.size() >= TORCH_MAX:
