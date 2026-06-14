@@ -210,6 +210,7 @@ func _loot_row(item_name: String, col: Color) -> PanelContainer:
 func _process(_delta: float) -> void:
 	if _visible and Input.is_key_pressed(KEY_R):
 		_visible = false
+		Sfx.play("ui_confirm")
 		var rm: Node = get_node_or_null("/root/RiftManager")
 		if rm != null and rm.has_method("reset_rift"):
 			rm.reset_rift()
