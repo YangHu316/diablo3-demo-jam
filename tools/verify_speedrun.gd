@@ -107,8 +107,8 @@ func _init() -> void:
 			if cols.size() >= 2 and not cols[0].is_empty():
 				ov[cols[0]] = cols[1]
 		f.close()
-		if String(ov.get("启用", "0")) == "1" and String(ov.get("进度条目标", "")) == "15" and String(ov.get("守门人HP", "")) == "4000":
-			ok += 1; print("OK⑦ CSV 存在·启用=1·目标=15·守门人HP=4000")
+		if String(ov.get("启用", "0")) == "1" and String(ov.get("进度条目标", "")) == "5" and String(ov.get("守门人HP", "")) == "1500":
+			ok += 1; print("OK⑦ CSV 存在·启用=1·目标=5·守门人HP=1500 (20s体验版)")
 		else:
 			printerr("FAIL⑦ CSV 字段不符: %s" % ov)
 	else:
