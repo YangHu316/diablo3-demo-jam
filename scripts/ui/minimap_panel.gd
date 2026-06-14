@@ -81,6 +81,7 @@ var _fog_timer: float = 0.0
 # ═════════════════════════════════════════════════════════════════════════
 func _ready() -> void:
 	layer = 105
+	add_to_group("minimap")
 	_map_size = get_viewport().size.x * MAP_SIZE_RATIO
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_build_ui()
