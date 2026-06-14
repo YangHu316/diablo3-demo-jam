@@ -1,7 +1,7 @@
 # 功能塔蓝图(可手动布置)
 
 > 把 `TowerSpawner`(读 `数值表/tower_layout.csv` 自动布塔)里的**两种 buff 塔**复制成**可手动拖放**的蓝图资产。
-> 复用原 `scenes/props/tower_trigger.tscn` + `scripts/entities/tower_trigger.gd` + `TowerBuffManager`(**原文件均未改**)。
+> 复用原 `scenes/props/tower_trigger.tscn` + `scripts/entities/tower_trigger.gd` + `TowerBuffManager`(**原文件均未改**)。视觉换 `SM_Env_GlowingOrb_01` **发光球模型** + 新助手 `scripts/levels/tower_orb_glow.gd`。
 
 | 蓝图 | tower_id | 效果(`tower_buffs.csv`) | 颜色 |
 |---|---|---|---|
@@ -15,11 +15,10 @@
 3. 运行:玩家走进塔范围 → 按 **F** 激活 buff(互斥限时增益);CD 内塔变暗、提示「冷却中」。
 4. 改数值:编辑 `数值表/tower_buffs.csv`(加成幅度 / 持续 / CD)——对蓝图与原 spawner 同时生效。
 
-> 蓝图本身**零新代码**:只是 `tower_trigger.tscn` 的实例 + 预设 `tower_id` / `ready_color`。交互、buff、CD、上色全在原 `tower_trigger.gd` / `TowerBuffManager`。
+> **模型 = 发光球**:蓝图把原圆柱 `Body` 隐藏(`visible=false` 覆写·**未改原场景**),换上 `SM_Env_GlowingOrb_01.fbx`。`scripts/levels/tower_orb_glow.gd`(`@tool`)给球叠**彩色 + 微弱自发光**(`emission_energy≈0.45`,对齐项目 l2_markers 自发光约定)的 `material_override`,并监听 `TowerBuffManager.tower_ready` / `tower_cooldown_changed`(按 `tower_id` 过滤)**复刻互动变色**:就绪 = 塔色 / 冷却 = 暗灰。buff / CD / F 激活 仍全在原 `tower_trigger.gd`,**原塔脚本/场景零改动**。两塔不同 `ready_color` 区分(伤害 🔴 / 加速 🔵)。
 
 ## 与原 TowerSpawner 的关系(重要)
 
-- 原 `TowerSpawner` 节点(在 `level_02_play.tscn`)仍会读 `tower_layout.csv` **自动布 2 座塔**(伤害塔 @出生点右、加速塔 @出生点左)。
-- **若改用手动蓝图**:删掉 `level_02_play.tscn` 里的 `TowerSpawner` 节点 **或** 清空 `tower_layout.csv`,避免和手摆的塔**重复**。
-  > 这两处属「原文件」,按你要求**未改动**——是否切换由你决定(删 TowerSpawner 节点 / 清 CSV 二选一)。
-- 编辑器预览:`tower_trigger.gd` 非 `@tool`,编辑器里两座都显示默认**红柱**;**运行时**才按 `ready_color` 上色(伤害红 / 加速蓝)。位置以节点 gizmo 为准。
+- `tower_layout.csv` **已清空** → `TowerSpawner` **不再自动布塔**(节点仍在 `level_02_play.tscn`,空表 = 布 0 座)。功能塔现全部手摆蓝图。
+- 要恢复自动布塔:把塔行填回 `tower_layout.csv`(届时注意别和手摆塔重复)。
+- 编辑器预览:`tower_orb_glow.gd` 是 `@tool`,**编辑器里发光球就按塔色亮**(伤害红 / 加速蓝),运行时再随激活/CD 切色。⚠ **发光球 `scale`/`y` 是估值**(headless 测不到 FBX 原生尺寸,参照立柱 ×78≈3.5m 设了 ×40),编辑器里按需微调大小/高度。
