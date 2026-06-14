@@ -7,12 +7,12 @@ extends RefCounted
 # 调用方式:const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
 #          DamageCalculator.compute(sd)
 
-# ── V3.0 锁死面板(数值表/player_loadout.csv)──────────────────────────
-# weapon_avg 24, dexterity 150, crit 45%, crit_damage ×5.0(+400%), elem +40%
-const LOCKED_WEAPON_AVG: float = 24.0
-const LOCKED_DEXTERITY: int = 150
+# ── V3.0 锁死面板(数值表/player_loadout.csv 爽快割草版)──────────────
+# weapon_avg 40, dexterity 400, crit 45%, crit_damage ×6.0(+500%), elem +40%
+const LOCKED_WEAPON_AVG: float = 40.0
+const LOCKED_DEXTERITY: int = 400
 const LOCKED_CRIT_RATE: float = 0.45
-const LOCKED_CRIT_DAMAGE: float = 5.0      # +400% = ×5.0
+const LOCKED_CRIT_DAMAGE: float = 6.0      # +500% = ×6.0
 const LOCKED_ELEMENTAL_BONUS: float = 0.40 # +40%
 
 # 仍然以 static var 暴露(向后兼容旧调用),但不再接 Inventory.stats_changed,

@@ -11,6 +11,7 @@ max_health = 120
 attack_damage = 33
 move_speed = 6.0
 detection_range = 22.0
+aggro_range = 14.0
 lose_aggro_range = 28.0
 attack_range = 18.0
 attack_windup = 0.7

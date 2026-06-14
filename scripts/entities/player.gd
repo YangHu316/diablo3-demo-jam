@@ -18,10 +18,10 @@ const SPEED: float = 7.0
 const ATTACK_RANGE: float = 18.0  # 利箭有效射程,目标在此范围内即停下射击
 const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 
-# V3.0 锁死玩家面板:HP 1200(策划案 player_loadout.csv)
-@export var max_health: int = 1200
+# V3.0 锁死玩家面板:HP 8000(策划案 player_loadout.csv 爽快割草版)
+@export var max_health: int = 8000
 
-var current_health: int = 1200
+var current_health: int = 8000
 var is_moving: bool = false
 var is_invulnerable: bool = false
 var is_frozen: bool = false
@@ -408,8 +408,8 @@ func _end_dodge() -> void:
 	dodge_ended.emit()
 
 # ── 受伤 / 死亡 ─────────────────────────────────────
-# V3.0 锁死护甲减伤 50%(player_loadout.csv 第 9 行)
-const ARMOR_DAMAGE_REDUCTION: float = 0.50
+# V3.0 锁死护甲减伤 70%(player_loadout.csv 爽快割草版)
+const ARMOR_DAMAGE_REDUCTION: float = 0.70
 
 func take_damage(amount: int, source = null) -> void:
 	if is_dead or is_invulnerable or amount <= 0:
