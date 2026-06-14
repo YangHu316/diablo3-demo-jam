@@ -84,15 +84,19 @@ func _apply_element_tint(elem: String) -> void:
 func _tint_meshes(node: Node, tint: Color, emit: Color) -> void:
 	if node is MeshInstance3D:
 		var mi: MeshInstance3D = node
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = tint
-		mat.emission_enabled = true
-		mat.emission = emit
-		mat.emission_energy_multiplier = 1.6
-		mat.metallic = 0.4
-		mat.roughness = 0.4
-		for i in range(max(1, mi.get_surface_override_material_count())):
-			mi.set_surface_override_material(i, mat)
+		# V3.3:用 material_overlay 在原材质之上叠加发光色 → 保留 Synty 贴图,
+		# 同时让箭整体看起来"被冰/火笼罩"。surface_override 之前不生效是因为
+		# FBX 内部多 surface 且材质来自 mesh 资源本身,改 surface_override(0) 只能盖住第一个面。
+		var overlay: StandardMaterial3D = StandardMaterial3D.new()
+		# 半透明 albedo 让原色透出
+		overlay.albedo_color = Color(tint.r, tint.g, tint.b, 0.55)
+		overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		overlay.emission_enabled = true
+		overlay.emission = emit
+		overlay.emission_energy_multiplier = 2.0
+		overlay.cull_mode = BaseMaterial3D.CULL_DISABLED
+		mi.material_overlay = overlay
 	for c in node.get_children():
 		_tint_meshes(c, tint, emit)
 

@@ -195,17 +195,9 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		var anchor: Node3D = Node3D.new()  # 用 anchor 控制 z = -radius 让箭离 pivot 一段距离
 		pivot.add_child(anchor)
 		anchor.add_child(arrow_model)
-		# 加点拖尾(可选)
-		if _orbit_trail_scene != null:
-			var trail: Node = _orbit_trail_scene.instantiate()
-			if trail != null and trail is Node3D:
-				anchor.add_child(trail)
-				# 拖尾 VFX 内部 +X 是飞行轴 → 与箭飞行方向(箭头朝切向)对齐
-				# 箭飞行方向 = pivot 切线 = pivot.basis.x(转 angle 后);
-				# 简单起见缩小一点,挂在 anchor 上跟箭一起飞
-				(trail as Node3D).scale = Vector3.ONE * 0.4
-		# 随机参数
-		var ang_speed: float = randf_range(1.6, 3.4)        # rad/s
+		# V3.3:不再挂火焰拖尾(用户反馈火焰不对)。需要拖尾再独立加冰蓝/紫电粒子。
+		# 随机参数(V3.3:速度上调 1.6~3.4 → 2.6~5.2 rad/s)
+		var ang_speed: float = randf_range(2.6, 5.2)        # rad/s
 		if randf() < 0.5:
 			ang_speed = -ang_speed                          # 顺/逆时针
 		var radius: float = r_base + randf_range(-r_var, r_var)
@@ -248,15 +240,11 @@ func _update_orbit_arrows(delta: float) -> void:
 			anchor.rotation = Vector3(0, deg_to_rad(90.0) * sgn, 0)
 
 func _despawn_orbit_arrows() -> void:
+	# V3.3:E 一结束箭立刻消失(之前有 0.6s 粒子衰减,用户反馈拖泥带水)
 	for d in _orbit_arrows:
 		var pivot = d.get("pivot")
 		if pivot != null and is_instance_valid(pivot):
-			# 拖尾粒子停止发射,等粒子自然消散后整个 pivot free
-			_disable_emitters(pivot)
-			var dying: Node = pivot
-			var tw: Tween = dying.create_tween()
-			tw.tween_interval(0.6)
-			tw.tween_callback(Callable(dying, "queue_free"))
+			pivot.queue_free()
 	_orbit_arrows.clear()
 
 func _disable_emitters(node: Node) -> void:
