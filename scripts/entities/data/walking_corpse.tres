@@ -6,7 +6,7 @@
 script = ExtResource("1")
 enemy_id = &"walking_corpse"
 enemy_name = "缓行走尸"
-max_health = 150
+max_health = 300
 attack_damage = 30
 move_speed = 5.1
 albedo_color = Color(0.827451, 0.184314, 0.184314, 1)

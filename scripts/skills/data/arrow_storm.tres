@@ -33,7 +33,7 @@ summon_duration = 0.0
 summon_max_count = 1
 
 channel_tick_interval = 0.3
-channel_focus_per_sec = 25.0
+channel_focus_per_sec = 40.0
 channel_radius = 6.0
 channel_movement_mult = 0.5
 channel_projectiles_per_tick = 12

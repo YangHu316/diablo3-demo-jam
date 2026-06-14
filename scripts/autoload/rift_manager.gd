@@ -43,12 +43,12 @@ var _sr_hooked: bool = false       # node_added 钩子已连标志
 # 注: 精英 (elite_blue/champion_yellow) 不在此 —— 精英不靠"击杀直接加权", 改为掉进度球,
 #   玩家拾取后按 elites.csv「每球进度%」经 add_progress_ball() 加进度 (取代精英直接权重).
 const WEIGHTS: Dictionary = {
-	&"trash": 1.0,
-	&"dog": 1.0,
-	&"archer": 1.0,
-	&"bloated": 1.0,
-	&"summoner": 1.0,
-	&"skeleton_guard": 1.0,
+	&"trash": 0.75,
+	&"dog": 0.75,
+	&"archer": 0.75,
+	&"bloated": 0.75,
+	&"summoner": 0.75,
+	&"skeleton_guard": 0.75,
 	&"guardian": 0.0,
 	&"butcher": 0.0,
 }
@@ -58,7 +58,7 @@ const NO_KILL_PROGRESS: Dictionary = {
 	&"elite_blue": true,
 	&"champion_yellow": true,
 }
-const TIME_BALL_WEIGHT: float = 3.0
+const TIME_BALL_WEIGHT: float = 2.25
 
 var progress: float = 0.0
 var guardian_triggered: bool = false
@@ -134,7 +134,7 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	# 精英: 击杀本身不加权 (靠掉落的进度球加进度). 仅计 kill_count (上面已 +1).
 	if NO_KILL_PROGRESS.has(mid):
 		return
-	var w: float = float(WEIGHTS.get(mid, 1.0))   # 未知 id 当白怪 (兜底, 不漏喂进度)
+	var w: float = float(WEIGHTS.get(mid, 0.75))   # 未知 id 当白怪 (兜底·×0.75)
 	if w <= 0.0:
 		return   # 兜底: 其它零权重 id 不计
 	_add_progress(w)

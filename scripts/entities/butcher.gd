@@ -20,8 +20,8 @@ signal died(self_ref)
 signal state_changed(old_state: int, new_state: int)
 
 # ── 数值(策划 03 §6 锚点)─────────────────────────
-const MAX_HEALTH: int = 24000  # V3.0 守门人 (rift_monsters.csv guardian)
-const ATTACK_DAMAGE: int = 90  # V3.0 守门人 (rift_monsters.csv guardian)
+const MAX_HEALTH: int = 30000  # V3.0 守门人 (rift_monsters.csv guardian·2026 调)
+const ATTACK_DAMAGE: int = 150  # V3.0 守门人 (rift_monsters.csv guardian·2026 调)
 const PHASE2_HEALTH_RATIO: float = 0.5
 
 const MOVE_SPEED: float = 4.0           # 慢悠悠走路

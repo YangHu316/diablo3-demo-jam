@@ -4,9 +4,20 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Torch.tscn" id="5_ldf2y"]
 [ext_resource type="PackedScene" uid="uid://bxceerbgtueuq" path="res://assets/PolygonDungeon/Models/Environment/Doors/SM_Env_Door_Large_Frame_01.fbx" id="6_kw13u"]
 [ext_resource type="PackedScene" uid="uid://cxul4d55xi638" path="res://assets/PolygonDungeon/Models/Environment/Doors/SM_Env_Door_Large_Stone_01.fbx" id="7_im2du"]
+[ext_resource type="PackedScene" uid="uid://cryegmorath4e" path="res://assets/PolygonDungeon/Models/Environment/Decor/SM_Env_Gem_Large_01.fbx" id="8_q5hn5"]
+[ext_resource type="PackedScene" uid="uid://djya6y2ekgfkm" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_01.fbx" id="9_67h3n"]
 [ext_resource type="PackedScene" uid="uid://ctu4lh4tpn04g" path="res://assets/PolygonDungeon/Models/Environment/Floors/SM_Env_Tiles_06.fbx" id="9_v58u8"]
+[ext_resource type="PackedScene" uid="uid://dwmqemxejpp2p" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_03.fbx" id="10_t3kmv"]
+[ext_resource type="PackedScene" uid="uid://wgtgwfig1v83" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_Small_02.fbx" id="11_3v4fd"]
 [ext_resource type="PackedScene" uid="uid://t5s2fte2du28" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01_DoubleSided.fbx" id="11_t3kmv"]
+[ext_resource type="PackedScene" uid="uid://brxvruw2mw2d6" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Cracked_02.fbx" id="12_a7pk7"]
 [ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="12_woepd"]
+[ext_resource type="PackedScene" uid="uid://csm7cpoimcty8" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Cracked_01.fbx" id="13_oqw1c"]
+[ext_resource type="PackedScene" uid="uid://6cn8isaateb" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_Small_01.fbx" id="14_woepd"]
+[ext_resource type="PackedScene" uid="uid://ccg7mncrtjnfv" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_02.fbx" id="15_j7qo7"]
+[ext_resource type="PackedScene" uid="uid://fa2a6c5enelb" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Pillar_Round_02.fbx" id="16_21rrx"]
+[ext_resource type="PackedScene" uid="uid://ipfigtwky5hj" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Pillar_Broken_02.fbx" id="17_pld4r"]
+[ext_resource type="PackedScene" uid="uid://d2h1uij6v6foq" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Pillar_Broken_Pile_02.fbx" id="18_0xega"]
 
 [sub_resource type="Environment" id="Environment_u3ogh"]
 background_mode = 1
@@ -34,7 +45,7 @@ light_energy = 0.25
 shadow_enabled = true
 
 [node name="Torch_4" parent="." unique_id=779877684 instance=ExtResource("5_ldf2y")]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 5.318203, 2.7, 41.6272)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 5.318203, 5.4692717, 43.632877)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=454473576]
 transform = Transform3D(0.70710677, -0.44312266, 0.5510375, 0, 0.7792847, 0.62667006, -0.70710677, -0.44312266, 0.5510375, 38, 30, 38)
@@ -179,6 +190,12 @@ transform = Transform3D(-4.371139e-06, 0, 100, 0, 100, 0, -100, 0, -4.371139e-06
 [node name="PWall_S_151" parent="." unique_id=2021587086 instance=ExtResource("11_t3kmv")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -4.950535, 0, 58.13739)
 
+[node name="PWall_S_153" parent="." unique_id=687969236 instance=ExtResource("11_t3kmv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 63.01297)
+
+[node name="PWall_S_154" parent="." unique_id=698318948 instance=ExtResource("11_t3kmv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.0299654, 0, 63.01297)
+
 [node name="PWall_S_152" parent="." unique_id=1047423152 instance=ExtResource("11_t3kmv")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -9.950535, 0, 58.13739)
 
@@ -196,3 +213,60 @@ transform = Transform3D(-4.371139e-06, 0, 100, 0, 100, 0, -100, 0, -4.371139e-06
 
 [node name="SM_Env_Door_Large_Stone_02" parent="." unique_id=1109947454 instance=ExtResource("7_im2du")]
 transform = Transform3D(-4.371139e-06, 0, -100, 0, 100, 0, 100, 0, -4.371139e-06, 20, 0, 50.7456)
+
+[node name="SM_Env_Gem_Large_01" parent="." unique_id=293267936 instance=ExtResource("8_q5hn5")]
+transform = Transform3D(300, 0, 0, 0, 300, 0, 0, 0, 300, 4.7238283, 0.14640665, 43.214478)
+
+[node name="SM_Env_BonePile_01" parent="." unique_id=374538312 instance=ExtResource("9_67h3n")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -5.028391, 0.09226799, 55.407368)
+
+[node name="SM_Env_BonePile_03" parent="." unique_id=170482434 instance=ExtResource("10_t3kmv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 10.710166, 0, 55.587116)
+
+[node name="SM_Env_BonePile_Small_02" parent="." unique_id=367325340 instance=ExtResource("11_3v4fd")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 16.856644, 0, 47.873314)
+
+[node name="SM_Env_Bone_Cracked_02" parent="." unique_id=1669362735 instance=ExtResource("12_a7pk7")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.172972, 0, 46.890514)
+
+[node name="SM_Env_Bone_Cracked_01" parent="." unique_id=1050059379 instance=ExtResource("13_oqw1c")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 14.905111, 0, 39.44221)
+
+[node name="SM_Env_BonePile_Small_01" parent="." unique_id=335206425 instance=ExtResource("14_woepd")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.869307, 0, 50.806103)
+
+[node name="SM_Env_BonePile_Small_03" parent="." unique_id=1000706328 instance=ExtResource("11_3v4fd")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.738037, 0, 49.259808)
+
+[node name="SM_Env_BonePile_02" parent="." unique_id=150866648 instance=ExtResource("9_67h3n")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.701376, 0, 51.58718)
+
+[node name="SM_Env_BonePile_Small_04" parent="." unique_id=1467921581 instance=ExtResource("14_woepd")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 19.1587, 0, 52.479053)
+
+[node name="SM_Env_BonePile_04" parent="." unique_id=180379537 instance=ExtResource("15_j7qo7")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.58656, 0, 49.983578)
+
+[node name="SM_Env_BonePile_05" parent="." unique_id=1911453751 instance=ExtResource("9_67h3n")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -8.560343, 0, 39.4835)
+
+[node name="SM_Env_BonePile_06" parent="." unique_id=330980880 instance=ExtResource("9_67h3n")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 8.949966, 0, 61.980347)
+
+[node name="SM_Env_Pillar_Round_02" parent="." unique_id=1177036352 instance=ExtResource("16_21rrx")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -1.2529676, 0, 54.109604)
+
+[node name="SM_Env_Pillar_Round_03" parent="." unique_id=34103292 instance=ExtResource("16_21rrx")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -1.2529676, 0, 49.64586)
+
+[node name="SM_Env_Pillar_Round_04" parent="." unique_id=547639068 instance=ExtResource("16_21rrx")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 11.562953, 0, 50.275352)
+
+[node name="SM_Env_Pillar_Round_05" parent="." unique_id=21122496 instance=ExtResource("16_21rrx")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 11.562953, 0, 45.811607)
+
+[node name="SM_Env_Pillar_Broken_02" parent="." unique_id=1754401078 instance=ExtResource("17_pld4r")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -1.0376339, 0, 44.38668)
+
+[node name="SM_Env_Pillar_Broken_Pile_02" parent="." unique_id=182246473 instance=ExtResource("18_0xega")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 12.408086, 0, 55.724815)
