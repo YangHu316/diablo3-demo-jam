@@ -213,13 +213,11 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		trail.scale_amount_min = 0.18
 		trail.scale_amount_max = 0.32
 		trail.color = Color(0.6, 0.85, 1.0, 0.85)   # 冷光蓝白
-		# 简单淡出曲线
+		# 简单淡出曲线(CPUParticles3D.color_ramp 在 Godot 4 直接接 Gradient)
 		var ramp: Gradient = Gradient.new()
 		ramp.add_point(0.0, Color(0.7, 0.95, 1.0, 0.95))
 		ramp.add_point(1.0, Color(0.4, 0.7, 1.0, 0.0))
-		var ramp_tex: GradientTexture1D = GradientTexture1D.new()
-		ramp_tex.gradient = ramp
-		trail.color_ramp = ramp_tex
+		trail.color_ramp = ramp
 		anchor.add_child(trail)
 		# 随机参数(V3.3:速度上调,V3.4:再加一档)
 		var ang_speed: float = randf_range(3.0, 5.8)        # rad/s
