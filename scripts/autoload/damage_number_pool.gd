@@ -13,10 +13,10 @@ const POOL_SIZE: int = 32                  # 提升池容量(E 技能 AOE 一次
 const FLOAT_DURATION: float = 0.85         # 总时长
 const FADE_START_RATIO: float = 0.55       # 飘到 55% 才开始淡出(读秒更久)
 
-# 字号
-const NORMAL_FONT_SIZE: int = 56
-const CRIT_FONT_SIZE: int = 88
-const HEAVY_FONT_SIZE: int = 112           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
+# 字号(V3.2 收紧:之前 56/88/112 太大了,屏幕上重叠严重)
+const NORMAL_FONT_SIZE: int = 32
+const CRIT_FONT_SIZE: int = 48
+const HEAVY_FONT_SIZE: int = 64           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
 
 # 重击阈值(单次伤害 >= 此值且暴击 → 升级到红橙重击样式)
 const HEAVY_DAMAGE_THRESHOLD: int = 800
@@ -27,9 +27,9 @@ const CRIT_COLOR: Color = Color(1.0, 0.86, 0.20, 1.0)        # 金黄
 const HEAVY_COLOR: Color = Color(1.0, 0.45, 0.15, 1.0)        # 橙红
 const OUTLINE_COLOR: Color = Color(0.05, 0.02, 0.0, 1.0)     # 几乎纯黑棕,衬黄/红更通透
 
-# 轨迹
-const FLOAT_HEIGHT: float = 1.8            # 抛物线峰高(m)
-const HORIZ_JITTER: float = 0.6            # 水平偏移随机范围(±0.6m)
+# 轨迹(V3.2:水平偏移加大、字小了 → 多目标飘字不再叠在一起)
+const FLOAT_HEIGHT: float = 1.4            # 抛物线峰高(m)
+const HORIZ_JITTER: float = 1.4            # 水平偏移随机范围(±1.4m)
 const SPAWN_VERTICAL_OFFSET: float = 0.5
 
 # 暴击 / 重击 弹跳
@@ -70,9 +70,9 @@ func _setup_pool() -> void:
 		lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		lbl.no_depth_test = true
 		lbl.fixed_size = true
-		lbl.pixel_size = 0.0035          # 字大了 → pixel_size 缩小,世界看着合适
+		lbl.pixel_size = 0.005           # 与字号配合的世界尺寸
 		lbl.font_size = NORMAL_FONT_SIZE
-		lbl.outline_size = 18            # 厚描边,远看更清晰
+		lbl.outline_size = 10            # 描边(字小了不需要太厚)
 		lbl.outline_modulate = OUTLINE_COLOR
 		lbl.modulate = Color(1, 1, 1, 0)
 		lbl.visible = false

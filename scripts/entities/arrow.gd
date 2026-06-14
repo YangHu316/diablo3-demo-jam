@@ -53,6 +53,63 @@ func configure_from_skill(sd, dmg_info: Dictionary) -> void:
 	aoe_radius = float(sd.aoe_radius) if "aoe_radius" in sd else 0.0
 	status_effect = String(sd.status_effect) if "status_effect" in sd else ""
 	status_duration = float(sd.status_duration) if "status_duration" in sd else 0.0
+	# V3.2:按 element 给箭矢 + 拖尾染色(冰箭蓝、火箭橙、毒箭绿…)
+	_apply_element_tint(element)
+
+# 按 element 给箭头 mesh + 拖尾 VFX 整体染色。physical 不染。
+func _apply_element_tint(elem: String) -> void:
+	var tint: Color
+	var emit: Color
+	match elem:
+		"frost":
+			tint = Color(0.55, 0.85, 1.0, 1.0)
+			emit = Color(0.45, 0.85, 1.0, 1.0)
+		"fire":
+			tint = Color(1.0, 0.55, 0.2, 1.0)
+			emit = Color(1.0, 0.4, 0.1, 1.0)
+		"poison":
+			tint = Color(0.55, 1.0, 0.4, 1.0)
+			emit = Color(0.4, 1.0, 0.3, 1.0)
+		_:
+			return
+	# 1) 箭模型 mesh 染色(覆盖 surface_override_material 0)
+	var pivot: Node = get_node_or_null("ModelPivot")
+	if pivot != null:
+		_tint_meshes(pivot, tint, emit)
+	# 2) 拖尾 VFX 整体 modulate(对粒子的 process_material 不一定有效,但对 GeometryInstance3D 着色管用)
+	var trail: Node = get_node_or_null("TrailVFX")
+	if trail != null:
+		_tint_particles(trail, tint)
+
+func _tint_meshes(node: Node, tint: Color, emit: Color) -> void:
+	if node is MeshInstance3D:
+		var mi: MeshInstance3D = node
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = tint
+		mat.emission_enabled = true
+		mat.emission = emit
+		mat.emission_energy_multiplier = 1.6
+		mat.metallic = 0.4
+		mat.roughness = 0.4
+		for i in range(max(1, mi.get_surface_override_material_count())):
+			mi.set_surface_override_material(i, mat)
+	for c in node.get_children():
+		_tint_meshes(c, tint, emit)
+
+func _tint_particles(node: Node, tint: Color) -> void:
+	# GPUParticles3D 通过 ParticleProcessMaterial.color 染色;CPUParticles3D 直接 .color。
+	if node is GPUParticles3D:
+		var p: GPUParticles3D = node
+		var pm: Material = p.process_material
+		if pm is ParticleProcessMaterial:
+			# duplicate 避免影响其他箭实例(资源共享时)
+			var pm_copy: ParticleProcessMaterial = (pm as ParticleProcessMaterial).duplicate() as ParticleProcessMaterial
+			pm_copy.color = tint
+			p.process_material = pm_copy
+	elif node is CPUParticles3D:
+		(node as CPUParticles3D).color = tint
+	for c in node.get_children():
+		_tint_particles(c, tint)
 
 func _physics_process(delta: float) -> void:
 	if _consumed:

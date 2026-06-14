@@ -6,8 +6,9 @@ extends Node
 const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
 
 const ARROW_SCENE_PATH: String = "res://scenes/projectiles/arrow.tscn"
-# V3.1:E 技能改 AOE(参考王者马可波罗大招):脚下持续燃烧领域 VFX,跟随玩家
-const CHANNEL_AURA_VFX_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn"
+# V3.2:E 技能视觉 = 5~6 支箭以不同角速度/方向/半径绕主角公转(伤害逻辑不变)
+const ORBIT_ARROW_MODEL_PATH: String = "res://assets/PolygonDungeon/Models/FX/SM_Arrow_01.fbx"
+const ORBIT_ARROW_TRAIL_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_01.tscn"
 
 # SkillType 枚举值(与 skill_data.gd 中 SkillType 保持同步)
 const TYPE_PROJECTILE: int = 0
@@ -29,12 +30,16 @@ var _channeling_slot: int = -1
 var _channel_skill: Resource = null
 var _channel_tick_timer: float = 0.0
 var _channel_focus_acc: float = 0.0  # 累积应扣专注(每帧 += per_sec*delta,够 1 即扣 1)
-var _channel_aura: Node3D = null     # 持续 AOE VFX(脚下火域,跟随玩家)
-var _channel_aura_scene: PackedScene = null
+# V3.2:绕身公转的箭(数据 = [pivot_node, angular_speed, radius, height, phase])
+var _orbit_arrows: Array = []
+var _orbit_time: float = 0.0
+var _orbit_arrow_scene: PackedScene = null
+var _orbit_trail_scene: PackedScene = null
 
 func _ready() -> void:
 	_arrow_scene = load(ARROW_SCENE_PATH)
-	_channel_aura_scene = load(CHANNEL_AURA_VFX_PATH)
+	_orbit_arrow_scene = load(ORBIT_ARROW_MODEL_PATH)
+	_orbit_trail_scene = load(ORBIT_ARROW_TRAIL_PATH)
 	var p: Node = get_parent()
 	if p is Node3D:
 		_player = p
@@ -88,9 +93,9 @@ func _on_channel_started(slot: int, sd: Resource) -> void:
 	# 通知 player 进引导态(50% 移速,不 freeze)
 	if _player != null and _player.has_method("set_channeling"):
 		_player.set_channeling(true, float(sd.channel_movement_mult))
-	# V3.1 AOE 改造:生成脚下持续火域 VFX(跟随玩家,_process 里更新位置)
-	_spawn_channel_aura(float(sd.channel_radius))
-	# SFX:开始引导(火球咏唱声)
+	# V3.2:生成 5~6 支绕身公转的箭(纯视觉,伤害还是 _emit_channel_tick 的 AOE)
+	_spawn_orbit_arrows(float(sd.channel_radius))
+	# SFX:开始引导(咏唱声)
 	var sfx_start: Node = get_node_or_null("/root/Sfx")
 	if sfx_start != null and sfx_start.has_method("play") and _player is Node3D:
 		sfx_start.play("channel_charge", (_player as Node3D).global_position, -2.0, 0.05)
@@ -104,7 +109,7 @@ func _on_channel_stopped(slot: int, _sd: Resource) -> void:
 	_channel_focus_acc = 0.0
 	if _player != null and _player.has_method("set_channeling"):
 		_player.set_channeling(false, 1.0)
-	_despawn_channel_aura()
+	_despawn_orbit_arrows()
 
 func _process(delta: float) -> void:
 	if _channel_skill == null or _channeling_slot < 0:
@@ -122,9 +127,8 @@ func _process(delta: float) -> void:
 				if _slot_manager != null and _slot_manager.has_method("stop_channel_external"):
 					_slot_manager.stop_channel_external(_channeling_slot)
 				return
-	# 2) AOE VFX 跟随玩家(每帧贴脚下)
-	if _channel_aura != null and is_instance_valid(_channel_aura) and _player != null and is_instance_valid(_player):
-		_channel_aura.global_position = (_player as Node3D).global_position + Vector3(0, 0.05, 0)
+	# 2) 公转箭跟随玩家 + 旋转
+	_update_orbit_arrows(delta)
 	# 3) tick 命中
 	_channel_tick_timer -= delta
 	if _channel_tick_timer <= 0.0:
@@ -163,33 +167,97 @@ func _emit_channel_tick(sd: Resource) -> void:
 	# 视觉:每 tick 来一次"脉冲环"扩散到边界,强化伤害节奏
 	_spawn_channel_pulse(center, radius)
 
-# V3.1:持续火域 VFX(脚下,跟随玩家)
-func _spawn_channel_aura(radius: float) -> void:
-	_despawn_channel_aura()
-	if _channel_aura_scene == null or _player == null or not (_player is Node3D):
+# V3.2:5~6 支箭绕主角公转(伤害不变,纯观感)
+# 每支箭参数(angular_speed/radius/height/phase/dir)随机化,看起来更乱更有"魔法围绕"感
+func _spawn_orbit_arrows(channel_radius: float) -> void:
+	_despawn_orbit_arrows()
+	if _orbit_arrow_scene == null or _player == null or not (_player is Node3D):
 		return
 	var scene_root: Node = get_tree().current_scene
 	if scene_root == null:
 		return
-	var aura: Node = _channel_aura_scene.instantiate()
-	if aura == null or not (aura is Node3D):
-		return
-	scene_root.add_child(aura)
-	# vfx_fire_area_01 默认 ~2m 半径,按 channel_radius 等比放大
-	var k: float = max(0.5, radius / 2.0)
-	(aura as Node3D).scale = Vector3(k, k, k)
-	(aura as Node3D).global_position = (_player as Node3D).global_position + Vector3(0, 0.05, 0)
-	_channel_aura = aura as Node3D
+	_orbit_time = 0.0
+	# 半径范围:略小于 channel_radius,贴近角色看着更"绕身"
+	var r_base: float = clamp(channel_radius * 0.35, 1.5, 3.5)
+	var r_var: float = clamp(channel_radius * 0.15, 0.3, 1.2)
+	var n: int = 6
+	for i in range(n):
+		# 用一个 pivot Node3D 作为绕主角的支点(每帧设到玩家位置),
+		# 子节点是箭模型,绕 Y 转 angle 后向前推 radius → 公转
+		var pivot: Node3D = Node3D.new()
+		scene_root.add_child(pivot)
+		pivot.global_position = (_player as Node3D).global_position
+		# 箭模型(纯视觉,无碰撞)
+		var arrow_model: Node = _orbit_arrow_scene.instantiate()
+		if arrow_model == null:
+			pivot.queue_free()
+			continue
+		var anchor: Node3D = Node3D.new()  # 用 anchor 控制 z = -radius 让箭离 pivot 一段距离
+		pivot.add_child(anchor)
+		anchor.add_child(arrow_model)
+		# 加点拖尾(可选)
+		if _orbit_trail_scene != null:
+			var trail: Node = _orbit_trail_scene.instantiate()
+			if trail != null and trail is Node3D:
+				anchor.add_child(trail)
+				# 拖尾 VFX 内部 +X 是飞行轴 → 与箭飞行方向(箭头朝切向)对齐
+				# 箭飞行方向 = pivot 切线 = pivot.basis.x(转 angle 后);
+				# 简单起见缩小一点,挂在 anchor 上跟箭一起飞
+				(trail as Node3D).scale = Vector3.ONE * 0.4
+		# 随机参数
+		var ang_speed: float = randf_range(1.6, 3.4)        # rad/s
+		if randf() < 0.5:
+			ang_speed = -ang_speed                          # 顺/逆时针
+		var radius: float = r_base + randf_range(-r_var, r_var)
+		var height: float = randf_range(0.4, 1.8)
+		var phase: float = randf() * TAU
+		# anchor 位置:相对 pivot 朝 -Z 推 radius,箭尖朝飞行切向(切向在 _update 里 look_at 设)
+		anchor.position = Vector3(0, height, -radius)
+		_orbit_arrows.append({
+			"pivot": pivot,
+			"anchor": anchor,
+			"speed": ang_speed,
+			"radius": radius,
+			"height": height,
+			"phase": phase,
+		})
 
-func _despawn_channel_aura() -> void:
-	if _channel_aura != null and is_instance_valid(_channel_aura):
-		# 让粒子自然衰减:停发射,1.5s 后销毁
-		_disable_emitters(_channel_aura)
-		var dying: Node = _channel_aura
-		var tw: Tween = dying.create_tween()
-		tw.tween_interval(1.5)
-		tw.tween_callback(Callable(dying, "queue_free"))
-	_channel_aura = null
+func _update_orbit_arrows(delta: float) -> void:
+	if _orbit_arrows.is_empty():
+		return
+	_orbit_time += delta
+	if _player == null or not is_instance_valid(_player):
+		return
+	var center: Vector3 = (_player as Node3D).global_position
+	for d in _orbit_arrows:
+		var pivot: Node3D = d.get("pivot") as Node3D
+		var anchor: Node3D = d.get("anchor") as Node3D
+		if pivot == null or not is_instance_valid(pivot):
+			continue
+		# pivot 跟随玩家
+		pivot.global_position = center
+		# pivot 绕 Y 转 angle = phase + speed * t
+		var angle: float = float(d["phase"]) + float(d["speed"]) * _orbit_time
+		pivot.rotation = Vector3(0, angle, 0)
+		# 让箭尖朝公转切线方向(箭模型在 SM_Arrow_01.fbx 里 +Z 朝箭尖,
+		# anchor.position = -Z*radius → 切向 = anchor.basis 关于 pivot 的导数;
+		# 在 pivot 局部空间下,半径方向是 -Z,切向 = +X(speed>0 顺时针)或 -X(speed<0)
+		# 简单做法:让 anchor 绕 Y 转 ±90° 让箭模型 +Z 对齐切向)
+		if anchor != null and is_instance_valid(anchor):
+			var sgn: float = 1.0 if float(d["speed"]) >= 0.0 else -1.0
+			anchor.rotation = Vector3(0, deg_to_rad(90.0) * sgn, 0)
+
+func _despawn_orbit_arrows() -> void:
+	for d in _orbit_arrows:
+		var pivot = d.get("pivot")
+		if pivot != null and is_instance_valid(pivot):
+			# 拖尾粒子停止发射,等粒子自然消散后整个 pivot free
+			_disable_emitters(pivot)
+			var dying: Node = pivot
+			var tw: Tween = dying.create_tween()
+			tw.tween_interval(0.6)
+			tw.tween_callback(Callable(dying, "queue_free"))
+	_orbit_arrows.clear()
 
 func _disable_emitters(node: Node) -> void:
 	if node is GPUParticles3D:
