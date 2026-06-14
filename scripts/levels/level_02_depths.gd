@@ -79,18 +79,20 @@ const TORCHES := [
 # 遭遇 [x, z, count, formation, radius, surround]
 # 注:surround 半径不可超过所在走廊半宽(否则刷进墙) → 仅用于开阔 Boss 厅;
 #     窄廊用 cluster/line。东路主线数量单调爬升,Boss 厅为高潮。
+# 经验预算见 数值表/经验曲线与L2刷怪预算.md;数量按提速XP曲线让玩家边割边升。
+# 当前白盒所有原型都 spawn enemy_zombie;战斗① 出齐 6 原型场景后按注释替换 enemy_scene。
 const ENCOUNTERS := [
-	[-60, -2, 3, "line", 5, false],      # 西廊·首遇(前置开场,不冷场)
-	[-31, 14, 4, "cluster", 5, false],   # 枢纽
-	[-15, 18, 4, "line", 5, false],      # 枢纽→东 过渡(填空走段)
-	[-3, 20, 4, "line", 5, false],       # 东廊
-	[22, 18, 5, "cluster", 5, false],    # 齿轮室(清场=机关转开)
-	[44, 38, 6, "cluster", 4, false],    # 右环·南(改 cluster,贴合窄廊半宽)
-	[10, 54, 5, "line", 5, false],       # 南长廊(下环)
-	[-35, -40, 5, "cluster", 5, false],  # 北廊伏击(纵深支线)
-	[-36, -78, 4, "cluster", 5, false],  # 北门守卫(目标)
-	[49, 48, 6, "line", 5, false],       # Boss 入口廊(爬升,不回落)
-	[67, 67, 12, "surround", 7, true],   # Boss 厅尸潮(高潮:12 环绕)
+	[-60, -2, 8, "cluster", 6, false],   # 西门/西廊 开场(走尸5+疯犬3) → 升L2
+	[-31, 14, 6, "cluster", 5, false],   # 枢纽(走尸4+弓手2)
+	[-15, 18, 4, "line", 5, false],      # 枢纽→东 过渡 → 升L3
+	[-3, 20, 6, "line", 5, false],       # 东廊(走尸4+弓手2)
+	[22, 18, 4, "cluster", 5, false],    # 齿轮室(走尸3+蓝名1) → 升L4 ★T2武器
+	[44, 38, 7, "cluster", 4, false],    # 右环·南(肿胀2+盾兵2+走尸3·破盾/自爆教学)
+	[-35, -40, 6, "cluster", 5, false],  # 北廊纵深(走尸4+弓手2) → 升L5 ★全技能
+	[-36, -78, 4, "cluster", 5, false],  # 北门守卫(黄名1+随从3·目标点)
+	[10, 54, 5, "line", 5, false],       # 南长廊 下环(召唤1+走尸4) → 升L6
+	[49, 48, 5, "line", 5, false],       # Boss入口廊(蓝名1+走尸4)
+	[67, 67, 12, "surround", 7, true],   # 终前尸潮(12环绕) → 升L7 ★T3武器;清完过传送门去Boss房
 ]
 
 const PLAYER_SPAWN := Vector3(-83, 0, -7)   # 西门
@@ -371,7 +373,7 @@ func _build_exit() -> void:
 	area.monitoring = true
 	area.position = _at(80, 78, 0.5)
 	area.set("level_id", "L2_depths")
-	area.set("next_hint", "下一层")
+	area.set("next_hint", "Boss房·屠夫(传送门)")
 	add_child(area)
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()

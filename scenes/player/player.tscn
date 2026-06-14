@@ -1,38 +1,32 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://c8y50mpfcnt7l"]
 
-[ext_resource type="Script" path="res://scripts/entities/player.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/skills/skill_slot_manager.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/skills/skill_executor.gd" id="3"]
-[ext_resource type="PackedScene" path="res://assets/PolygonDungeon/Models/Characters/Characters.fbx" id="4"]
-[ext_resource type="Script" path="res://scripts/components/character_visibility.gd" id="5"]
+[ext_resource type="Script" uid="uid://drhtrc72sparx" path="res://scripts/entities/player.gd" id="1"]
+[ext_resource type="Script" uid="uid://vmk78socauck" path="res://scripts/skills/skill_slot_manager.gd" id="2"]
+[ext_resource type="Script" uid="uid://euptcykcvyym" path="res://scripts/skills/skill_executor.gd" id="3"]
+[ext_resource type="PackedScene" uid="uid://bvtxqmsolmcou" path="res://assets/PolygonDungeon/Models/Characters/Characters.fbx" id="4"]
+[ext_resource type="Script" uid="uid://dkbqo74rgd3sp" path="res://scripts/components/character_visibility.gd" id="5"]
 
 [sub_resource type="CapsuleShape3D" id="player_shape"]
 radius = 0.3
 height = 1.8
 
-[node name="Player" type="CharacterBody3D" groups=["player"]]
-collision_layer = 1
+[node name="Player" type="CharacterBody3D" unique_id=154750243 groups=["player"]]
 collision_mask = 4
 script = ExtResource("1")
 
-[node name="CharacterRig" parent="." instance=ExtResource("4")]
-; Synty 模型默认朝 +Z;Godot forward = -Z,所以绕 Y 转 180°(箭已验证此朝向正确)
-; post_import 已自动缩到 ~1.6m,不再额外 scale
+[node name="CharacterRig" parent="." unique_id=1082520742 instance=ExtResource("4")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 script = ExtResource("5")
-visible_character = "Character_Hero_Knight_Female"
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1134727667]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("player_shape")
 
-[node name="ArrowSpawnPoint" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -0.5)
+[node name="ArrowSpawnPoint" type="Marker3D" parent="." unique_id=1491918790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -0.5)
 
-[node name="SkillSlotManager" type="Node" parent="."]
+[node name="SkillSlotManager" type="Node" parent="." unique_id=2062518235]
 script = ExtResource("2")
 
-[node name="SkillExecutor" type="Node" parent="."]
+[node name="SkillExecutor" type="Node" parent="." unique_id=104685572]
 script = ExtResource("3")
-slot_manager_path = NodePath("../SkillSlotManager")
-arrow_spawn_point_path = NodePath("../ArrowSpawnPoint")
