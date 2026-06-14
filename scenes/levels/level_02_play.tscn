@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/companions/templar.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/props/tower_trigger.tscn" id="8"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -30,3 +31,11 @@ script = ExtResource("4")
 [node name="HUD" parent="." unique_id=1591168324 instance=ExtResource("5")]
 
 [node name="InventoryPanel" parent="." unique_id=1503968696 instance=ExtResource("6")]
+
+[node name="DamageTower" parent="." instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, -7)
+tower_id = &"damage_tower"
+
+[node name="SpeedTower" parent="." instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -86, 0, -7)
+tower_id = &"speed_tower"
