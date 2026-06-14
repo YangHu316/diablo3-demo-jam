@@ -323,9 +323,11 @@ func _draw_landmark(canvas: Control, uv: Vector2, kind: String) -> void:
 func _draw_player_triangle(canvas: Control, ms: float) -> void:
 	var center := Vector2(ms * 0.5, ms * 0.5)
 	var r := ms * 0.040
-	var a := _player_ry
+	# 关卡相机/世界轴向 → minimap 投影时 Y 轴旋转手性反转 → 这里取 -ry,
+	# 让玩家朝右(世界 +X)时箭头也指右(屏幕 +x)
+	var a := -_player_ry
 
-	# 蓝色发光底座（三层，由大到小）
+	# 蓝色发光底座(三层,由大到小)
 	canvas.draw_circle(center, r * 2.4, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.12))
 	canvas.draw_circle(center, r * 1.5, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.25))
 	canvas.draw_circle(center, r * 0.9, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.40))
