@@ -10,6 +10,10 @@ extends Area3D
 @export var damage_tick_interval: float = 0.5
 @export var damage_pct_per_tick: float = 0.02  # V3.0 爽快版: 2%/tick × 2 tick/s = 4%/s
 
+# V3.0:接 BinbunVFX 火焰区域粒子
+const FIRE_AREA_VFX_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn"
+var _fire_vfx: Node3D = null
+
 enum Phase { WARNING, BURNING, DONE }
 var _phase: int = Phase.WARNING
 var _phase_timer: float = 0.0
@@ -29,6 +33,22 @@ func _ready() -> void:
 	_apply_radius()
 	_init_material()
 	_set_visual_warning()
+	_spawn_fire_vfx()
+
+# V3.0:挂 BinbunVFX 火焰区域粒子(在 BURNING 阶段才显火,WARNING 时静音)
+func _spawn_fire_vfx() -> void:
+	if not ResourceLoader.exists(FIRE_AREA_VFX_PATH):
+		return
+	var scn: PackedScene = load(FIRE_AREA_VFX_PATH)
+	if scn == null:
+		return
+	var vfx: Node = scn.instantiate()
+	if vfx is Node3D:
+		add_child(vfx)
+		(vfx as Node3D).position = Vector3.ZERO
+		(vfx as Node3D).scale = Vector3.ONE * radius
+		(vfx as Node3D).visible = false  # WARNING 时不显,_set_visual_burning 时打开
+		_fire_vfx = vfx as Node3D
 
 func _apply_radius() -> void:
 	# 把 mesh + collision shape 的尺寸调成 export 的 radius
@@ -72,6 +92,9 @@ func _set_visual_burning() -> void:
 	_mat.albedo_color = Color(1.0, 0.55, 0.1, 0.75)
 	_mat.emission = Color(1.0, 0.55, 0.08, 1.0)
 	_mat.emission_energy_multiplier = 5.5
+	# 打开 BinbunVFX 火焰粒子
+	if _fire_vfx != null and is_instance_valid(_fire_vfx):
+		_fire_vfx.visible = true
 
 func _process(delta: float) -> void:
 	if _phase == Phase.DONE:

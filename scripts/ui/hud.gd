@@ -11,11 +11,12 @@ extends CanvasLayer
 # 信号:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager
 
 const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
-# 技能图标:从 D3 恶魔猎手图集(64px 格)按 (列,行) 取区域(对应 利箭/多重/冰霜/翻滚/箭雨)
-# 只依赖一张图集 png,代码里建 AtlasTexture,避免依赖易丢的切片 .tres
+# 技能图标:从 D3 恶魔猎手图集(1024×512,8 col × 4 row,每格 128px)按 (列,行) 取区域
+# 修:原 SKILL_CELL=64 错了,实际单格 128;原 region(9,0) 越界,且其他 region 都切到 1/4 角 → 图标剧烈歪。
+# 5 个图:利箭 / 多重 / 冰冻 / 翻滚 / 箭雨,用 row0~row1 前 5 个挑选合适样式。
 const SKILL_SHEET: String = "res://assets/ui/skills/2DUI_Skills_DemonHunter.png"
-const SKILL_CELL: int = 64
-const SKILL_REGIONS: Array = [Vector2i(2, 0), Vector2i(5, 0), Vector2i(9, 0), Vector2i(1, 1), Vector2i(1, 2)]
+const SKILL_CELL: int = 128
+const SKILL_REGIONS: Array = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0)]
 const GOLD := Color(0.72, 0.56, 0.26)
 const DARK := Color(0.06, 0.05, 0.04, 0.92)
 
