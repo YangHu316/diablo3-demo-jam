@@ -9,9 +9,28 @@ extends Node3D
 
 func _ready() -> void:
 	call_deferred("_hide_depths_floor_walls")
+	# 自愈:墙被队友提交/编辑器回写覆盖回 scale-1(0.05,看不见)时,加载即自动 ×100 修回。
+	# 编辑器+运行时都跑;幂等(已是 scale-100 则跳过,不产生改动/脏标记)。
+	call_deferred("_fix_wall_scales")
 	# D3 氛围只在运行时搭建:编辑器里不创建节点,避免污染/被回写进 .tscn。按 F6 运行可见。
 	if not Engine.is_editor_hint():
 		call_deferred("_setup_d3_atmosphere")
+
+# 墙尺寸自愈:LevelArt/Walls 下任何 basis 缩放 ~1 的墙(应为 ~100)自动放大 100 倍,保持旋转/原点。
+func _fix_wall_scales() -> void:
+	var walls: Node = get_node_or_null("Walls")
+	if walls == null:
+		return
+	var n: int = 0
+	for w in walls.get_children():
+		if w is Node3D:
+			var t: Transform3D = (w as Node3D).transform
+			if t.basis.x.length() < 50.0:
+				t.basis = t.basis.scaled(Vector3(100, 100, 100))
+				(w as Node3D).transform = t
+				n += 1
+	if n > 0:
+		print("[level_02_art] 墙尺寸自愈:%d 段 scale-1 → scale-100" % n)
 
 func _hide_depths_floor_walls() -> void:
 	var p: Node = get_parent()
