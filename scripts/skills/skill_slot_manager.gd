@@ -9,6 +9,9 @@ extends Node
 
 signal skill_activated(slot_index: int, skill_data: Resource)
 signal cooldown_changed(slot_index: int, remaining: float, total: float)
+# 引导技能(CHANNEL)信号 — SkillExecutor 据此启动 / 停止 引导循环
+signal channel_started(slot_index: int, skill_data: Resource)
+signal channel_stopped(slot_index: int, skill_data: Resource)
 
 const SLOT_COUNT: int = 5
 # slot 0 = 左键, 1 = 右键, 2/3/4 = 数字键 1/2/3
@@ -34,7 +37,9 @@ const UNLOCK_ID_TO_SKILL: Dictionary = {
 	"skill_multishot":    [1, "res://scripts/skills/data/multishot.tres"],
 	"skill_frost_arrow":  [2, "res://scripts/skills/data/frost_arrow.tres"],
 	"skill_roll":         [3, "res://scripts/skills/data/dodge_roll.tres"],
-	"skill_valkyrie":     [4, "res://scripts/skills/data/valkyrie_summon.tres"],
+	# V3.0:女武神召唤 → 箭雨风暴(引导型,SkillType.CHANNEL=4)
+	"skill_valkyrie":     [4, "res://scripts/skills/data/arrow_storm.tres"],
+	"skill_arrow_storm":  [4, "res://scripts/skills/data/arrow_storm.tres"],
 }
 
 # Inspector 里若已填 slot_skills 则覆盖默认行为(便于关卡 / 调试摆置)
@@ -47,6 +52,20 @@ const UNLOCK_ID_TO_SKILL: Dictionary = {
 @export var debug_unlock_all: bool = true
 
 var _cooldowns: PackedFloat32Array = PackedFloat32Array()
+
+# V3.0 LMB 门控:player.gd 决定何时让 LMB 槽 0 开火(点地走时不开火)。
+# 默认 false,由 player.gd 每帧根据"是否锁定敌人在射程内/Shift 站桩"重新评估并 set_lmb_attack_armed(b)。
+var _lmb_attack_armed: bool = false
+
+# CHANNEL 类技能(skill_type=4):按住引导,松开停;每槽独立。
+# 当前正在引导的槽位(-1=未引导)。同一帧只允许一个引导技能。
+var _channeling_slot: int = -1
+
+func set_lmb_attack_armed(b: bool) -> void:
+	_lmb_attack_armed = b
+
+# SkillType.CHANNEL 枚举值(与 skill_data.gd 对齐)— 避免跨文件 enum 引用
+const _SKILL_TYPE_CHANNEL: int = 4
 
 func _ready() -> void:
 	_cooldowns.resize(SLOT_COUNT)
@@ -125,13 +144,55 @@ func _process(delta: float) -> void:
 func _poll_inputs() -> void:
 	for i in range(SLOT_COUNT):
 		var action: String = SLOT_ACTIONS[i]
+		var sd_i: Resource = slot_skills[i]
+		# CHANNEL 类技能特殊路径:按下=开始引导,松开=停止引导,期间无 CD,执行结束才进 CD
+		if sd_i != null and int(sd_i.skill_type) == _SKILL_TYPE_CHANNEL:
+			_handle_channel_input(i, action, sd_i)
+			continue
 		var pressed: bool
 		if i < slot_hold_trigger.size() and slot_hold_trigger[i]:
 			pressed = Input.is_action_pressed(action)
 		else:
 			pressed = Input.is_action_just_pressed(action)
+		# V3.0:槽 0(LMB 利箭)只在 player 把它"装填"上才开火 — 否则点地走不开枪。
+		if i == 0 and not _lmb_attack_armed:
+			pressed = false
 		if pressed:
 			_try_activate(i)
+
+# 引导输入处理:开始(just_pressed)/ 持续(executor 自管)/ 结束(just_released 或 强行停止)
+func _handle_channel_input(slot: int, action: String, sd: Resource) -> void:
+	if Input.is_action_just_pressed(action):
+		# CD 未好 → 不能开
+		if _cooldowns[slot] > 0.0:
+			return
+		# 同时只允许一个引导
+		if _channeling_slot >= 0:
+			return
+		_channeling_slot = slot
+		channel_started.emit(slot, sd)
+	elif Input.is_action_just_released(action):
+		if _channeling_slot == slot:
+			_stop_channel(slot, sd)
+
+# 由 SkillExecutor 在专注耗尽时调用,强行停掉引导
+func stop_channel_external(slot: int) -> void:
+	if _channeling_slot != slot:
+		return
+	var sd: Resource = slot_skills[slot]
+	_stop_channel(slot, sd)
+
+func _stop_channel(slot: int, sd: Resource) -> void:
+	_channeling_slot = -1
+	channel_stopped.emit(slot, sd)
+	# 引导结束才进 CD(防止按一下就锁住)
+	var cd: float = float(sd.cooldown) if sd != null else 0.0
+	if cd > 0.0:
+		_cooldowns[slot] = cd
+		cooldown_changed.emit(slot, cd, cd)
+
+func is_channeling() -> bool:
+	return _channeling_slot >= 0
 
 func _try_activate(slot: int) -> void:
 	if slot < 0 or slot >= SLOT_COUNT:

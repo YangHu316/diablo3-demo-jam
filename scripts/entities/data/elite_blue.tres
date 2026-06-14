@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"elite_blue"
+enemy_name = "蓝名精英"
+archetype = 0
+max_health = 375
+attack_damage = 39
+move_speed = 5.1
+detection_range = 14.0
+aggro_range = 16.0
+lose_aggro_range = 20.0
+attack_range = 2.0
+attack_windup = 0.8
+attack_recovery = 0.4
+attack_hit_window = 0.2
+albedo_color = Color(0.30, 0.55, 1.0, 1)

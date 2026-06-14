@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"skeleton_guard"
+enemy_name = "骸骨卫士"
+archetype = 0
+max_health = 350
+attack_damage = 39
+move_speed = 4.2
+detection_range = 12.0
+aggro_range = 14.0
+lose_aggro_range = 18.0
+attack_range = 2.0
+attack_windup = 0.9
+attack_recovery = 0.5
+attack_hit_window = 0.2
+albedo_color = Color(0.80, 0.78, 0.65, 1)

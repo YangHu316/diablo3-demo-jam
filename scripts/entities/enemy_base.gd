@@ -45,6 +45,7 @@ var _slow_timer: float = 0.0
 var attack_damage: int = 12
 var attack_range: float = 2.0
 var detection_range: float = 12.0
+var aggro_range: float = 14.0  # V3.0 仇恨范围(D3 近距激活):玩家进此距离才进 CHASE
 var lose_aggro_range: float = 18.0
 var attack_windup: float = 0.8
 var attack_recovery: float = 0.4
@@ -92,6 +93,11 @@ func _apply_data() -> void:
 	attack_damage = int(data.attack_damage)
 	move_speed = float(data.move_speed)
 	detection_range = float(data.detection_range)
+	# V3.0:aggro_range 优先(若 .tres 设了大于 0),否则 fallback 到 detection_range 兼容老数据
+	if "aggro_range" in data and float(data.aggro_range) > 0.0:
+		aggro_range = float(data.aggro_range)
+	else:
+		aggro_range = detection_range
 	lose_aggro_range = float(data.lose_aggro_range)
 	attack_range = float(data.attack_range)
 	attack_windup = float(data.attack_windup)
@@ -141,7 +147,8 @@ func _tick_idle(_delta: float) -> void:
 	move_and_slide()
 	if _player == null:
 		return
-	if global_position.distance_to(_player.global_position) < detection_range:
+	# V3.0 仇恨重构:玩家进入 aggro_range 才转 CHASE(原 detection_range,12m)
+	if global_position.distance_to(_player.global_position) < aggro_range:
 		_set_state(State.CHASE)
 
 # ── CHASE ─────────────────────────────────────────────
