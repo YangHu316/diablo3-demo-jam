@@ -46,6 +46,9 @@ var _death_label: Label = null
 var _death_hint: Label = null
 var _is_dead: bool = false
 
+var _debug_label: Label = null
+var _debug_visible: bool = false
+
 const MinimapPanel := preload("res://scripts/ui/minimap_panel.gd")
 const TabMap := preload("res://scripts/ui/tab_map.gd")
 
@@ -279,6 +282,20 @@ func _build_ui() -> void:
 	_death_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_death_hint.visible = false
 	root.add_child(_death_hint)
+
+	# ── Debug 面板（F3 切换）──
+	_debug_label = Label.new()
+	_debug_label.add_theme_font_size_override("font_size", 14)
+	_debug_label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.4))
+	_debug_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_debug_label.add_theme_constant_override("outline_size", 3)
+	_debug_label.anchor_left = 0.0
+	_debug_label.anchor_top = 0.0
+	_debug_label.offset_left = 8
+	_debug_label.offset_top = 8
+	_debug_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_debug_label.visible = false
+	root.add_child(_debug_label)
 
 # ── 工具:哥特金框 StyleBox ──
 func _frame_box(bg: Color, radius: int) -> StyleBoxFlat:
@@ -645,3 +662,14 @@ func _process(delta: float) -> void:
 	if _time_orb_accum >= 0.25:
 		_time_orb_accum = 0.0
 		_refresh_time_orb()
+	if _debug_label != null and _debug_label.visible:
+		var fps: int = Engine.get_frames_per_second()
+		_debug_label.text = "FPS: %d" % fps
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F3:
+			_debug_visible = !_debug_visible
+			if _debug_label != null:
+				_debug_label.visible = _debug_visible
+			get_viewport().set_input_as_handled()

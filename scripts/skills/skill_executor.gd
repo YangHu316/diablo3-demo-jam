@@ -151,7 +151,7 @@ func _emit_channel_tick(sd: Resource) -> void:
 	var center: Vector3 = _player.global_position
 	var radius: float = float(sd.channel_radius)
 	# 命中:范围内每个敌人一次伤害(独立暴击卷点)
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = EntityRegistry.enemies
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):
 			continue
@@ -428,7 +428,7 @@ func _execute_summon(sd: Resource) -> void:
 	var group_name: String = SUMMON_GROUP_PREFIX + String(sd.skill_id)
 
 	# 检查同种召唤物上限,超出移除最旧的(get_nodes_in_group 返回顺序≈添加顺序)
-	var existing: Array = get_tree().get_nodes_in_group(group_name)
+	var existing: Array = get_tree().get_nodes_in_group(group_name)  # 召唤物用专属 group，不能改
 	while existing.size() >= max_count and not existing.is_empty():
 		var oldest: Node = existing[0]
 		if is_instance_valid(oldest):
@@ -476,7 +476,7 @@ func _execute_melee(sd: Resource) -> void:
 	var hit: Dictionary = DC.compute(sd)
 	var dmg: int = int(hit.get("damage", 0))
 	var is_crit: bool = bool(hit.get("is_crit", false))
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = EntityRegistry.enemies
 	var hit_count: int = 0
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):
