@@ -50,6 +50,7 @@ var _drag_offset: Vector2 = Vector2.ZERO   # 拖拽累积偏移（世界坐标�
 var _is_dragging: bool    = false
 var _drag_start_mouse: Vector2 = Vector2.ZERO
 var _drag_start_offset: Vector2 = Vector2.ZERO
+var _arrow_tex: Texture2D = null
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -58,6 +59,8 @@ var _drag_start_offset: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	layer = 110
 	visible = false
+	if ResourceLoader.exists("res://assets/ui/player_arrow.png"):
+		_arrow_tex = load("res://assets/ui/player_arrow.png")
 	_recalc_map_size()
 	get_viewport().size_changed.connect(_on_viewport_resized)
 	_build_ui()
@@ -274,30 +277,29 @@ func _draw_landmark(canvas: Control, uv: Vector2, kind: String) -> void:
 	canvas.draw_circle(uv, rad, col)
 
 
-# ── 玩家朝向三角形 + 蓝色发光底座 ────────────────────────────────────────
+# ── 玩家箭头图标 + 蓝色发光底座 ─────────────────────────────────────────
 func _draw_player_triangle(canvas: Control, ms: float) -> void:
-	# 玩家位置在大地图上的实际像素坐标（受拖拽偏移影响）
 	var center: Vector2 = _world_to_ui(_mm._player_wx if _mm != null else 0.0,
 										_mm._player_wz if _mm != null else 0.0, ms)
 	var r := ms * 0.025
-	var a: float = 0.0
-	if _mm != null:
-		a = _mm._player_ry
+	var a: float = -(_mm._player_ry if _mm != null else 0.0)
 
+	# 蓝色发光底座
 	canvas.draw_circle(center, r * 2.4, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.12))
 	canvas.draw_circle(center, r * 1.5, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.25))
 	canvas.draw_circle(center, r * 0.9, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.40))
 
-	var tip   := center + Vector2( sin(a),        -cos(a))        * r * 1.8
-	var left  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * r
-	var right := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * r
-
-	var so := r * 0.30
-	var tip_o   := center + Vector2( sin(a),        -cos(a))        * (r * 1.8 + so)
-	var left_o  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * (r + so)
-	var right_o := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * (r + so)
-	canvas.draw_polygon(PackedVector2Array([tip_o, left_o, right_o]), PackedColorArray([COLOR_PLAYER_OUT]))
-	canvas.draw_polygon(PackedVector2Array([tip, left, right]),       PackedColorArray([COLOR_PLAYER]))
+	if _arrow_tex != null:
+		var icon_size: float = r * 5.0
+		var half_icon := Vector2(icon_size * 0.5, icon_size * 0.5)
+		canvas.draw_set_transform(center, a, Vector2.ONE)
+		canvas.draw_texture_rect(_arrow_tex, Rect2(-half_icon, Vector2(icon_size, icon_size)), false)
+		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	else:
+		var tip   := center + Vector2( sin(a),        -cos(a))        * r * 1.8
+		var left  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * r
+		var right := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * r
+		canvas.draw_polygon(PackedVector2Array([tip, left, right]), PackedColorArray([Color.WHITE]))
 
 
 # ═════════════════════════════════════════════════════════════════════════

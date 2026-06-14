@@ -13,18 +13,19 @@ const FOG_UPDATE_INTERVAL: float = 0.15   # 迷雾采样间隔（秒）
 const MAP_SIZE_RATIO: float      = 0.14   # 小地图边长 = 屏幕宽 × 此值（缩小一半）
 const MARGIN: float              = 16.0   # 距屏幕右/上边缘的像素距离
 const RECT_INFLATE: float        = 1.5    # 矩形扩展量（消除拼接缝隙）
-# 迷雾格子大小（世界单位）：越小越精细，越大越快
-const FOG_CELL_SIZE: float       = 3.0   # 格子越小边缘越平滑
-const FOG_FADE_WIDTH: float      = 6.0   # 渐变过渡带宽度（世界单位）
+# 格子目标像素大小：自适应分辨率，始终约 2px/格（越小越平滑）
+const FOG_CELL_PX: float         = 2.0   # 每格目标屏幕像素数
+const FOG_FADE_WIDTH: float      = 10.0  # 渐变过渡带宽度（世界单位，加大柔化）
+# FOG_CELL_SIZE 在运行时由 _map_size 动态计算，见 _get_fog_cell_size()
+var FOG_CELL_SIZE: float         = 3.0   # 运行时动态值，不要直接用
 
 # ── 颜色 ─────────────────────────────────────────────────────────────────
 const COLOR_FLOOR_LARGE := Color(0.22, 0.17, 0.13, 0.95)  # 统一深灰棕（参考暗黑3）
 const COLOR_FLOOR_SMALL := Color(0.22, 0.17, 0.13, 0.95)  # 同上，不再区分
 const COLOR_FLOOR_EDGE  := Color(0.50, 0.36, 0.20, 0.35)  # 矩形描边（已停用）
 const COLOR_BORDER      := Color(0.55, 0.40, 0.18, 1.00)  # 金色外边框
-const COLOR_PLAYER      := Color(1.00, 1.00, 1.00, 1.00)  # 玩家三角（白）
-const COLOR_PLAYER_OUT  := Color(0.90, 0.70, 0.10, 0.90)  # 玩家三角描边（黄）
-const COLOR_PLAYER_GLOW := Color(0.30, 0.55, 1.00, 1.00)  # 玩家蓝色发光底座
+const COLOR_PLAYER_GLOW := Color(0.30, 0.55, 1.00, 1.00)  # 玩家发光底座
+const PLAYER_ARROW_TEX: String = "res://assets/ui/player_arrow.png"
 
 # 地标样式：{kind: [Color, inner_radius]}，3 层发光绘制
 const LANDMARK_STYLE := {
@@ -74,6 +75,7 @@ var _player_wz: float = 0.0
 var _player_ry: float = 0.0
 
 var _fog_timer: float = 0.0
+var _arrow_tex: Texture2D = null
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -83,7 +85,10 @@ func _ready() -> void:
 	layer = 105
 	add_to_group("minimap")
 	_map_size = get_viewport().size.x * MAP_SIZE_RATIO
+	_update_fog_cell_size()
 	get_viewport().size_changed.connect(_on_viewport_resized)
+	if ResourceLoader.exists(PLAYER_ARROW_TEX):
+		_arrow_tex = load(PLAYER_ARROW_TEX)
 	_build_ui()
 	call_deferred("_acquire_refs")
 
@@ -128,9 +133,17 @@ func _resize_panel() -> void:
 
 func _on_viewport_resized() -> void:
 	_map_size = get_viewport().size.x * MAP_SIZE_RATIO
+	_update_fog_cell_size()
 	_resize_panel()
 	if _canvas != null:
 		_canvas.queue_redraw()
+
+
+# 动态格子尺寸：FOG_CELL_PX 像素 → 对应世界单位
+func _update_fog_cell_size() -> void:
+	# 每像素对应的世界单位 = VIEW_RADIUS / (_map_size * 0.5)
+	var world_per_px: float = VIEW_RADIUS / (_map_size * 0.5)
+	FOG_CELL_SIZE = maxf(FOG_CELL_PX * world_per_px, 0.5)
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -320,32 +333,29 @@ func _draw_landmark(canvas: Control, uv: Vector2, kind: String) -> void:
 	canvas.draw_circle(uv, rad, col)
 
 
-# ── 玩家朝向三角形 + 蓝色发光底座 ────────────────────────────────────────
+# ── 玩家箭头图标 + 蓝色发光底座 ─────────────────────────────────────────
 func _draw_player_triangle(canvas: Control, ms: float) -> void:
 	var center := Vector2(ms * 0.5, ms * 0.5)
 	var r := ms * 0.040
-	# 关卡相机/世界轴向 → minimap 投影时 Y 轴旋转手性反转 → 这里取 -ry,
-	# 让玩家朝右(世界 +X)时箭头也指右(屏幕 +x)
 	var a := -_player_ry
 
-	# 蓝色发光底座(三层,由大到小)
+	# 蓝色发光底座（三层，由大到小）
 	canvas.draw_circle(center, r * 2.4, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.12))
 	canvas.draw_circle(center, r * 1.5, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.25))
 	canvas.draw_circle(center, r * 0.9, Color(COLOR_PLAYER_GLOW.r, COLOR_PLAYER_GLOW.g, COLOR_PLAYER_GLOW.b, 0.40))
 
-	# 三角形顶点
-	var tip   := center + Vector2( sin(a),        -cos(a))        * r * 1.8
-	var left  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * r
-	var right := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * r
-
-	# 黄色描边
-	var so := r * 0.30
-	var tip_o   := center + Vector2( sin(a),        -cos(a))        * (r * 1.8 + so)
-	var left_o  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * (r + so)
-	var right_o := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * (r + so)
-	canvas.draw_polygon(PackedVector2Array([tip_o, left_o, right_o]), PackedColorArray([COLOR_PLAYER_OUT]))
-	# 白色填充
-	canvas.draw_polygon(PackedVector2Array([tip, left, right]), PackedColorArray([COLOR_PLAYER]))
+	if _arrow_tex != null:
+		var icon_size: float = r * 5.0
+		var half_icon := Vector2(icon_size * 0.5, icon_size * 0.5)
+		canvas.draw_set_transform(center, a, Vector2.ONE)
+		canvas.draw_texture_rect(_arrow_tex, Rect2(-half_icon, Vector2(icon_size, icon_size)), false)
+		canvas.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	else:
+		# 降级：程序化三角形
+		var tip   := center + Vector2( sin(a),        -cos(a))        * r * 1.8
+		var left  := center + Vector2( sin(a + 2.35), -cos(a + 2.35)) * r
+		var right := center + Vector2( sin(a - 2.35), -cos(a - 2.35)) * r
+		canvas.draw_polygon(PackedVector2Array([tip, left, right]), PackedColorArray([Color.WHITE]))
 
 
 # ═════════════════════════════════════════════════════════════════════════

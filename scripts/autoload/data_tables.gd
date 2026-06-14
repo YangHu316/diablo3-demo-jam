@@ -20,6 +20,9 @@ const BOSS_DROP_LIST_PATH: String = "res://数值表/boss_drop_list.csv"
 # V3.0 大秘境: 玩家固定面板 (开局即中期满装档; 展示面板写死, 换装不改数值).
 const PLAYER_LOADOUT_PATH: String = "res://数值表/player_loadout.csv"
 
+# 功能塔 buff 表 (伤害塔/加速塔: 加成幅度/持续/CD, 热调).
+const TOWER_BUFFS_PATH: String = "res://数值表/tower_buffs.csv"
+
 var _affixes: Array[AffixDef] = []
 var _affix_by_id: Dictionary = {}            # StringName -> AffixDef
 var _affixes_by_slot: Dictionary = {}        # slot StringName -> Array[AffixDef]
@@ -46,6 +49,9 @@ var _boss_drops: Array[Dictionary] = []
 # V3.0: 玩家固定面板 (player_loadout.csv 的 key->value 原始行).
 var _player_loadout: Dictionary = {}
 
+# 功能塔 buff (tower_buffs.csv): id -> { buff_type, magnitude, duration, cooldown, note }.
+var _tower_buffs: Dictionary = {}
+
 var is_loaded: bool = false
 
 func _ready() -> void:
@@ -59,6 +65,7 @@ func _load_all() -> void:
 	_load_monsters()
 	_load_boss_drops()
 	_load_player_loadout()
+	_load_tower_buffs()
 	xp_curve = _load_res(XP_CURVE_PATH) as XPCurve
 	tier_table = _load_res(TIER_TABLE_PATH) as TierTable
 	is_loaded = true
@@ -184,6 +191,35 @@ func _load_player_loadout() -> void:
 		_player_loadout[String(cols[0]).strip_edges()] = String(cols[1]).strip_edges()
 	f.close()
 
+# 功能塔 buff 表. 每行 id,buff_type,加成幅度,持续秒,冷却秒,备注 -> _tower_buffs[id]=Dict.
+func _load_tower_buffs() -> void:
+	_tower_buffs.clear()
+	if not FileAccess.file_exists(TOWER_BUFFS_PATH):
+		push_warning("DataTables: missing %s" % TOWER_BUFFS_PATH)
+		return
+	var f := FileAccess.open(TOWER_BUFFS_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var headers: PackedStringArray = f.get_csv_line()  # id,buff_type,加成幅度,持续秒,冷却秒,备注
+	while not f.eof_reached():
+		var cols: PackedStringArray = f.get_csv_line()
+		if cols.size() < 5 or String(cols[0]).strip_edges() == "":
+			continue
+		var row: Dictionary = {}
+		for i in headers.size():
+			row[String(headers[i]).strip_edges()] = String(cols[i]).strip_edges() if i < cols.size() else ""
+		var id: String = String(row.get("id", ""))
+		if id == "":
+			continue
+		_tower_buffs[id] = {
+			"buff_type": String(row.get("buff_type", "")),
+			"magnitude": float(row.get("加成幅度", "0")),
+			"duration": float(row.get("持续秒", "0")),
+			"cooldown": float(row.get("冷却秒", "0")),
+			"note": String(row.get("备注", "")),
+		}
+	f.close()
+
 # ---------------------------------------------------------------------------
 # Query API (对外稳定接口)
 # ---------------------------------------------------------------------------
@@ -286,6 +322,15 @@ func get_boss_drop_count() -> int:
 # 取 loadout 某 key 的原始字符串值 (如 "敏捷"->"150", "暴击率"->"45%").
 func get_loadout_value(key: String) -> String:
 	return String(_player_loadout.get(key, ""))
+
+# ---- 功能塔 buff (tower_buffs.csv) ----
+
+# 取某塔 buff 定义: { buff_type, magnitude, duration, cooldown, note }. 无则空 Dict.
+func get_tower_buff(id: String) -> Dictionary:
+	return _tower_buffs.get(id, {})
+
+func get_all_tower_buff_ids() -> Array:
+	return _tower_buffs.keys()
 
 # 把 "45%" / "+400%" / "约50%" 之类含符号字符串抽成纯数值 (float). 解析失败回退 fallback.
 func _loadout_num(key: String, fallback: float) -> float:
