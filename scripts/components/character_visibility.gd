@@ -12,6 +12,9 @@ extends Node3D
 @export var visible_character: String = "Character_Hero_Knight_Female"
 @export var visible_attachments: PackedStringArray = []  # 留空 = 所有挂件都隐藏
 @export var hide_all_others: bool = true
+# 可选:给显示出来的那个 mesh 套材质覆盖(留空=不覆盖,用 FBX 原材质)。
+# 玩家用它把 ghost_02 套成"发光幽灵";butcher 等不设则不受影响。
+@export var mesh_material_override: Material = null
 
 # T-pose → A-pose 程序化压臂(美术 D 接 AnimationTree 后可关)
 @export var apply_a_pose: bool = true
@@ -34,7 +37,10 @@ func _ready() -> void:
 		attach_set[String(a)] = true
 	for c in skel.get_children():
 		if c is MeshInstance3D:
-			c.visible = (c.name == visible_character) or not hide_all_others
+			var show_mesh: bool = (c.name == visible_character) or not hide_all_others
+			c.visible = show_mesh
+			if show_mesh and mesh_material_override != null:
+				(c as MeshInstance3D).material_override = mesh_material_override
 		elif c is BoneAttachment3D:
 			c.visible = attach_set.has(String(c.name))
 	# 2. 程序化 A-pose
