@@ -93,7 +93,8 @@ const TORCHES := [
 
 # 哥特结构件 [x, z, kind, rot_deg]  kind: arch(拱门) / colonnade(列柱廊) / brazier(火盆) / altar(祭坛) / broken_wall(断墙)
 # V3.0 形似优化:沿动线节点摆哥特白盒结构(拱门框景 / 列柱廊 / 火盆引导 / 祭坛 / 断墙)。
-# 全部无碰撞(走 _deco_box / _cylinder,不建 StaticBody)→ 零导航影响、不挡路;@tool 编辑器可预览。
+# V3.0 防穿模:立柱/盆座/断墙=碰撞实体(_pillar / StaticBody);横梁/盖板/柱头/祭石=无碰撞(_cylinder / _deco_box)。
+#   柱距(列柱 4u)>玩家半径,不挡主路;navmesh(WALK)未抠洞,敌人同 OBSTACLES 物理滑动绕行。
 const STRUCTURES := [
 	[-61, -2, "colonnade", 0],    # 西廊·列柱廊(沿廊框景)
 	[-31, 0, "arch", 0],          # 枢纽北口·拱门(框长北廊纵深)
@@ -370,7 +371,7 @@ func _cylinder(pos: Vector3, radius: float, h: float, mat: StandardMaterial3D) -
 	mi.position = pos
 	add_child(mi)
 
-# ---- 哥特结构件(全部无碰撞·零导航影响·@tool 可预览)----
+# ---- 哥特结构件(立柱/盆座/断墙=碰撞实体防穿模·横梁/盖板/顶饰=无碰撞·@tool 可预览)----
 func _deco_box(pos: Vector3, size: Vector3, mat: StandardMaterial3D) -> void:
 	# 无碰撞装饰盒(纯 MeshInstance,不建 StaticBody);pos 走 WALK 坐标(x/z×SCALE)
 	var mi := MeshInstance3D.new()
@@ -408,7 +409,7 @@ func _build_arch(x: float, z: float, rot: float, mat: StandardMaterial3D) -> voi
 	for sgn in [-1.0, 1.0]:
 		var px: float = x + dx * w * sgn
 		var pz: float = z + dz * w * sgn
-		_cylinder(_at(px, pz, ph * 0.5), 0.45, ph, mat)
+		_pillar(px, pz, 0.45, ph, mat)   # 立柱带碰撞(防穿模);横梁仍无碰撞(走人头顶)
 	var beam := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3((w * 2.0 + 0.9) * SCALE, 0.7, 0.7)
@@ -429,8 +430,8 @@ func _build_colonnade(x: float, z: float, rot: float, mat: StandardMaterial3D) -
 		var off: float = (float(i) - float(n - 1) * 0.5) * gap
 		var cx: float = x + dx * off
 		var cz: float = z + dz * off
-		_cylinder(_at(cx, cz, ph * 0.5), 0.5, ph, mat)
-		_cylinder(_at(cx, cz, ph - 0.1), 0.7, 0.35, mat)
+		_pillar(cx, cz, 0.5, ph, mat)               # 廊柱带碰撞(防穿模);柱距 4u>玩家半径不挡主路
+		_cylinder(_at(cx, cz, ph - 0.1), 0.7, 0.35, mat)   # 柱头(顶部·无碰撞)
 	var span: float = float(n - 1) * gap + 1.6
 	var cap := MeshInstance3D.new()
 	var bm := BoxMesh.new()
@@ -442,8 +443,8 @@ func _build_colonnade(x: float, z: float, rot: float, mat: StandardMaterial3D) -
 	add_child(cap)
 
 func _build_brazier(x: float, z: float) -> void:
-	# 大火盆:盆座 + 火光(无碰撞)+ 暖光(动线引导)
-	_cylinder(_at(x, z, 0.9), 0.7, 1.8, _mat(Color(0.22, 0.2, 0.18)))
+	# 大火盆:盆座(带碰撞防穿模)+ 火光(无碰撞)+ 暖光(动线引导)
+	_pillar(x, z, 0.7, 1.8, _mat(Color(0.22, 0.2, 0.18)))
 	_cylinder(_at(x, z, 1.95), 0.85, 0.5, _mat(Color(1.0, 0.5, 0.15), true))
 	var l := OmniLight3D.new()
 	l.position = _at(x, z, 2.4)
@@ -453,8 +454,8 @@ func _build_brazier(x: float, z: float) -> void:
 	add_child(l)
 
 func _build_altar(x: float, z: float, mat: StandardMaterial3D) -> void:
-	# 祭坛:矮台座 + 发光祭石(无碰撞)+ 顶光
-	_cylinder(_at(x, z, 0.4), 1.2, 0.8, mat)
+	# 祭坛:矮台座(带碰撞防穿模)+ 发光祭石(无碰撞)+ 顶光
+	_pillar(x, z, 1.2, 0.8, mat)
 	_deco_box(Vector3(x, 1.1, z), Vector3(1.0, 0.6, 1.0), _mat(Color(0.5, 0.15, 0.15), true))
 	var l := OmniLight3D.new()
 	l.position = _at(x, z, 1.8)
@@ -464,21 +465,31 @@ func _build_altar(x: float, z: float, mat: StandardMaterial3D) -> void:
 	add_child(l)
 
 func _build_broken_wall(x: float, z: float, rot: float, mat: StandardMaterial3D) -> void:
-	# 断墙:几段高低不齐的无碰撞墙块(破败感)
+	# 断墙:几段高低不齐的墙块(破败感);V3.0 加碰撞防穿模
 	var dx := cos(rot)
 	var dz := sin(rot)
 	var heights := [2.6, 1.8, 2.2, 1.2]
 	for i in range(heights.size()):
 		var off: float = (float(i) - 1.5) * 1.6
 		var h: float = heights[i]
-		var seg := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(1.5 * SCALE, h, 0.6 * SCALE)
-		bm.material = mat
-		seg.mesh = bm
+		var sz := Vector3(1.5 * SCALE, h, 0.6 * SCALE)
+		var seg := StaticBody3D.new()
+		seg.collision_layer = 4
+		seg.collision_mask = 0
 		seg.position = _at(x + dx * off, z + dz * off, h * 0.5)
 		seg.rotation = Vector3(0, -rot, 0)
 		add_child(seg)
+		var mi := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = sz
+		bm.material = mat
+		mi.mesh = bm
+		seg.add_child(mi)
+		var cs := CollisionShape3D.new()
+		var shp := BoxShape3D.new()
+		shp.size = sz
+		cs.shape = shp
+		seg.add_child(cs)
 
 # ---- 碰撞立柱(阻挡物·破开大空间 / 弓系风筝掩体)----
 func _pillar(x: float, z: float, r: float, h: float, mat: StandardMaterial3D) -> void:
