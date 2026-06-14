@@ -164,8 +164,8 @@ func _emit_channel_tick(sd: Resource) -> void:
 		if cm != null and cm.has_signal("hit_landed"):
 			var dir: Vector3 = ((e as Node3D).global_position - center).normalized()
 			cm.hit_landed.emit(_player, e, dmg, is_crit, String(sd.element), (e as Node3D).global_position, dir)
-	# 视觉:每 tick 来一次"脉冲环"扩散到边界,强化伤害节奏
-	_spawn_channel_pulse(center, radius)
+	# V3.4:删掉一波一波的圆圈涟漪(用户反馈很丑),纯靠公转箭+飘字呈现命中节奏
+	# _spawn_channel_pulse(center, radius)
 
 # V3.2:5~6 支箭绕主角公转(伤害不变,纯观感)
 # 每支箭参数(angular_speed/radius/height/phase/dir)随机化,看起来更乱更有"魔法围绕"感
@@ -177,9 +177,10 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 	if scene_root == null:
 		return
 	_orbit_time = 0.0
-	# 半径范围:略小于 channel_radius,贴近角色看着更"绕身"
-	var r_base: float = clamp(channel_radius * 0.35, 1.5, 3.5)
-	var r_var: float = clamp(channel_radius * 0.15, 0.3, 1.2)
+	# V3.4:用户反馈最大半径太小 → 改为基于 channel_radius 的更大区间。
+	# channel_radius=6 → r ∈ [3.0, 5.5],最远箭已经接近 AOE 边界,绕得开。
+	var r_min: float = max(2.0, channel_radius * 0.5)
+	var r_max: float = max(r_min + 1.0, channel_radius * 0.95)
 	var n: int = 6
 	for i in range(n):
 		# 用一个 pivot Node3D 作为绕主角的支点(每帧设到玩家位置),
@@ -195,13 +196,37 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		var anchor: Node3D = Node3D.new()  # 用 anchor 控制 z = -radius 让箭离 pivot 一段距离
 		pivot.add_child(anchor)
 		anchor.add_child(arrow_model)
-		# V3.3:不再挂火焰拖尾(用户反馈火焰不对)。需要拖尾再独立加冰蓝/紫电粒子。
-		# 随机参数(V3.3:速度上调 1.6~3.4 → 2.6~5.2 rad/s)
-		var ang_speed: float = randf_range(2.6, 5.2)        # rad/s
+		# V3.4:加回一条魔法尾迹 — 但用程序化 CPUParticles3D(冰蓝拉丝)替代 mprojectile
+		# 火焰拖尾。火粒子是 fire-base 模板很难调出"圣箭"质感,所以自己拼一个简短的
+		# 冷光蓝白拖尾,挂在 anchor 上,跟着箭走。
+		var trail: CPUParticles3D = CPUParticles3D.new()
+		trail.amount = 24
+		trail.lifetime = 0.35
+		trail.local_coords = false   # 世界坐标,粒子留在身后不被 anchor 旋转拽走
+		trail.emitting = true
+		trail.one_shot = false
+		trail.explosiveness = 0.0
+		trail.spread = 8.0
+		trail.initial_velocity_min = 0.0
+		trail.initial_velocity_max = 0.4
+		trail.gravity = Vector3.ZERO
+		trail.scale_amount_min = 0.18
+		trail.scale_amount_max = 0.32
+		trail.color = Color(0.6, 0.85, 1.0, 0.85)   # 冷光蓝白
+		# 简单淡出曲线
+		var ramp: Gradient = Gradient.new()
+		ramp.add_point(0.0, Color(0.7, 0.95, 1.0, 0.95))
+		ramp.add_point(1.0, Color(0.4, 0.7, 1.0, 0.0))
+		var ramp_tex: GradientTexture1D = GradientTexture1D.new()
+		ramp_tex.gradient = ramp
+		trail.color_ramp = ramp_tex
+		anchor.add_child(trail)
+		# 随机参数(V3.3:速度上调,V3.4:再加一档)
+		var ang_speed: float = randf_range(3.0, 5.8)        # rad/s
 		if randf() < 0.5:
 			ang_speed = -ang_speed                          # 顺/逆时针
-		var radius: float = r_base + randf_range(-r_var, r_var)
-		var height: float = randf_range(0.4, 1.8)
+		var radius: float = randf_range(r_min, r_max)
+		var height: float = randf_range(0.4, 2.2)
 		var phase: float = randf() * TAU
 		# anchor 位置:相对 pivot 朝 -Z 推 radius,箭尖朝飞行切向(切向在 _update 里 look_at 设)
 		anchor.position = Vector3(0, height, -radius)
