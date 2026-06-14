@@ -351,6 +351,10 @@ func _die(source, overkill: int) -> void:
 	# 取消击退,防止死亡缩放 + knockback move_and_slide 同时跑触发 det==0 spam
 	if knockback_comp != null and knockback_comp.has_method("cancel"):
 		knockback_comp.cancel()
+	# SFX 死亡
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("enemy_death", global_position, -4.0, 0.1)
 	# 广播击杀事件给 CombatManager(juice/掉落系统监听)
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null:

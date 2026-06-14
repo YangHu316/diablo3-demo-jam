@@ -11,11 +11,12 @@ extends CanvasLayer
 # 信号:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager
 
 const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
-# 技能图标:从 D3 恶魔猎手图集(64px 格)按 (列,行) 取区域(对应 利箭/多重/冰霜/翻滚/箭雨)
-# 只依赖一张图集 png,代码里建 AtlasTexture,避免依赖易丢的切片 .tres
+# 技能图标:从 D3 恶魔猎手图集(1024×512,8 col × 4 row,每格 128px)按 (列,行) 取区域
+# 修:原 SKILL_CELL=64 错了,实际单格 128;原 region(9,0) 越界,且其他 region 都切到 1/4 角 → 图标剧烈歪。
+# 5 个图:利箭 / 多重 / 冰冻 / 翻滚 / 箭雨,用 row0~row1 前 5 个挑选合适样式。
 const SKILL_SHEET: String = "res://assets/ui/skills/2DUI_Skills_DemonHunter.png"
-const SKILL_CELL: int = 64
-const SKILL_REGIONS: Array = [Vector2i(2, 0), Vector2i(5, 0), Vector2i(9, 0), Vector2i(1, 1), Vector2i(1, 2)]
+const SKILL_CELL: int = 128
+const SKILL_REGIONS: Array = [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0)]
 const GOLD := Color(0.72, 0.56, 0.26)
 const DARK := Color(0.06, 0.05, 0.04, 0.92)
 
@@ -39,12 +40,20 @@ var _death_label: Label = null
 var _death_hint: Label = null
 var _is_dead: bool = false
 
+const MinimapPanel := preload("res://scripts/ui/minimap_panel.gd")
+const TabMap := preload("res://scripts/ui/tab_map.gd")
+
 func _ready() -> void:
 	layer = 100
 	add_to_group("hud")
 	_build_ui()
 	_connect_signals()
 	_initial_refresh()
+	# 常驻小地图（独立 CanvasLayer layer=105，挂到场景根）
+	var minimap := MinimapPanel.new()
+	get_tree().root.call_deferred("add_child", minimap)
+	var tab_map := TabMap.new()
+	get_tree().root.call_deferred("add_child", tab_map)
 
 # ── UI 构建 ───────────────────────────────────────────────────
 func _build_ui() -> void:
@@ -86,27 +95,6 @@ func _build_ui() -> void:
 	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tc.add_child(_rift_bar)
 
-	# ── TopRight: 小地图框(占位)──
-	var mm: Panel = Panel.new()
-	mm.anchor_left = 1.0
-	mm.anchor_right = 1.0
-	mm.offset_left = -150
-	mm.offset_top = 12
-	mm.offset_right = -14
-	mm.offset_bottom = 148
-	mm.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mm.add_theme_stylebox_override("panel", _frame_box(Color(0.05, 0.07, 0.05, 0.85), 4))
-	root.add_child(mm)
-	var mm_lbl: Label = Label.new()
-	mm_lbl.text = "小地图"
-	mm_lbl.anchor_right = 1.0
-	mm_lbl.anchor_bottom = 1.0
-	mm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mm_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	mm_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
-	mm_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mm.add_child(mm_lbl)
-
 	# ── BottomLeft: 生命球 ──
 	_hp_fill = _make_orb(root, Vector2(0, 1), Vector2(20, -118), 96, Color(0.64, 0.10, 0.07))
 	_hp_label = _make_anchored_label(root, Vector2(20, -46), Vector2(96, 18),
@@ -139,12 +127,15 @@ func _build_ui() -> void:
 	for i in range(5):
 		var panel: Panel = Panel.new()
 		panel.custom_minimum_size = Vector2(slot_size, slot_size)
+		# 关键:HBoxContainer 默认 fill 高度,显式指定 size_flags 强制 panel 不被压扁/拉伸
+		panel.size_flags_horizontal = Control.SIZE_FILL
+		panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_theme_stylebox_override("panel", _frame_box(DARK, 4))
 		slots.add_child(panel)
 		_slot_panels.append(panel)
 
-		# 技能图标(最底层):从图集切区域
+		# 技能图标(最底层):从图集切区域 — 改为完全填充(STRETCH_SCALE)
 		var icon: TextureRect = TextureRect.new()
 		if ResourceLoader.exists(SKILL_SHEET):
 			var at: AtlasTexture = AtlasTexture.new()
@@ -153,7 +144,8 @@ func _build_ui() -> void:
 			at.region = Rect2(rc.x * SKILL_CELL, rc.y * SKILL_CELL, SKILL_CELL, SKILL_CELL)
 			icon.texture = at
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		# SCALE 拉伸到 panel 大小(不留 letterbox)
+		icon.stretch_mode = TextureRect.STRETCH_SCALE
 		icon.anchor_right = 1.0
 		icon.anchor_bottom = 1.0
 		icon.offset_left = 3
@@ -163,20 +155,28 @@ func _build_ui() -> void:
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(icon)
 
-		# 按键标签(右下)
+		# 按键标签:右下角 + 半透明黑底 stylebox(避免和图标颜色混)
+		var key_bg: Panel = Panel.new()
+		key_bg.add_theme_stylebox_override("panel", _solid_box(Color(0, 0, 0, 0.7), 2))
+		key_bg.anchor_right = 1.0
+		key_bg.anchor_bottom = 1.0
+		key_bg.offset_left = -22
+		key_bg.offset_top = -16
+		key_bg.offset_right = -2
+		key_bg.offset_bottom = -2
+		key_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(key_bg)
+
 		var key_lbl: Label = Label.new()
 		key_lbl.text = SKILL_KEY_LABELS[i]
-		key_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
-		key_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-		key_lbl.add_theme_constant_override("outline_size", 4)
+		key_lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.55))
 		key_lbl.add_theme_font_size_override("font_size", 12)
 		key_lbl.anchor_right = 1.0
 		key_lbl.anchor_bottom = 1.0
-		key_lbl.offset_left = -34
-		key_lbl.offset_top = -18
-		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		key_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		key_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(key_lbl)
+		key_bg.add_child(key_lbl)
 
 		# CD 灰蒙板(从下往上消)
 		var cd_overlay: ColorRect = ColorRect.new()
@@ -276,6 +276,13 @@ func _frame_box(bg: Color, radius: int) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.set_border_width_all(2)
 	sb.border_color = GOLD
+	sb.set_corner_radius_all(radius)
+	return sb
+
+# 纯背景 stylebox(无金边),给小标签底用
+func _solid_box(bg: Color, radius: int) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
 	sb.set_corner_radius_all(radius)
 	return sb
 

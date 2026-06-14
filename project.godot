@@ -32,9 +32,14 @@ SpawnManager="*res://scripts/autoload/spawn_manager.gd"
 LootManager="*res://scripts/autoload/loot_manager.gd"
 AnimLib="*res://scripts/autoload/anim_lib.gd"
 RiftManager="*res://scripts/autoload/rift_manager.gd"
+Sfx="*res://scripts/autoload/sfx_manager.gd"
 
 [display]
 
+window/size/viewport_width=2560
+window/size/viewport_height=1440
+window/size/window_width_override=2560
+window/size/window_height_override=1440
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
@@ -97,5 +102,10 @@ interact={
 toggle_inventory={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":66,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+toggle_map={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194306,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }

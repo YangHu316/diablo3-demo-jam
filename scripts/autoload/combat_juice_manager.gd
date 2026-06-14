@@ -62,6 +62,10 @@ func _on_hit_landed(_attacker, target, damage: int, is_crit: bool, _element: Str
 		var max_hp: int = _get_max_health(target)
 		if max_hp > 0 and float(damage) >= float(max_hp) * HEAVY_SHAKE_HEALTH_PCT:
 			_trigger_screen_shake()
+			# 暴击重击 SFX(slash + impact 复合)
+			var sfx_crit: Node = get_node_or_null("/root/Sfx")
+			if sfx_crit != null and sfx_crit.has_method("play"):
+				sfx_crit.play("slash", hit_position, 2.0, 0.05)
 
 	# 4. 击退
 	var kb: Node = target.get_node_or_null(KNOCKBACK_NODE_NAME)

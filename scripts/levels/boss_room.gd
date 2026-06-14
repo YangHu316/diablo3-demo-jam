@@ -5,10 +5,9 @@ extends Node3D
 # 八边形 = 半展 R=18 的方形切 c=8 斜角;可走区 ≈1168 单位²(原方形 576 的 ~2 倍)。
 # 8 顶点(X,Z):(-10,-18)(10,-18)(18,-10)(18,10)(10,18)(-10,18)(-18,10)(-18,-10)。
 # 8 面墙(4 轴对齐+4 斜角)围出八边形,南面留 X[-3,3] 入口;导航=单八边形多边形(.tscn)。
-# 几何 collision_layer=4;四角火炉为装饰(无碰撞,不挡走位)。屠夫从入口触发(白盒占位走尸)。
+# 几何 collision_layer=4;四角火炉为装饰(无碰撞,不挡走位)。屠夫(butcher.tscn)进场即实例化在 BossSpawn。
 
-const ENEMY := preload("res://scenes/enemies/enemy_zombie.tscn")
-const CORPSE := preload("res://scripts/entities/data/walking_corpse.tres")
+const BUTCHER := preload("res://scenes/enemies/butcher.tscn")
 const SPAWN_TRIGGER := preload("res://scripts/components/spawn_trigger.gd")
 
 const PLAYER_SPAWN := Vector3(0, 0, 15)   # 南门入口内侧
@@ -109,27 +108,14 @@ func _build() -> void:
 		add_child(l)
 
 func _build_boss() -> void:
-	var area := Area3D.new()
-	area.set_script(SPAWN_TRIGGER)
-	area.collision_layer = 0
-	area.collision_mask = 1
-	area.monitoring = true
-	area.position = Vector3(0, 0.5, 12)   # 入口内侧触发
-	area.set("enemy_scene", ENEMY)
-	area.set("enemy_data", CORPSE)
-	area.set("count", 1)
-	area.set("formation", "cluster")
-	area.set("spawn_radius", 1.0)
-	area.set("spawn_at_self", false)
-	area.set("spawn_center_path", NodePath("../BossSpawn"))
-	area.set("one_shot", true)
-	area.set("target_player", false)
-	add_child(area)
-	var cs := CollisionShape3D.new()
-	var sh := SphereShape3D.new()
-	sh.radius = 3.0
-	cs.shape = sh
-	area.add_child(cs)
+	# 真守门人(屠夫): 直接实例化 butcher.tscn 到 BossSpawn 位置.
+	# (原占位"走尸"monster_id 非 butcher, 不触发掉落/结算/速通HP覆写, 已弃用.)
+	var spawn: Node3D = get_node_or_null("BossSpawn")
+	var pos: Vector3 = spawn.global_position if spawn != null else Vector3(0, 0, -8)
+	var boss: Node = BUTCHER.instantiate()
+	add_child(boss)
+	if boss is Node3D:
+		(boss as Node3D).global_position = pos
 
 func _place_player() -> void:
 	var ps := get_tree().get_nodes_in_group("player")

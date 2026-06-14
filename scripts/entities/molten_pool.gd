@@ -8,6 +8,10 @@ extends Area3D
 @export var warning_duration: float = 1.5
 @export var explosion_damage: int = 40
 
+# V3.0:接 BinbunVFX 火焰区域粒子(粒子作为预警可视层 + 爆炸喷射)
+const FIRE_AREA_VFX_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn"
+var _fire_vfx: Node3D = null
+
 enum Phase { WARNING, EXPLODED }
 var _phase: int = Phase.WARNING
 var _phase_timer: float = 0.0
@@ -21,6 +25,22 @@ func _ready() -> void:
 	_phase_timer = warning_duration
 	_apply_radius()
 	_init_material()
+	_spawn_fire_vfx()
+
+# 在脚下挂 BinbunVFX 火焰区域(纯视觉,持续到 _explode 时切爆炸或 queue_free)
+func _spawn_fire_vfx() -> void:
+	if not ResourceLoader.exists(FIRE_AREA_VFX_PATH):
+		return
+	var scn: PackedScene = load(FIRE_AREA_VFX_PATH)
+	if scn == null:
+		return
+	var vfx: Node = scn.instantiate()
+	if vfx is Node3D:
+		add_child(vfx)
+		(vfx as Node3D).position = Vector3.ZERO
+		# 半径缩放(VFX 默认按 1m 半径,我们 radius=3)
+		(vfx as Node3D).scale = Vector3.ONE * radius
+		_fire_vfx = vfx as Node3D
 
 func _apply_radius() -> void:
 	if mesh_inst != null and mesh_inst.mesh is CylinderMesh:
