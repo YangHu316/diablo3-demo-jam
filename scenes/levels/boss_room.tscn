@@ -29,6 +29,9 @@ ssao_enabled = true
 glow_enabled = true
 glow_intensity = 0.5
 
+[sub_resource type="BoxShape3D" id="wall_box"]
+size = Vector3(7.172, 3.173, 0.43)
+
 [node name="BossRoom" type="Node3D" unique_id=1824286911]
 script = ExtResource("1")
 
@@ -49,3 +52,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
 
 [node name="SM_Env_Wall_01" parent="." unique_id=1053158943 instance=ExtResource("2_oufd4")]
 transform = Transform3D(136.79504, 0, 0, 0, 60.495483, 0, 0, 0, 100, -2.4337206, -0.2601373, 17.811237)
+
+[node name="WallCollider" type="StaticBody3D" parent="SM_Env_Wall_01"]
+top_level = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 1.27, 17.869)
+collision_layer = 4
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SM_Env_Wall_01/WallCollider"]
+shape = SubResource("wall_box")
