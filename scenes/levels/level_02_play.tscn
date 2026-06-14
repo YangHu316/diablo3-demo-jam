@@ -6,12 +6,6 @@
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
-<<<<<<< Updated upstream
-[ext_resource type="PackedScene" path="res://scenes/companions/templar.tscn" id="7"]
-[ext_resource type="Script" path="res://scripts/levels/tower_spawner.gd" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="9"]
-[ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="10"]
-=======
 [ext_resource type="PackedScene" uid="uid://bt1lfep4m86pk" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="9"]
@@ -24,17 +18,13 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_archer.tscn" id="16_uwex3"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_dog.tscn" id="17_2rkws"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_bloated_x5.tscn" id="18_pg437"]
->>>>>>> Stashed changes
+[ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="19"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
 [node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
 
-<<<<<<< Updated upstream
-[node name="Level02Encounters" parent="." instance=ExtResource("10")]
-=======
 [node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
->>>>>>> Stashed changes
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)
@@ -58,9 +48,6 @@ script = ExtResource("4")
 [node name="TowerSpawner" type="Node3D" parent="." unique_id=1857851527]
 script = ExtResource("8")
 
-<<<<<<< Updated upstream
-[node name="SettlementPanel" parent="." instance=ExtResource("9")]
-=======
 [node name="Group_Zombie_x10" parent="." unique_id=586773416 instance=ExtResource("9_7kxde")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.79977, -1.937151e-07, -3.0630455)
 
@@ -138,4 +125,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.25
 
 [node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.98991, 1.1803445, 99.99161)
->>>>>>> Stashed changes
+
+[node name="SettlementPanel" parent="." instance=ExtResource("19")]
