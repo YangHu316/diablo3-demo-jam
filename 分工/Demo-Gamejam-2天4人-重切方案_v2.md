@@ -105,6 +105,58 @@
 
 **域归属**:buff 状态机/互斥替换/持续计时/与伤害公式·移速的挂钩 = **系统(程序②)**;塔的触发区域(Area3D)、场景表现/激活反馈与战斗属性的接线 = 战斗(程序①)配合;塔的摆位/数值平衡/激活引导 = 关卡(设计者)。
 
+### 2.5.1 实现细节(系统②,待实现 — 切入点已对齐现有代码)
+
+> 已核对现有代码确认挂钩点(file:line 为当前真实位置)。核心原则:**新建独立 `TowerBuffManager` autoload 做中心状态机**,通过两个最小侵入的"全局乘区"注入伤害/移速,不动 Inventory 装备聚合链路,与现有信号总线解耦。
+
+**A. 新增 autoload:`scripts/autoload/tower_buff_manager.gd`(注册进 `project.godot [autoload]`)**
+
+中心状态机,持有当前 buff 与各塔 CD:
+- 状态:`_active_type`(none/damage/speed)、`_buff_timer`(持续倒计时)、`_cd_map`(每塔 CD 剩余,实现"塔变暗/不可再激活")。
+- `activate(buff_type, tower_id) -> bool`:塔 CD 未就绪则返回 false;否则**互斥替换**——清掉旧 buff 乘区 → 应用新乘区 → 重置 `_buff_timer = duration` → 给该塔置 CD。
+- `_process(delta)`:递减 `_buff_timer`(归零则 `_clear()` 还原乘区)与 `_cd_map`(归零则发 `tower_ready(tower_id)`)。
+- **对外信号**(供 HUD/塔订阅):
+  - `signal tower_buff_changed(buff_type: StringName, remaining: float, duration: float)` — 激活/刷新/清除时发。
+  - `signal tower_cooldown_changed(tower_id: StringName, cd_remaining: float, cd_total: float)`。
+- 互斥落点就在"单一 `_active_type`"——天然二选一,HUD 永远只画一个 buff 图标。
+
+**B. 伤害 +X% 挂钩点 → `scripts/skills/damage_calculator.gd:40-44`**
+
+`compute()` 是全局唯一伤害公式集中点(`static`)。新增一个**全局伤害乘区** static var,套在公式末端(与 `elemental_bonus` 同级,互不污染锁死面板):
+```gdscript
+static var tower_dmg_mult: float = 1.0          # 伤害塔:激活=1.30,清除=1.0
+# compute() 末端: base *= tower_dmg_mult        # 加在 line 44 之后
+```
+TowerBuffManager 激活伤害塔时设 `DamageCalculator.tower_dmg_mult = 1.0 + 加成`,清除时还原 1.0。零侵入暴击/元素/锁死值。
+
+**C. 移速 +X% 挂钩点 → `scripts/entities/player.gd:249`**
+
+`_move_toward()` 的 `spd` 是移速唯一应用点。Player 加一个全局乘数,激活/清除时由 TowerBuffManager 写:
+```gdscript
+var speed_buff_mult: float = 1.0                # 加速塔:激活=1.35,清除=1.0
+# line 249 改: var spd := SPEED * speed_buff_mult * (_channel_movement_mult if _is_channeling else 1.0)
+```
+(可选射速加成后续接 skill_executor 的攻击间隔,Demo 期可先只做移速。)
+
+**D. 塔交互(Area3D + F 键)→ 复用 `scripts/entities/loot_drop.gd` 的拾取范式**
+
+塔做成 Area3D 节点,挂 `tower_trigger.gd`:`body_entered/exited` 维护 `_player_in_range` + 高亮提示;`_process` 检测 `Input.is_action_just_pressed("interact")`(F 键,`project.godot` 已映射) → 调 `TowerBuffManager.activate(buff_type, tower_id)`。CD 内塔置灰、提示"冷却中"。
+
+**E. HUD buff 图标 + 倒计时 → `scripts/ui/hud.gd` 的 `_buff_box` 容器**
+
+订阅 `TowerBuffManager.tower_buff_changed`:激活→在 `_buff_box` 加一个图标(伤害=红/加速=蓝)+ 倒计时条;`remaining` 驱动进度;清除→移除图标。互斥保证容器里始终最多一个。
+
+**F. 数值表(热调,系统②落表)→ 新建 `数值表/tower_buffs.csv` + `DataTables` 加载**
+
+```csv
+id,buff_type,加成幅度,持续秒,冷却秒,备注
+damage_tower,damage,0.30,8,20,全局伤害+30%
+speed_tower,speed,0.35,8,20,全局移速+35%
+```
+`DataTables` 加一个 `get_tower_buff(id)` 读取(对齐现有 `数值表/*.csv → 查询 API` 范式),TowerBuffManager 启动时拉取,持续/CD/幅度全可热调。
+
+**G. 实现顺序(增量、随时可跑)**:① TowerBuffManager 状态机骨架(纯逻辑,可 headless 验证互斥+计时)→ ② 接 damage_calculator 乘区 → ③ 接 player 移速乘区 → ④ tower_trigger 交互 → ⑤ HUD 图标 → ⑥ CSV 热调。①~③ 完成即"功能可验证",④~⑥ 是体验包装。
+
 ---
 
 ## 3. 重切后的体验流程(单次 ~40 分钟)
