@@ -28,11 +28,26 @@ var _last_anim: String = ""
 func _ready() -> void:
 	_ap = get_node_or_null(anim_player_path) as AnimationPlayer
 	if _ap == null:
-		push_warning("PlayerAnimDriver: AnimationPlayer @ %s 未找到" % anim_player_path)
-		return
+		push_warning("PlayerAnimDriver: AnimationPlayer @ %s 未找到 — 角色不会有骨骼动画" % anim_player_path)
+		# V3.6 兜底:如果按 NodePath 找不到,递归找一个 AnimationPlayer
+		var p: Node = get_parent()
+		if p != null:
+			_ap = _find_ap(p)
+			if _ap != null:
+				print("PlayerAnimDriver: 递归找到 AnimationPlayer at %s" % _ap.get_path())
+		if _ap == null:
+			return
 	# 注入 UAL 动画库
 	if anim_library != "":
 		_inject_ual_library()
+	# 调试:打印实际加载到的所有动画名
+	var loaded_names: PackedStringArray = PackedStringArray()
+	for ln in _ap.get_animation_library_list():
+		var lib: AnimationLibrary = _ap.get_animation_library(ln)
+		if lib != null:
+			for an in lib.get_animation_list():
+				loaded_names.append("%s/%s" % [ln, an] if ln != "" else String(an))
+	print("PlayerAnimDriver: AnimationPlayer 上共 %d 个动画 → %s" % [loaded_names.size(), ", ".join(loaded_names)])
 	# 设循环
 	for a in loop_anims:
 		var full: String = "%s/%s" % [anim_library, a] if anim_library != "" else a
@@ -48,6 +63,16 @@ func _ready() -> void:
 		if _player.has_signal("player_died"):
 			_player.player_died.connect(_on_player_died)
 	_play(_resolve(idle_anim))
+
+# V3.6:递归找 AnimationPlayer(导入的 FBX 节点结构有时会变,NodePath 失效兜底)
+func _find_ap(node: Node) -> AnimationPlayer:
+	if node is AnimationPlayer:
+		return node
+	for c in node.get_children():
+		var r: AnimationPlayer = _find_ap(c)
+		if r != null:
+			return r
+	return null
 
 func _inject_ual_library() -> void:
 	var lib_node: Node = get_node_or_null("/root/AnimLib")
