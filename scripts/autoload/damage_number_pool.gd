@@ -13,10 +13,10 @@ const POOL_SIZE: int = 32                  # 提升池容量(E 技能 AOE 一次
 const FLOAT_DURATION: float = 0.85         # 总时长
 const FADE_START_RATIO: float = 0.55       # 飘到 55% 才开始淡出(读秒更久)
 
-# 字号(V3.5:减半,屏幕上更克制)
-const NORMAL_FONT_SIZE: int = 16
-const CRIT_FONT_SIZE: int = 22
-const HEAVY_FONT_SIZE: int = 28           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
+# 字号(V3.12:16/22/28 → 24/32/42 略放大更醒目)
+const NORMAL_FONT_SIZE: int = 24
+const CRIT_FONT_SIZE: int = 32
+const HEAVY_FONT_SIZE: int = 42           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
 
 # 重击阈值(单次伤害 >= 此值且暴击 → 升级到红橙重击样式)
 const HEAVY_DAMAGE_THRESHOLD: int = 800
