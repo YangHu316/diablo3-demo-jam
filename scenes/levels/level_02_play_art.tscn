@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
 [ext_resource type="PackedScene" uid="uid://bumx10usyvdnn" path="res://scenes/ui/hud.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://bhtvqmetiwpc5" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bt1lfep4m86pk" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="9"]
@@ -57,6 +57,10 @@
 [ext_resource type="PackedScene" uid="uid://bg4b8ws3yijbh" path="res://assets/PolygonDungeon/Models/Props/Valuables/SM_Prop_Jewel_06.fbx" id="55_cvi1u"]
 [ext_resource type="PackedScene" uid="uid://bh1itj8jqedbt" path="res://assets/PolygonDungeon/Models/Props/Creatures/SM_Prop_Goblin_Fence_02.fbx" id="56_xomiv"]
 [ext_resource type="PackedScene" uid="uid://mhte2nyu0sy5" path="res://assets/PolygonDungeon/Models/Props/Creatures/SM_Prop_Goblin_Fence_01.fbx" id="57_h0ret"]
+[ext_resource type="PackedScene" uid="uid://68q7l0h7yfox" path="res://assets/PolygonDungeon/Models/Environment/Decor/SM_Env_Fence_Goblin_01.fbx" id="58_cvi1u"]
+[ext_resource type="PackedScene" uid="uid://brb56gy4il7yf" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Curved_01_DoubleSided.fbx" id="59_xomiv"]
+[ext_resource type="PackedScene" uid="uid://d11ema4xyi80w" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Curved_Corner_01.fbx" id="60_h0ret"]
+[ext_resource type="PackedScene" uid="uid://5gso2kl60nns" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Large_01_DoubleSided.fbx" id="61_16uhi"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -3316,7 +3320,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -66.03508, 0.24444318, 
 transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0, 1.4074788, -24.184267, 7.599592e-07, 29.581598)
 
 [node name="SM_Env_Cave_Background_01_DoubleSided2" parent="." unique_id=1737213110 instance=ExtResource("34_hl14s")]
-transform = Transform3D(4.2554817, 1.438853, 218.23099, 98.557205, -4.8258243, -9.30786, 3.8484168, 121.99732, -2.942048, -24.766935, 3.7309484, 42.72584)
+transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -27.73771, 3.7309484, 42.72584)
 
 [node name="SM_Prop_Candle_03" parent="." unique_id=393461788 instance=ExtResource("47_h0ret")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.3022, 2.8312206e-07, 53.190956)
@@ -3392,3 +3396,18 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 12.347055, 0.11340832, 
 
 [node name="SM_Prop_Goblin_Fence_01" parent="." unique_id=1227612523 instance=ExtResource("57_h0ret")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 1.6247559, 7.599592e-07, 74.590744)
+
+[node name="SM_Env_Fence_Goblin_01" parent="." unique_id=877112382 instance=ExtResource("58_cvi1u")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 76.941986, -1.937151e-07, 81.91679)
+
+[node name="SM_Env_Cave_Curved_01_DoubleSided" parent="." unique_id=439251700 instance=ExtResource("59_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -72.986786, 0, 32.585136)
+
+[node name="SM_Env_Cave_Curved_Corner_01" parent="." unique_id=2065045302 instance=ExtResource("60_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 95.071106, 0, 66.64114)
+
+[node name="SM_Env_Cave_Large_01_DoubleSided" parent="." unique_id=325282664 instance=ExtResource("61_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 108.649826, 0, 75.530136)
+
+[node name="SM_Env_Door_Large_Frame_04" parent="." unique_id=2137271297 instance=ExtResource("50_ni4gb")]
+transform = Transform3D(139.72156, 0, 0, 0, 124.67749, 0, 0, 0, 113.87358, 82.7868, -1.937151e-07, 46.424866)
