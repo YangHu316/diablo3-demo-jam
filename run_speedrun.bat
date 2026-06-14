@@ -1,54 +1,45 @@
 @echo off
 REM ============================================================
-REM  run_speedrun.bat — 一键启动「1分钟速通」测试模式
-REM  原理: 命令行 -- --speedrun → RiftManager 读 speedrun_test.csv
-REM         套差量 (进度条目标 106->15 / 守门人HP 24000->4000)。
-REM  不带 --speedrun 启动 = 走正式值, 零污染 (见 数值表/测试-1分钟速通)。
+REM run_speedrun.bat - launch 1-min speedrun test mode
+REM Pass --speedrun via cmdline; RiftManager reads speedrun_test.csv
 REM ============================================================
+chcp 65001 >nul
 setlocal
 
-REM 项目根 = 本脚本所在目录
 set "PROJECT_DIR=%~dp0"
-
-REM 依次尝试常见 Godot 路径
 set "GODOT="
-for %%P in (
-  "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
-  "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe"
-  "%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe"
-  "%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe"
-  "%PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe"
-  "%PROJECT_DIR%Godot_v4.6.3-stable_win64.exe"
-) do (
-  if exist "%%~P" (
-    set "GODOT=%%~P"
-    goto found
-  )
+
+if exist "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
+if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe"
+if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe"
+if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe"
+if not defined GODOT if exist "%PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe"
+if not defined GODOT if exist "%PROJECT_DIR%Godot_v4.6.3-stable_win64.exe" set "GODOT=%PROJECT_DIR%Godot_v4.6.3-stable_win64.exe"
+
+if not defined GODOT (
+  echo [!] Godot 4.6.x not found. Tried:
+  echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe
+  echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe
+  echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe
+  echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64.exe
+  echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe
+  echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64.exe
+  echo.
+  echo Put Godot 4.6.x exe at one of those paths, or edit GODOT in this bat.
+  pause
+  exit /b 1
 )
 
-echo [!] 没找到 Godot 4.6.x 可执行文件,尝试过的路径:
-echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe
-echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe
-echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe
-echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64.exe
-echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe
-echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64.exe
-echo.
-echo 解决:把 Godot 4.6.x 可执行文件放到上面任一路径,或编辑本脚本修 GODOT 变量
-pause
-exit /b 1
-
-:found
-echo [*] 找到 Godot: %GODOT%
-echo [*] 项目: %PROJECT_DIR%
-echo [*] 启动速通模式 (--speedrun)...
-echo     生效后控制台应打印: [RiftManager] 速通模式生效: goal=15 守门人HP=4000
+echo [*] Godot: %GODOT%
+echo [*] Project: %PROJECT_DIR%
+echo [*] Launching speedrun mode (--speedrun)...
+echo     Look for: [RiftManager] speedrun mode active: goal=15 boss_hp=4000
 echo.
 
 "%GODOT%" --path "%PROJECT_DIR%" -- --speedrun
 
 echo.
-echo [*] Godot 进程已结束,按任意键关闭窗口...
+echo [*] Godot exited. Press any key to close.
 pause >nul
 
 endlocal
