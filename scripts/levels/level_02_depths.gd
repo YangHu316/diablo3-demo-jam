@@ -5,11 +5,12 @@ extends Node3D
 # @tool:几何在编辑器里也会构建(可见预览);战斗部分(刷怪/出口/落点)仅运行时。
 # 改了 WALK/SCALE 等数组后:在编辑器里重新打开本场景(或重载脚本)即可刷新预览。
 # 蓝图解读(轴对齐近似,北=−Z=上):
-#   西门(入口蓝portal) → 西廊 → 中央枢纽(十字) → 三向分叉:
-#     · 北:长北廊(纵深)→ 上中室 / 北门(目标·蓝portal)
-#     · 西南:宝藏死胡同(小圆室)
-#     · 东:东廊 → 齿轮室(机关)→ 右侧环路(绕中心实体)→ Boss厅(中心柱)
+#   西门(入口拱门) → 西廊 → 中央枢纽(十字) → 三向分叉:
+#     · 北:长北廊(纵深)→ 上中室 / 北门(纵深尽端)
+#     · 西南:死胡同(小圆室)
+#     · 东:东廊 → 齿轮室 → 右侧环路(绕中心实体)→ Boss厅(中心柱)
 #   下环路:枢纽南廊 → 南长廊 → 汇入 Boss 入口,与「东路」形成大环路。
+# V3.0 大秘境清理:已移除地图内全部传送门 + 宝箱 + 机关,仅保留入口;终点=守门人传送门(进度满由 RiftManager 激活)。
 #
 # 导航:rect→栅格 navmesh 编译器(矩形栅格化→共享顶点四边形,连通由构造保证);
 #       墙体由同一栅格的「可走/不可走」边界自动生成。全部 collision_layer=4。
@@ -60,10 +61,10 @@ const WALK := [
 	[-78, -44, -6, 2],     # W2 西廊
 	[-44, -18, -2, 30],    # H  中央枢纽
 	[-40, -30, -70, 4],    # N1 长北廊(纵深)
-	[-50, -22, -86, -66],  # NP 北门(目标)
+	[-50, -22, -86, -66],  # NP 北门(纵深尽端)
 	[-30, 2, -52, -28],    # UC 上中室(分隔室)
 	[-46, -30, 26, 40],    # T1 西南廊
-	[-78, -46, 24, 44],    # TR 宝藏死胡同
+	[-78, -46, 24, 44],    # TR 死胡同(支线小室)
 	[-18, 12, 14, 26],     # E1 东廊(加宽,留弓系风筝空间)
 	[12, 32, 8, 28],       # GR 齿轮室
 	[30, 58, 8, 16],       # RL_N 右环·北
@@ -76,15 +77,12 @@ const WALK := [
 	[-40, 46, 48, 60],     # S2 南长廊(加宽;汇入 Boss 入口=大环路)
 ]
 
-# 地标 [x, z, kind]   kind: portal_in / portal_out / gear / chest / boss_pillar / waypoint
+# 地标 [x, z, kind]   kind: entrance / boss_pillar / waypoint
+# V3.0 大秘境清理:移除 portal_in/portal_out(传送门)、chest(宝箱)、gear(机关)、beacon(原北门牵引);仅保留入口(改纯拱门·无传送语义);守门人传送门由 RiftManager 进度满激活(非地图装饰)。
 const LANDMARKS := [
-	[-83, -7, "portal_in"],    # 西门入口
-	[-36, -78, "portal_out"],  # 北门目标
-	[-36, -70, "beacon"],      # 北门光柱(远端牵引,长廊尽头可见)
-	[22, 18, "gear"],          # 机关
-	[-62, 34, "chest"],        # 宝藏
-	[67, 67, "boss_pillar"],   # Boss 中心柱
-	[-31, 14, "waypoint"],     # 枢纽
+	[-83, -7, "entrance"],     # 西门入口(纯拱门·仅保留入口)
+	[67, 67, "boss_pillar"],   # Boss 厅中心柱(守门人房入口前地标·装饰发光)
+	[-31, 14, "waypoint"],     # 枢纽地标(装饰)
 ]
 
 # 长廊串灯坐标 [x, z](每约 18-22u 一盏暖光,把"纸面纵深"换成"一段段看得见的推进")
@@ -93,23 +91,64 @@ const TORCHES := [
 	[-30, 54], [-10, 54], [10, 54], [30, 54],         # S2 南长廊
 ]
 
+# 哥特结构件 [x, z, kind, rot_deg]  kind: arch(拱门) / colonnade(列柱廊) / brazier(火盆) / altar(祭坛) / broken_wall(断墙)
+# V3.0 形似优化:沿动线节点摆哥特白盒结构(拱门框景 / 列柱廊 / 火盆引导 / 祭坛 / 断墙)。
+# 全部无碰撞(走 _deco_box / _cylinder,不建 StaticBody)→ 零导航影响、不挡路;@tool 编辑器可预览。
+const STRUCTURES := [
+	[-61, -2, "colonnade", 0],    # 西廊·列柱廊(沿廊框景)
+	[-31, 0, "arch", 0],          # 枢纽北口·拱门(框长北廊纵深)
+	[-62, 34, "altar", 0],        # 西南死胡同·祭坛(原宝藏室→祭坛室,给死路视觉目的)
+	[-15, 20, "arch", 90],        # 东廊入口·拱门
+	[22, 12, "broken_wall", 0],   # 齿轮室·断墙(破败感)
+	[44, 38, "colonnade", 0],     # 右环·南·列柱廊
+	[49, 46, "arch", 0],          # Boss 入口廊·宏伟门廊(框守门人厅)
+	[58, 67, "colonnade", 90],    # Boss 厅·西侧列柱
+	[76, 67, "colonnade", 90],    # Boss 厅·东侧列柱
+	[-35, -28, "brazier", 0],     # 长北廊·大火盆(纵深引导)
+	[-36, 50, "brazier", 0],      # 南长廊·大火盆
+]
+
+# 碰撞立柱(阻挡物)[x, z, radius]  破开大空间 + 给弓系风筝掩体 / 破精英弓手视线
+# ⚠ 白盒阶段:立柱有物理碰撞但 navmesh(WALK)未抠洞 → 敌人 NavAgent 直线会贴柱·靠物理滑动绕行(可接受);
+#   若需精确绕行,后续给柱加 NavigationObstacle3D 或在栅格编译器里挖洞(交接)。radius=世界单位,位置=WALK 坐标。
+const OBSTACLES := [
+	[-38, 8, 1.4],    # 枢纽·西北柱
+	[-24, 20, 1.4],   # 枢纽·东南柱
+	[-8, 17, 1.2],    # 东廊·错位柱(chicane 逼走位)
+	[2, 23, 1.2],     # 东廊·错位柱
+	[16, 22, 1.3],    # 齿轮室·柱
+	[28, 14, 1.3],    # 齿轮室·柱
+	[38, 38, 1.3],    # 右环·南·柱
+	[50, 38, 1.3],    # 右环·南·柱
+	[62, 62, 1.5],    # Boss 厅·风筝柱·西南
+	[72, 62, 1.5],    # Boss 厅·风筝柱·东南
+	[62, 72, 1.5],    # Boss 厅·风筝柱·西北
+	[72, 72, 1.5],    # Boss 厅·风筝柱·东北
+]
+
 # 遭遇 [x, z, count, formation, radius, surround]
 # 注:surround 半径不可超过所在走廊半宽(否则刷进墙) → 仅用于开阔 Boss 厅;
 #     窄廊用 cluster/line。东路主线数量单调爬升,Boss 厅为高潮。
-# 经验预算见 数值表/经验曲线与L2刷怪预算.md;数量按提速XP曲线让玩家边割边升。
+# V3.0 大秘境:取消等级成长,怪物用固定值(数值表/rift_monsters.csv);数量按进度条权重单调爬升(白怪+1.0/蓝名+5.0/黄名+8.0,总≈100~110,见 大秘境-单局固定数值与关卡配置.md §6.3)。
 # 当前白盒所有原型都 spawn enemy_zombie;战斗① 出齐 6 原型场景后按注释替换 enemy_scene。
 const ENCOUNTERS := [
-	[-60, -2, 8, "cluster", 6, false],   # 西门/西廊 开场(走尸5+疯犬3) → 升L2
+	[-60, -2, 8, "cluster", 6, false],   # 西门/西廊 开场(走尸5+疯犬3)
 	[-31, 14, 6, "cluster", 5, false],   # 枢纽(走尸4+弓手2)
-	[-15, 18, 4, "line", 5, false],      # 枢纽→东 过渡 → 升L3
+	[-15, 18, 4, "line", 5, false],      # 枢纽→东 过渡
 	[-3, 20, 6, "line", 5, false],       # 东廊(走尸4+弓手2)
-	[22, 18, 4, "cluster", 5, false],    # 齿轮室(走尸3+蓝名1) → 升L4 ★T2武器
+	[22, 18, 4, "cluster", 5, false],    # 齿轮室(走尸3+蓝名1·精英)
 	[44, 38, 7, "cluster", 4, false],    # 右环·南(肿胀2+盾兵2+走尸3·破盾/自爆教学)
-	[-35, -40, 6, "cluster", 5, false],  # 北廊纵深(走尸4+弓手2) → 升L5 ★全技能
-	[-36, -78, 4, "cluster", 5, false],  # 北门守卫(黄名1+随从3·目标点)
-	[10, 54, 5, "line", 5, false],       # 南长廊 下环(召唤1+走尸4) → 升L6
+	[-35, -40, 6, "cluster", 5, false],  # 北廊纵深(走尸4+弓手2)
+	[-36, -78, 4, "cluster", 5, false],  # 北门守卫(黄名1+扈从骷髅3·首领点·扈从=敌随从非玩家)
+	[10, 54, 5, "line", 5, false],       # 南长廊 下环(召唤者1+走尸4)
 	[49, 48, 5, "line", 5, false],       # Boss入口廊(蓝名1+走尸4)
-	[67, 67, 12, "surround", 7, true],   # 终前尸潮(12环绕) → 升L7 ★T3武器;清完过传送门去Boss房
+	[67, 67, 12, "surround", 7, true],   # 终前尸潮(12环绕)·进度满→过守门人传送门去Boss房
+	# ── 关卡C 混编追加(逼弓系风筝·配 OBSTACLES 立柱掩体;占位 spawn 走尸,战斗① 按注释绑对应怪种 AI/数据)──
+	[-34, 18, 3, "cluster", 5, false],   # 枢纽·墓园疯犬群(高速冲锋逼翻滚·绕 O1/O2 柱拉开)
+	[-26, 10, 2, "line", 5, false],      # 枢纽·骷髅弓手(远程驻射逼走位·用 O1/O2 柱挡射线)
+	[-3, 22, 2, "cluster", 4, false],    # 东廊·肿胀走尸(自爆逼站位·穿 O3/O4 chicane)
+	[44, 34, 3, "cluster", 4, false],    # 右环·南·墓园疯犬(冲锋·绕 O7/O8 柱)
+	[67, 60, 3, "line", 6, false],       # Boss厅·骷髅弓手(守门人战远程压制·绕 O9~O12 风筝柱)
 ]
 
 const PLAYER_SPAWN := Vector3(-83, 0, -7)   # 西门
@@ -130,6 +169,8 @@ func _rebuild() -> void:
 	_build_grid_nav_and_walls()
 	_build_landmarks()
 	_build_torches()
+	_build_structures()
+	_build_obstacles()
 	# 战斗逻辑:只在运行时建(编辑器里不跑刷怪/出口/落点,避免编辑器误触发)
 	if not Engine.is_editor_hint():
 		_build_encounters()
@@ -296,23 +337,8 @@ func _build_landmarks() -> void:
 		var x: float = lm[0]
 		var z: float = lm[1]
 		match String(lm[2]):
-			"portal_in":
-				_portal(x, z, Color(0.3, 0.9, 0.5), 2.0)
-			"portal_out":
-				_portal(x, z, Color(0.3, 0.6, 1.0), 4.5)   # 目标门更亮,远端可见
-			"beacon":
-				# 高光柱:穿过长廊黑暗,在远处成为亮点(纵深牵引)
-				_cylinder(_at(x, z, 5.0), 0.6, 10.0, _mat(Color(0.4, 0.7, 1.0), true))
-				var bl := OmniLight3D.new()
-				bl.position = _at(x, z, 6.0)
-				bl.light_color = Color(0.4, 0.7, 1.0)
-				bl.light_energy = 5.0
-				bl.omni_range = 28.0
-				add_child(bl)
-			"gear":
-				_gear(x, z)
-			"chest":
-				_box(Vector3(x, 0.4, z), Vector3(1.4, 0.8, 1.0), _mat(Color(0.85, 0.62, 0.15), true), true)
+			"entrance":
+				_entrance(x, z)   # 纯入口拱门(无传送语义/无发光门面)
 			"boss_pillar":
 				# 中心柱 + 环形台座(Boss厅中心特征)
 				_cylinder(_at(x, z, 0.0), 2.4, 0.3, _mat(Color(0.22, 0.2, 0.18)))
@@ -320,30 +346,18 @@ func _build_landmarks() -> void:
 			"waypoint":
 				_cylinder(_at(x, z, 0.05), 1.6, 0.1, _mat(Color(0.4, 0.4, 0.5), true))
 
-func _portal(x: float, z: float, c: Color, energy: float) -> void:
-	# 拱门 + 发光门面
+func _entrance(x: float, z: float) -> void:
+	# 纯入口拱门:两立柱 + 顶横梁(石材·无发光门面/无传送语义);暖光示意入口
 	var stone := _mat(Color(0.4, 0.38, 0.34))
 	_box(Vector3(x - 1.6, 1.6, z), Vector3(0.7, 3.2, 0.7), stone, true)
 	_box(Vector3(x + 1.6, 1.6, z), Vector3(0.7, 3.2, 0.7), stone, true)
 	_box(Vector3(x, 3.4, z), Vector3(4.0, 0.6, 0.7), stone, false)
-	var mi := MeshInstance3D.new()
-	var pm := BoxMesh.new()
-	pm.size = Vector3(2.6, 2.8, 0.2)
-	pm.material = _mat(c, true)
-	mi.mesh = pm
-	mi.position = _at(x, z, 1.6)
-	add_child(mi)
 	var l := OmniLight3D.new()
-	l.position = _at(x, z, 1.6)
-	l.light_color = c
-	l.light_energy = energy
-	l.omni_range = 10.0 + energy * 2.0
+	l.position = _at(x, z, 2.4)
+	l.light_color = Color(1.0, 0.7, 0.4)
+	l.light_energy = 2.0
+	l.omni_range = 12.0
 	add_child(l)
-
-func _gear(x: float, z: float) -> void:
-	var mat := _mat(Color(0.55, 0.5, 0.2), true)
-	_cylinder(_at(x, z, 0.9), 1.3, 0.4, mat)
-	_cylinder(_at(x, z, 0.45), 0.4, 0.9, _mat(Color(0.3, 0.28, 0.2)))
 
 func _cylinder(pos: Vector3, radius: float, h: float, mat: StandardMaterial3D) -> void:
 	var mi := MeshInstance3D.new()
@@ -355,6 +369,146 @@ func _cylinder(pos: Vector3, radius: float, h: float, mat: StandardMaterial3D) -
 	mi.mesh = cm
 	mi.position = pos
 	add_child(mi)
+
+# ---- 哥特结构件(全部无碰撞·零导航影响·@tool 可预览)----
+func _deco_box(pos: Vector3, size: Vector3, mat: StandardMaterial3D) -> void:
+	# 无碰撞装饰盒(纯 MeshInstance,不建 StaticBody);pos 走 WALK 坐标(x/z×SCALE)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	bm.material = mat
+	mi.mesh = bm
+	mi.position = Vector3(pos.x * SCALE, pos.y, pos.z * SCALE)
+	add_child(mi)
+
+func _build_structures() -> void:
+	var stone := _mat(Color(0.40, 0.38, 0.34))
+	for s in STRUCTURES:
+		var x: float = s[0]
+		var z: float = s[1]
+		var rot: float = deg_to_rad(float(s[3]))
+		match String(s[2]):
+			"arch":
+				_build_arch(x, z, rot, stone)
+			"colonnade":
+				_build_colonnade(x, z, rot, stone)
+			"brazier":
+				_build_brazier(x, z)
+			"altar":
+				_build_altar(x, z, stone)
+			"broken_wall":
+				_build_broken_wall(x, z, rot, stone)
+
+func _build_arch(x: float, z: float, rot: float, mat: StandardMaterial3D) -> void:
+	# 拱门:两立柱 + 顶横梁(无碰撞);rot 控制跨度方向
+	var w := 3.0
+	var ph := 4.5
+	var dx := cos(rot)
+	var dz := sin(rot)
+	for sgn in [-1.0, 1.0]:
+		var px: float = x + dx * w * sgn
+		var pz: float = z + dz * w * sgn
+		_cylinder(_at(px, pz, ph * 0.5), 0.45, ph, mat)
+	var beam := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3((w * 2.0 + 0.9) * SCALE, 0.7, 0.7)
+	bm.material = mat
+	beam.mesh = bm
+	beam.position = _at(x, z, ph + 0.1)
+	beam.rotation = Vector3(0, -rot, 0)
+	add_child(beam)
+
+func _build_colonnade(x: float, z: float, rot: float, mat: StandardMaterial3D) -> void:
+	# 列柱廊:一排廊柱(柱身 + 柱头)+ 顶盖板(全无碰撞);沿 rot 方向排布
+	var n := 5
+	var gap := 4.0
+	var ph := 5.0
+	var dx := cos(rot)
+	var dz := sin(rot)
+	for i in range(n):
+		var off: float = (float(i) - float(n - 1) * 0.5) * gap
+		var cx: float = x + dx * off
+		var cz: float = z + dz * off
+		_cylinder(_at(cx, cz, ph * 0.5), 0.5, ph, mat)
+		_cylinder(_at(cx, cz, ph - 0.1), 0.7, 0.35, mat)
+	var span: float = float(n - 1) * gap + 1.6
+	var cap := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(span * SCALE, 0.5, 1.4 * SCALE)
+	bm.material = mat
+	cap.mesh = bm
+	cap.position = _at(x, z, ph + 0.3)
+	cap.rotation = Vector3(0, -rot, 0)
+	add_child(cap)
+
+func _build_brazier(x: float, z: float) -> void:
+	# 大火盆:盆座 + 火光(无碰撞)+ 暖光(动线引导)
+	_cylinder(_at(x, z, 0.9), 0.7, 1.8, _mat(Color(0.22, 0.2, 0.18)))
+	_cylinder(_at(x, z, 1.95), 0.85, 0.5, _mat(Color(1.0, 0.5, 0.15), true))
+	var l := OmniLight3D.new()
+	l.position = _at(x, z, 2.4)
+	l.light_color = Color(1.0, 0.55, 0.2)
+	l.light_energy = 3.2
+	l.omni_range = 14.0
+	add_child(l)
+
+func _build_altar(x: float, z: float, mat: StandardMaterial3D) -> void:
+	# 祭坛:矮台座 + 发光祭石(无碰撞)+ 顶光
+	_cylinder(_at(x, z, 0.4), 1.2, 0.8, mat)
+	_deco_box(Vector3(x, 1.1, z), Vector3(1.0, 0.6, 1.0), _mat(Color(0.5, 0.15, 0.15), true))
+	var l := OmniLight3D.new()
+	l.position = _at(x, z, 1.8)
+	l.light_color = Color(0.9, 0.3, 0.25)
+	l.light_energy = 2.2
+	l.omni_range = 10.0
+	add_child(l)
+
+func _build_broken_wall(x: float, z: float, rot: float, mat: StandardMaterial3D) -> void:
+	# 断墙:几段高低不齐的无碰撞墙块(破败感)
+	var dx := cos(rot)
+	var dz := sin(rot)
+	var heights := [2.6, 1.8, 2.2, 1.2]
+	for i in range(heights.size()):
+		var off: float = (float(i) - 1.5) * 1.6
+		var h: float = heights[i]
+		var seg := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(1.5 * SCALE, h, 0.6 * SCALE)
+		bm.material = mat
+		seg.mesh = bm
+		seg.position = _at(x + dx * off, z + dz * off, h * 0.5)
+		seg.rotation = Vector3(0, -rot, 0)
+		add_child(seg)
+
+# ---- 碰撞立柱(阻挡物·破开大空间 / 弓系风筝掩体)----
+func _pillar(x: float, z: float, r: float, h: float, mat: StandardMaterial3D) -> void:
+	var body := StaticBody3D.new()
+	body.collision_layer = 4
+	body.collision_mask = 0
+	body.position = _at(x, z, h * 0.5)
+	add_child(body)
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = r
+	cm.bottom_radius = r
+	cm.height = h
+	cm.material = mat
+	mi.mesh = cm
+	body.add_child(mi)
+	var cs := CollisionShape3D.new()
+	var sh := CylinderShape3D.new()
+	sh.radius = r
+	sh.height = h
+	cs.shape = sh
+	body.add_child(cs)
+
+func _build_obstacles() -> void:
+	var mat := _mat(Color(0.34, 0.32, 0.30))
+	for o in OBSTACLES:
+		var x: float = o[0]
+		var z: float = o[1]
+		var r: float = o[2]
+		_pillar(x, z, r, 3.5, mat)
 
 # ---- 遭遇 ----
 func _build_encounters() -> void:
@@ -384,7 +538,7 @@ func _build_encounters() -> void:
 		area.add_child(cs)
 
 func _build_exit() -> void:
-	# 出口设在 Boss 厅深处(击杀后出关占位)
+	# 守门人传送门:设在 Boss 厅深处;V3.0 由 RiftManager 进度满激活后切场景(非地图装饰传送门)
 	var area := Area3D.new()
 	area.set_script(LEVEL_EXIT)
 	area.collision_layer = 0
@@ -392,7 +546,7 @@ func _build_exit() -> void:
 	area.monitoring = true
 	area.position = _at(80, 78, 0.5)
 	area.set("level_id", "L2_depths")
-	area.set("next_hint", "Boss房·屠夫(传送门)")
+	area.set("next_hint", "守门人房(进度满·RiftManager 切场景)")
 	add_child(area)
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
