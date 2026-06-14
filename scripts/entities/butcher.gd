@@ -124,6 +124,11 @@ var _slow_timer: float = 0.0
 func _ready() -> void:
 	add_to_group("enemies")
 	add_to_group("boss")
+	# V3.13:E(arrow_storm)/ 多重箭等通过 EntityRegistry.enemies 拿目标,
+	# 之前 boss 没注册 → AOE/引导永远跳过 boss → "E 技能打 boss 没伤害"。
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and reg.has_method("register_enemy"):
+		reg.register_enemy(self)
 	# 系统组的 ProgressionManager 用此 meta 给玩家 XP
 	set_meta("monster_id", &"butcher")
 	set_meta("monster_level", 7)
@@ -137,6 +142,11 @@ func _ready() -> void:
 		_floor_burn_scene = load(FLOOR_BURN_SCENE_PATH)
 	# 注:不连接 stagger_comp.stagger_started — 视觉做但不打断 AI
 	call_deferred("_acquire_player")
+
+func _exit_tree() -> void:
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and reg.has_method("unregister_enemy"):
+		reg.unregister_enemy(self)
 
 func _acquire_player() -> void:
 	var arr: Array = get_tree().get_nodes_in_group("player")

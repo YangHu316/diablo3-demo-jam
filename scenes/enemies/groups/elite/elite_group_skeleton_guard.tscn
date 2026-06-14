@@ -32,8 +32,14 @@ preplaced = true
 shape = SubResource("shape")
 
 [node name="Elite" parent="." instance=ExtResource("2")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 3, 0, 0)
+; V3.13 root cause:CharacterBody3D 不支持非 1 scale,
+; 之前在物理体上整套 1.5x → Area3D body_entered 漏检 → LMB/Q 打不中精英怪。
+; 修法:物理体保持 scale=1(只挪位置),把 1.5x 缩放下放到 Visual 子节点(纯视觉)。
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
 data = ExtResource("3")
+
+[node name="Visual" parent="Elite" index="1"]
+transform = Transform3D(-1.5, 0, -1.3113417e-07, 0, 1.5, 0, 1.3113417e-07, 0, -1.5, 0, 0, 0)
 
 [node name="EliteTint" type="Node3D" parent="Elite"]
 script = ExtResource("4")
