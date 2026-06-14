@@ -85,6 +85,50 @@ func _apply_element_tint(elem: String) -> void:
 		# V3.7:冰箭整体放大,但比上一版克制(1.8x → 1.3x)
 		if elem == "frost" and pivot is Node3D:
 			(pivot as Node3D).scale = (pivot as Node3D).scale * 1.3
+	# V3.8:冰箭加专属雪花/小粒子拖尾(挂 self,跟着箭飞)
+	if elem == "frost":
+		_spawn_frost_trail()
+
+# V3.8:程序化雪花拖尾 — CPUParticles3D + 小 quad 加色 mesh,白蓝飘洒。
+func _spawn_frost_trail() -> void:
+	var trail: CPUParticles3D = CPUParticles3D.new()
+	trail.name = "FrostTrail"
+	# 必须设 mesh 才能渲染(吃过亏)
+	var quad: QuadMesh = QuadMesh.new()
+	quad.size = Vector2(0.12, 0.12)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.albedo_color = Color(0.85, 0.97, 1.0, 1.0)
+	mat.emission_enabled = true
+	mat.emission = Color(0.6, 0.9, 1.0, 1.0)
+	mat.emission_energy_multiplier = 4.0
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	quad.material = mat
+	trail.mesh = quad
+	trail.amount = 36
+	trail.lifetime = 0.55
+	trail.local_coords = false      # 世界坐标 → 粒子留在身后形成尾迹
+	trail.emitting = true
+	trail.one_shot = false
+	trail.explosiveness = 0.0
+	trail.spread = 12.0
+	trail.initial_velocity_min = 0.0
+	trail.initial_velocity_max = 0.5
+	trail.gravity = Vector3(0, -0.6, 0)   # 雪花轻微下飘
+	trail.scale_amount_min = 0.6
+	trail.scale_amount_max = 1.4
+	trail.angular_velocity_min = -180.0
+	trail.angular_velocity_max = 180.0
+	trail.color = Color(0.85, 0.97, 1.0, 1.0)
+	var ramp: Gradient = Gradient.new()
+	ramp.add_point(0.0, Color(0.95, 1.0, 1.0, 1.0))
+	ramp.add_point(0.5, Color(0.6, 0.9, 1.0, 0.8))
+	ramp.add_point(1.0, Color(0.4, 0.7, 1.0, 0.0))
+	trail.color_ramp = ramp
+	add_child(trail)
 
 func _tint_meshes(node: Node, tint: Color, emit: Color) -> void:
 	if node is MeshInstance3D:

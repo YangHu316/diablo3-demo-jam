@@ -207,15 +207,13 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		# V3.4:加回一条魔法尾迹 — 但用程序化 CPUParticles3D(冰蓝拉丝)替代 mprojectile
 		# 火焰拖尾。火粒子是 fire-base 模板很难调出"圣箭"质感,所以自己拼一个简短的
 		# 冷光蓝白拖尾,挂在 anchor 上,跟着箭走。
-		# V3.7:火光拖尾方向修复 — 参照 arrow.tscn 的修复思路
-		# arrow.tscn 里 ModelPivot 有 Y180° 翻转,arrow tip = -Z,所以拖尾用 Y+90° (VFX +X→世界 -Z)
-		# 这里 orbit 用的是裸 FBX,arrow tip = +Z(原生),所以拖尾用 Y-90° (VFX +X→anchor +Z)
+		# V3.7→V3.8:首尾反了,从 Y-90° 翻 180° → Y+90°
 		var trail: Node = null
 		if _orbit_trail_scene != null:
 			trail = _orbit_trail_scene.instantiate()
 			if trail != null and trail is Node3D:
 				anchor.add_child(trail)
-				(trail as Node3D).rotation = Vector3(0, deg_to_rad(-90.0), 0)
+				(trail as Node3D).rotation = Vector3(0, deg_to_rad(90.0), 0)
 				(trail as Node3D).scale = Vector3.ONE * 0.5
 		# 随机参数(V3.3:速度上调,V3.4:再加一档)
 		var ang_speed: float = randf_range(3.0, 5.8)        # rad/s
