@@ -13,9 +13,22 @@ extends Node
 
 signal progress_changed(value: float, goal: float)
 signal guardian_ready()
+# 守门人 (=屠夫) 死亡 = 单局通关. 携本局用时(秒) 与 击杀总数.
+signal run_cleared(clear_time_sec: float, kill_count: int)
 
-const GOAL: float = 106.0                       # 总权重目标 (~6min 填满)
+const GOAL: float = 106.0                       # 总权重目标默认值 (~6min 填满). 外部 rm.GOAL 读此常量.
 const BOSS_SCENE: String = "res://scenes/levels/boss_room_play.tscn"
+
+# 运行期有效目标 (默认=GOAL). 速通模式 (--speedrun) 时被 speedrun_test.csv 覆写为 15.
+# 内部进度逻辑一律用 goal; progress_changed 信号携带 goal → HUD 自动跟随.
+var goal: float = GOAL
+
+# ── 速通测试 override (数值表/测试-1分钟速通) ──────────────────
+# 仅命令行带 --speedrun 时生效. 不进正式包: 不带开关 = 走正式值, 零污染.
+const SPEEDRUN_CSV: String = "res://数值表/测试-1分钟速通/speedrun_test.csv"
+var speedrun: bool = false
+var _sr_guardian_hp: int = 0       # >0 时进场覆写守门人 current_health
+var _sr_hooked: bool = false       # node_added 钩子已连标志
 
 # monster_id -> 进度权重. 守门人/屠夫 = 0 (不计).
 const WEIGHTS: Dictionary = {
@@ -35,10 +48,16 @@ const TIME_BALL_WEIGHT: float = 3.0
 var progress: float = 0.0
 var guardian_triggered: bool = false
 
+# 本局计时起点 (ms) 与 击杀总数 (供结算面板).
+var run_start_ms: int = 0
+var kill_count: int = 0
+
 # 已计数的 enemy 实例 id (防同一只怪重复加权).
 var _counted: Dictionary = {}
 
 func _ready() -> void:
+	run_start_ms = Time.get_ticks_msec()
+	_load_speedrun_overrides()
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null and cm.has_signal("enemy_killed"):
 		cm.enemy_killed.connect(_on_enemy_killed)
@@ -48,7 +67,9 @@ func reset_rift() -> void:
 	progress = 0.0
 	guardian_triggered = false
 	_counted.clear()
-	progress_changed.emit(progress, GOAL)
+	run_start_ms = Time.get_ticks_msec()
+	kill_count = 0
+	progress_changed.emit(progress, goal)
 
 func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if enemy == null:
@@ -58,13 +79,18 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if _counted.has(key):
 		return
 	_counted[key] = true
+	kill_count += 1   # 击杀总数 (含小怪/精英/守门人)
 
 	var mid: StringName = &"trash"
 	if enemy.has_meta("monster_id"):
 		mid = StringName(enemy.get_meta("monster_id"))
+	# 守门人 (屠夫) 死亡 = 单局通关: 发结算事件, 不喂进度.
+	if mid == &"butcher" or mid == &"guardian":
+		run_cleared.emit(get_clear_time(), kill_count)
+		return
 	var w: float = float(WEIGHTS.get(mid, 1.0))   # 未知 id 当白怪 (兜底, 不漏喂进度)
 	if w <= 0.0:
-		return   # 守门人不计
+		return   # 兜底: 其它零权重 id 不计
 	_add_progress(w)
 
 # 时间球拾取 +3.0 (供拾取实体调用).
@@ -74,9 +100,9 @@ func add_time_ball() -> void:
 func _add_progress(amount: float) -> void:
 	if guardian_triggered:
 		return
-	progress = minf(progress + amount, GOAL)
-	progress_changed.emit(progress, GOAL)
-	if progress >= GOAL:
+	progress = minf(progress + amount, goal)
+	progress_changed.emit(progress, goal)
+	if progress >= goal:
 		_trigger_guardian()
 
 func _trigger_guardian() -> void:
@@ -95,3 +121,65 @@ func _go_boss() -> void:
 		push_warning("RiftManager: missing %s" % BOSS_SCENE)
 		return
 	tree.change_scene_to_file(BOSS_SCENE)
+
+# ── 结算访问器 ────────────────────────────────────────────────
+func get_kill_count() -> int:
+	return kill_count
+
+func get_clear_time() -> float:
+	return float(Time.get_ticks_msec() - run_start_ms) / 1000.0
+
+# ── 速通 override (仅 --speedrun) ─────────────────────────────
+# 读 speedrun_test.csv → 套用差量到运行期值. 不带开关 = 不读 = 正式值.
+func _load_speedrun_overrides() -> void:
+	if not OS.get_cmdline_user_args().has("--speedrun"):
+		return
+	if not FileAccess.file_exists(SPEEDRUN_CSV):
+		push_warning("RiftManager: 速通开关已开但缺 %s" % SPEEDRUN_CSV)
+		return
+	var f: FileAccess = FileAccess.open(SPEEDRUN_CSV, FileAccess.READ)
+	if f == null:
+		return
+	var ov: Dictionary = {}
+	f.get_line()   # 跳表头
+	while not f.eof_reached():
+		var cols: PackedStringArray = f.get_line().split(",")
+		if cols.size() >= 2 and not cols[0].is_empty():
+			ov[cols[0]] = cols[1]
+	f.close()
+	_apply_overrides(ov)
+
+# 纯套用逻辑 (抽出供 verify 直接测, 不依赖 cmdline/文件).
+func _apply_overrides(ov: Dictionary) -> void:
+	if String(ov.get("启用", "0")) != "1":
+		return   # 表内启用=0 → 视为不开
+	speedrun = true
+	goal = float(ov.get("进度条目标", goal))
+	_sr_guardian_hp = int(ov.get("守门人HP", 0))
+	# 守门人 HP/ATK 属战斗① (butcher.gd const). 系统② 不改 const, 进场后 set 实例 current_health.
+	# ATK 留正式 90 (README 明示可选); 时间条 120s 当前无限时机制 (N/A).
+	if _sr_guardian_hp > 0 and not _sr_hooked and is_inside_tree():
+		_sr_hooked = true
+		get_tree().node_added.connect(_on_node_added)
+	print("[RiftManager] 速通模式生效: goal=%.0f 守门人HP=%d (ATK留正式90/无限时)" % [goal, _sr_guardian_hp])
+
+# 守门人进场即把 current_health 压到速通值. 口径=monster_id meta (与击杀判定同源).
+# node_added 早于子节点 _ready (meta 在 butcher.gd _ready 才 set) → 延一帧再查.
+func _on_node_added(n: Node) -> void:
+	if _sr_guardian_hp <= 0 or n == null:
+		return
+	call_deferred("_try_apply_guardian_hp", n)
+
+func _try_apply_guardian_hp(n: Node) -> void:
+	if _sr_guardian_hp <= 0 or not is_instance_valid(n):
+		return
+	if not n.has_meta("monster_id"):
+		return
+	var mid: StringName = StringName(n.get_meta("monster_id"))
+	if mid != &"butcher" and mid != &"guardian":
+		return
+	if n.get_meta("_sr_hp_applied", false):
+		return
+	if "current_health" in n:
+		n.current_health = _sr_guardian_hp
+		n.set_meta("_sr_hp_applied", true)

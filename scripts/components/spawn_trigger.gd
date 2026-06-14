@@ -45,6 +45,10 @@ signal wave_triggered(wave_id: int)
 # 精英组:全员清光时调 LootManager.notify_elite_group_killed() 喂软保底
 @export var elite_group: bool = false
 
+# V3.0 预放置模式(策划 D3 经典):true = level 加载即生成怪物在 IDLE 待机,
+# 玩家走入怪自身的 detection_range 后由 enemy_base 自己进 CHASE。false = 旧行为(踩触发圈才生成)。
+@export var preplaced: bool = false
+
 const _DROP_SOURCE_MAP := {
 	"trash": 0, "elite_blue": 1, "champion_yellow": 2, "butcher": 3,
 }
@@ -56,6 +60,14 @@ func _ready() -> void:
 	# Area3D 默认 monitoring=true,这里再保险设置;collision_mask 应在 .tscn 里设为 1(player layer)
 	monitoring = true
 	body_entered.connect(_on_body_entered)
+	# V3.0 预放置:level 加载即生成怪;玩家走入怪自身 detection 范围由 enemy_base 自启 CHASE
+	if preplaced:
+		call_deferred("_preplace_spawn")
+
+func _preplace_spawn() -> void:
+	if _triggered:
+		return
+	_trigger_spawn(null)
 
 func _on_body_entered(body: Node) -> void:
 	if _triggered and one_shot:

@@ -5,11 +5,11 @@ extends Node
 
 signal focus_changed(current: float, max_focus: float)
 
-const PASSIVE_REGEN: float = 8.0  # 每秒被动恢复
+const PASSIVE_REGEN: float = 60.0  # V3.0 爽快版:每秒被动恢复 60(原 8)
 
-@export var max_focus: float = 100.0
+@export var max_focus: float = 1500.0  # V3.0 爽快版:上限 1500(原 100)
 
-var current: float = 100.0
+var current: float = 1500.0
 
 func _ready() -> void:
 	current = max_focus

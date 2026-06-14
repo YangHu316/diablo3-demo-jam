@@ -1,0 +1,39 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+skill_id = &"arrow_storm"
+skill_name = "箭雨风暴"
+cooldown = 1.0
+focus_cost = 0.0
+focus_gain_on_hit = 0.0
+skill_multiplier = 0.7
+element = &"physical"
+skill_type = 4
+description = "按住引导:每 0.3s 向四周 360° 抛 1 轮箭(命中 6m 内每个 70%);引导每秒耗 25 专注;期间移速 50%。松开/专注耗尽即停。"
+
+projectile_count = 12
+projectile_spread_angle = 360.0
+can_penetrate = false
+
+aoe_radius = 6.0
+status_effect = &""
+status_duration = 0.0
+
+is_movement_skill = false
+move_distance = 0.0
+move_duration = 0.0
+grants_invuln = false
+cancels_attack_cooldowns = false
+
+summon_scene = null
+summon_duration = 0.0
+summon_max_count = 1
+
+channel_tick_interval = 0.3
+channel_focus_per_sec = 25.0
+channel_radius = 6.0
+channel_movement_mult = 0.5
+channel_projectiles_per_tick = 12

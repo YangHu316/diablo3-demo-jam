@@ -23,7 +23,8 @@ enum EnemyArchetype {
 @export_range(0.0, 30.0, 0.1) var move_speed: float = 4.2
 
 # ── AI ───────────────────────────────────────────────
-@export_range(0.0, 50.0, 0.1) var detection_range: float = 12.0  # 玩家进入此圈才进 CHASE
+@export_range(0.0, 50.0, 0.1) var detection_range: float = 12.0  # 玩家进入此圈才进 CHASE(legacy,被 aggro_range 取代)
+@export_range(0.0, 50.0, 0.1) var aggro_range: float = 14.0     # V3.0 仇恨范围:玩家进入此距离才转 CHASE(D3 经典近距激活)
 @export_range(0.0, 50.0, 0.1) var lose_aggro_range: float = 18.0 # 玩家拉远到此距离才回 IDLE
 @export_range(0.0, 10.0, 0.1) var attack_range: float = 2.0      # 进入此距离才进入 ATTACK
 @export_range(0.0, 5.0, 0.05) var attack_windup: float = 0.8     # 攻击前摇(策划案口径)

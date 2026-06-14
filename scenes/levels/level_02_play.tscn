@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/companions/templar.tscn" id="7"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -13,6 +14,9 @@
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)
+
+[node name="Templar" parent="." instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81, 0, -7)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=708971309]
 transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, -83, 12, 5)

@@ -7,7 +7,7 @@ extends CharacterBody3D
 # - Shift(force_stand): 原地站桩,左键朝光标射不移动。
 # - 空格(force_move): 朝光标走,无视脚下敌人(经典 D3 Force-Move)。
 # - Q(potion): 治疗药水(暂未接 — 留待 P0 后续)。
-# - 翻滚由 SkillExecutor._execute_movement 通过 dodge() API 触发。
+# - 翻滚由 SkillExecutor._execute_movement 通过 dodge() API 触发(W=朝光标前滚)。
 
 signal health_changed(current: int, max_hp: int)
 signal player_died()
@@ -18,10 +18,10 @@ const SPEED: float = 7.0
 const ATTACK_RANGE: float = 18.0  # 利箭有效射程,目标在此范围内即停下射击
 const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 
-# V3.0 锁死玩家面板:HP 1200(策划案 player_loadout.csv)
-@export var max_health: int = 1200
+# V3.0 锁死玩家面板:HP 8000(策划案 player_loadout.csv 爽快割草版)
+@export var max_health: int = 8000
 
-var current_health: int = 1200
+var current_health: int = 8000
 var is_moving: bool = false
 var is_invulnerable: bool = false
 var is_frozen: bool = false
@@ -51,6 +51,12 @@ var _lmb_attack_armed: bool = false
 # 翻滚(W)走 dodge() 流程,自身覆盖 _physics_process 的移动,所以 freeze 只影响 RMB/Q/E。
 const CAST_FREEZE_DURATION: float = 0.18
 var _cast_freeze_timer: float = 0.0
+
+# ── 引导(箭雨风暴 E)────────────────────────────────
+# 引导期间:不冻结,可移动但移速倍率 _channel_movement_mult(默认 0.5);
+# 不触发施法急停(set_channeling 为 true 时 _on_skill_activated 跳过急停)
+var _is_channeling: bool = false
+var _channel_movement_mult: float = 1.0
 
 var _last_forward: Vector3 = Vector3.FORWARD
 var _camera: Camera3D = null
@@ -127,7 +133,6 @@ func _tick_input_and_movement(delta: float) -> void:
 	# 3) LMB 按下/按住 — 重新决策:点中敌人 = 攻击目标;点中地面 = 移动目标
 	if lmb_held:
 		_resolve_lmb_click()
-
 	# 4) 攻击目标(从 LMB 点敌设置)— 走进射程,到了就停下让 SkillSlotManager 开火
 	if is_instance_valid(_attack_target):
 		var ep: Vector3 = (_attack_target as Node3D).global_position
@@ -157,15 +162,55 @@ func _tick_input_and_movement(delta: float) -> void:
 
 # 把鼠标光标投到地面平面,如果命中敌人(physics raycast)则设为攻击目标。
 func _resolve_lmb_click() -> void:
+	# 仅在"刚按下"那一帧 spawn 终点指引环(避免按住每帧 spam)
+	var just_clicked: bool = Input.is_action_just_pressed("attack_primary")
 	var enemy: Node3D = _pick_enemy_under_cursor()
 	if enemy != null:
 		_attack_target = enemy
 		_has_move_target = false
+		if just_clicked:
+			_spawn_click_indicator(enemy.global_position, true)
 		return
 	var p: Vector3 = _get_mouse_ground_point()
 	_move_target = p
 	_has_move_target = true
 	_attack_target = null
+	if just_clicked:
+		_spawn_click_indicator(p, false)
+
+# D3 经典点地反馈:在落点 spawn 一个 0.4s 圆环,扩散 + 淡出。
+# is_enemy=true → 红圈(锁敌);false → 白圈(走点)
+func _spawn_click_indicator(world_pos: Vector3, is_enemy: bool) -> void:
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	if is_enemy:
+		mat.albedo_color = Color(1.0, 0.35, 0.30, 0.9)
+		mat.emission = Color(1.0, 0.30, 0.20, 1.0)
+	else:
+		mat.albedo_color = Color(0.95, 0.95, 1.0, 0.85)
+		mat.emission = Color(0.85, 0.90, 1.0, 1.0)
+	mat.emission_enabled = true
+	mat.emission_energy_multiplier = 3.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.55
+	torus.outer_radius = 0.70
+	torus.ring_segments = 32
+	torus.material = mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.mesh = torus
+	scene_root.add_child(mi)
+	mi.global_position = world_pos + Vector3(0, 0.05, 0)
+	mi.scale = Vector3.ONE * 0.5
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3.ONE * 1.4, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(mat, "albedo_color:a", 0.0, 0.4)
+	tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.4)
+	tw.chain().tween_callback(Callable(mi, "queue_free"))
 
 # 物理 raycast(layer mask = 敌人层 2)从相机射,命中的就是该敌人 collider 的根。
 func _pick_enemy_under_cursor() -> Node3D:
@@ -200,8 +245,10 @@ func _move_toward(target: Vector3, _delta: float) -> void:
 		_stop_horizontal_motion()
 		return
 	var dir: Vector3 = to.normalized()
-	velocity.x = dir.x * SPEED
-	velocity.z = dir.z * SPEED
+	# 引导期(箭雨风暴):移速降到 channel_movement_mult(默认 50%)
+	var spd: float = SPEED * (_channel_movement_mult if _is_channeling else 1.0)
+	velocity.x = dir.x * spd
+	velocity.z = dir.z * spd
 	is_moving = true
 	move_and_slide()
 
@@ -294,22 +341,33 @@ func get_aim_direction() -> Vector3:
 func _on_skill_activated(slot_index: int, _sd: Resource) -> void:
 	if slot_index == 0:
 		return  # LMB 利箭不急停(连射手感)
+	# 引导态(箭雨风暴 E)期间不急停
+	if _is_channeling:
+		return
 	# 立即面向光标 — 给 SkillExecutor 同帧读取 basis 时拿到正确朝向
 	_face_mouse()
 	_cast_freeze_timer = CAST_FREEZE_DURATION
 	# 急停瞬间清掉攻击目标,但保留 _move_target —— freeze 结束后会自动恢复朝点行走
 	_attack_target = null
 
-# 翻滚方向源:V3.0 改为"光标反方向后撤",无 WASD。
+# 引导启停:由 SkillExecutor._on_channel_started/stopped 调
+func set_channeling(active: bool, movement_mult: float) -> void:
+	_is_channeling = active
+	_channel_movement_mult = movement_mult if active else 1.0
+	# 进入引导:取消任何挂着的施法急停,并清攻击目标(避免 LMB armed 干扰 E 的输入循环)
+	if active:
+		_cast_freeze_timer = 0.0
+
+# 翻滚方向源:V3.0 改为"光标方向前滚",无 WASD。
 # 也对外暴露当前面向供 fallback。
 func get_movement_input_direction() -> Vector3:
-	# 光标方向相对玩家的反向(后撤)
+	# 光标方向(玩家 → 光标 的水平单位向量)— 朝光标前滚
 	var aim: Vector3 = _get_mouse_ground_point()
 	var to: Vector3 = aim - global_position
 	to.y = 0.0
 	if to.length() < 0.001:
-		return -get_forward()
-	return -(to.normalized())
+		return get_forward()
+	return to.normalized()
 
 # ── 翻滚 ────────────────────────────────────────────
 func dodge(direction: Vector3, distance: float, duration: float) -> bool:
@@ -350,8 +408,8 @@ func _end_dodge() -> void:
 	dodge_ended.emit()
 
 # ── 受伤 / 死亡 ─────────────────────────────────────
-# V3.0 锁死护甲减伤 50%(player_loadout.csv 第 9 行)
-const ARMOR_DAMAGE_REDUCTION: float = 0.50
+# V3.0 锁死护甲减伤 70%(player_loadout.csv 爽快割草版)
+const ARMOR_DAMAGE_REDUCTION: float = 0.70
 
 func take_damage(amount: int, source = null) -> void:
 	if is_dead or is_invulnerable or amount <= 0:
