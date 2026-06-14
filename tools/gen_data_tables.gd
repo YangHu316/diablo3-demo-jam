@@ -65,8 +65,8 @@ func _build_legendaries() -> LegendaryTable:
 			"冰冻/冻缓状态目标受到的伤害 +30%", true),
 		_make_leg(&"windforce_boots", "疾风之靴", "boots", &"roll_no_cd_decoy",
 			"翻滚回避无 CD(改为消耗 25 专注);翻滚留下诱饵", true),
-		_make_leg(&"valkyrie_crown", "女武神之冠", "head", &"valkyrie_plus1",
-			"女武神召唤数 +1, 持续时间 +50%", false),
+		_make_leg(&"arrow_dance_crown", "箭舞之冠", "head", &"rain_extra_volley",
+			"箭雨风暴额外多射 1 轮箭矢且范围 +20%", false),
 		_make_leg(&"focus_engine", "专注引擎", "amulet", &"crit_restore_focus",
 			"暴击回 6 专注", false),
 	]

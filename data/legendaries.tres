@@ -32,11 +32,11 @@ is_first_orange_whitelist = true
 
 [sub_resource type="Resource" id="Resource_dajrn"]
 script = ExtResource("1_j188b")
-id = &"valkyrie_crown"
-display_name = "女武神之冠"
+id = &"arrow_dance_crown"
+display_name = "箭舞之冠"
 slot = &"head"
-effect_text = "女武神召唤数 +1, 持续时间 +50%"
-effect_id = &"valkyrie_plus1"
+effect_text = "箭雨风暴额外多射 1 轮箭矢且范围 +20%"
+effect_id = &"rain_extra_volley"
 
 [sub_resource type="Resource" id="Resource_4bsi6"]
 script = ExtResource("1_j188b")
