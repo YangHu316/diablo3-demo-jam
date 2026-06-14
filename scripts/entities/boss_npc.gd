@@ -6,9 +6,10 @@ extends Area3D
 # 点击检测: Area3D.input_event 信号 (input_ray_pickable=true + collision_layer 在交互层).
 #   —— 与玩家"点地移动/点敌攻击"互不干扰: 玩家的攻击射线只查敌人层(2)与地面;
 #      本 NPC 在交互层(16), 玩家射线不命中它, 而 Godot 的 PhysicsPicking 会单独给它派 input_event.
-# 整个 NPC 由代码构建 (胶囊身体 + 自发光光环 + 头顶名牌), 不依赖外部模型导入.
+# V3.13:身体替换成 Synty Character_Rock_Golem 模型 (石像), 保留光环/光源/碰撞/名牌不变.
 
-const NPC_NAME: String = "受难者之影"
+const NPC_NAME: String = "守墓石像"
+const ROCK_GOLEM_SCENE: PackedScene = preload("res://assets/characters/synty/Character_Rock_Golem.tscn")
 
 # 两轮固定台词 (按顺序逐句点击推进).
 const LINES: Array[String] = [
@@ -29,23 +30,16 @@ func _ready() -> void:
 	_build_visual()
 	_play_appear()
 
-# ── 视觉构建 (金光天使风 NPC) ─────────────────────────────────
+# ── 视觉构建 (石像 NPC) ───────────────────────────────────────
 func _build_visual() -> void:
-	# 身体: 高胶囊, 暖金自发光.
-	var body := MeshInstance3D.new()
+	# 身体: Synty 石像模型 (替代原程序化胶囊). 保留 Y=0 贴地, 略放大让神秘感.
+	var body: Node = ROCK_GOLEM_SCENE.instantiate()
 	body.name = "Body"
-	var cap := CapsuleMesh.new()
-	cap.radius = 0.4
-	cap.height = 2.0
-	var m := StandardMaterial3D.new()
-	m.albedo_color = Color(0.95, 0.82, 0.45)
-	m.emission_enabled = true
-	m.emission = Color(1.0, 0.85, 0.45)
-	m.emission_energy_multiplier = 0.9
-	cap.material = m
-	body.mesh = cap
-	body.position = Vector3(0, 1.0, 0)
 	add_child(body)
+	if body is Node3D:
+		(body as Node3D).scale = Vector3(1.2, 1.2, 1.2)   # 比玩家略大,体现"古老守护者"压迫感
+		# 让石像面朝南门(玩家方向, +Z), Synty 模型默认 +Z 朝向需要 180° 翻面对玩家
+		(body as Node3D).rotation = Vector3(0, PI, 0)
 
 	# 地面光环 (扁圆柱, 半透明金).
 	var halo := MeshInstance3D.new()
