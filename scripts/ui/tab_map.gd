@@ -156,13 +156,16 @@ func _process(delta: float) -> void:
 
 
 # ═════════════════════════════════════════════════════════════════════════
-# 绘制（逻辑完全照搬 minimap_panel._do_draw，数据从 _mm 取）
+# 绘制（逻辑同 minimap_panel._do_draw，数据从 _mm 取）
+# 边缘细格子：同 minimap_panel，复用其常量
 # ═════════════════════════════════════════════════════════════════════════
 func _do_draw(canvas: Control) -> void:
 	if _mm == null:
 		return
 
 	var ms: float = _map_size
+	var cell: float = _mm.FOG_CELL_SIZE
+	var fine_cell: float = cell / 3.0
 
 	# 1. 遍历所有 WALK 矩形，按格子绘制已探索区域
 	for r in _mm._walk_rects:
@@ -171,20 +174,43 @@ func _do_draw(canvas: Control) -> void:
 
 		var cx: float = r[0]
 		while cx < r[1]:
-			var cx_end: float = minf(cx + _mm.FOG_CELL_SIZE, r[1])
+			var cx_end: float = minf(cx + cell, r[1])
 			var cell_cx: float = (cx + cx_end) * 0.5
 
 			var cz: float = r[2]
 			while cz < r[3]:
-				var cz_end: float = minf(cz + _mm.FOG_CELL_SIZE, r[3])
+				var cz_end: float = minf(cz + cell, r[3])
 				var cell_cz: float = (cz + cz_end) * 0.5
 
 				var alpha: float = _mm._fog_alpha(cell_cx, cell_cz)
-				if alpha > 0.01:
-					var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * alpha)
+
+				if alpha <= 0.05:
+					pass  # 完全遮蔽，跳过
+				elif alpha >= 0.95:
+					# 完全探索：绘制底色
 					var tl := _world_to_ui(cx, cz, ms) - Vector2(RECT_INFLATE, RECT_INFLATE)
 					var br := _world_to_ui(cx_end, cz_end, ms) + Vector2(RECT_INFLATE, RECT_INFLATE)
-					canvas.draw_rect(Rect2(tl, br - tl), c)
+					var rect := Rect2(tl, br - tl)
+					var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * alpha)
+					canvas.draw_rect(rect, c)
+				else:
+					# 边缘渐变区（迷雾边缘）：细分消除锯齿，无轮廓
+					var fx: float = cx
+					while fx < cx_end:
+						var fx_end: float = minf(fx + fine_cell, cx_end)
+						var fcx: float = (fx + fx_end) * 0.5
+						var fz: float = cz
+						while fz < cz_end:
+							var fz_end: float = minf(fz + fine_cell, cz_end)
+							var fcz: float = (fz + fz_end) * 0.5
+							var fa: float = _mm._fog_alpha(fcx, fcz)
+							if fa > 0.05:
+								var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * fa)
+								var tl := _world_to_ui(fx, fz, ms) - Vector2(RECT_INFLATE, RECT_INFLATE)
+								var br := _world_to_ui(fx_end, fz_end, ms) + Vector2(RECT_INFLATE, RECT_INFLATE)
+								canvas.draw_rect(Rect2(tl, br - tl), c)
+							fz = fz_end
+						fx = fx_end
 
 				cz = cz_end
 			cx = cx_end
@@ -203,15 +229,8 @@ func _do_draw(canvas: Control) -> void:
 	# 3. 玩家标记（居中）
 	_draw_player_triangle(canvas, ms)
 
-	# 4. 金色外边框
-	canvas.draw_rect(Rect2(0.0, 0.0, ms, ms), COLOR_BORDER, false, 3.0)
-
-	# 5. 四角装饰块
-	var s := maxf(ms * 0.038, 4.0)
-	canvas.draw_rect(Rect2(0.0,    0.0,    s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(ms - s, 0.0,    s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(0.0,    ms - s, s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(ms - s, ms - s, s, s), COLOR_BORDER)
+	# 4. 金色外边框（tab_map 不需要）
+	# 5. 四角装饰块（tab_map 不需要）
 
 
 # ── 地标 3 层发光绘制 ─────────────────────────────────────────────────────

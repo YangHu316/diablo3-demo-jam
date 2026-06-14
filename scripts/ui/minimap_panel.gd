@@ -8,7 +8,7 @@ extends CanvasLayer
 
 # ── 显示参数 ─────────────────────────────────────────────────────────────
 const VIEW_RADIUS: float         = 55.0   # 小地图视口世界半径（已含 SCALE）
-const EXPLORE_RADIUS: float      = 16.0   # 玩家每次探索的圆形半径（世界单位）
+const EXPLORE_RADIUS: float      = 28.0   # 玩家每次探索的圆形半径（世界单位）
 const FOG_UPDATE_INTERVAL: float = 0.15   # 迷雾采样间隔（秒）
 const MAP_SIZE_RATIO: float      = 0.14   # 小地图边长 = 屏幕宽 × 此值（缩小一半）
 const MARGIN: float              = 16.0   # 距屏幕右/上边缘的像素距离
@@ -27,8 +27,8 @@ const MAX_FOG_CIRCLES: int       = 800
 const SPATIAL_CELL: float        = 12.0  # 略小于 EXPLORE_RADIUS，保证不漏检
 
 # ── 颜色 ─────────────────────────────────────────────────────────────────
-const COLOR_FLOOR_LARGE := Color(0.22, 0.17, 0.13, 0.95)  # 统一深灰棕（参考暗黑3）
-const COLOR_FLOOR_SMALL := Color(0.22, 0.17, 0.13, 0.95)  # 同上，不再区分
+const COLOR_FLOOR_LARGE := Color(0.22, 0.16, 0.11, 0.90)  # 已探索底色
+const COLOR_FLOOR_SMALL := Color(0.22, 0.16, 0.11, 0.90)  # 同上
 const COLOR_FLOOR_EDGE  := Color(0.50, 0.36, 0.20, 0.35)  # 矩形描边（已停用）
 const COLOR_BORDER      := Color(0.55, 0.40, 0.18, 1.00)  # 金色外边框
 const COLOR_PLAYER_GLOW := Color(0.30, 0.55, 1.00, 1.00)  # 玩家发光底座
@@ -219,7 +219,7 @@ func _load_level_data() -> void:
 # 每帧更新
 # ═════════════════════════════════════════════════════════════════════════
 func _process(delta: float) -> void:
-	if _player == null:
+	if _player == null or not is_instance_valid(_player) or not _player.is_inside_tree():
 		return
 
 	var pos: Vector3 = _player.global_position
@@ -328,39 +328,70 @@ func _fog_alpha(wx: float, wz: float) -> float:
 
 # ═════════════════════════════════════════════════════════════════════════
 # 绘制（由 MinimapCanvas._draw() 回调）
+# 边缘细格子策略：
+#   粗格子(FOG_CELL_SIZE) 扫描全区域 → alpha 完全在内部(≥EDGE_HI)直接绘制；
+#   边缘渐变区(EDGE_LO < alpha < EDGE_HI) 细分为 FOG_CELL_SIZE/EDGE_SUBDIV 的小格子重绘；
+#   完全在迷雾外(≤EDGE_LO) 跳过。
+#   效果：内部填充无锯齿，边缘平滑，总计算量约增加 20~30%。
 # ═════════════════════════════════════════════════════════════════════════
+const EDGE_LO: float      = 0.05  # alpha 低于此值视为完全遮蔽，跳过
+const EDGE_HI: float      = 0.95  # alpha 高于此值视为完全探索，粗格子直接绘制
+const EDGE_SUBDIV: int    = 3     # 边缘区细分倍数（3 → 细格子 = 粗格子/3）
+
 func _do_draw(canvas: Control) -> void:
 	var ms: float = _map_size
+	var fine_cell: float = FOG_CELL_SIZE / float(EDGE_SUBDIV)
 
 	# 1. 遍历所有 WALK 矩形，按格子绘制已探索区域
 	for i in range(_walk_rects.size()):
 		var r: Array = _walk_rects[i]
-		# P1-3：按面积区分颜色
 		var world_area: float = (r[1] - r[0]) * (r[3] - r[2])
 		var floor_color: Color = COLOR_FLOOR_LARGE if world_area > 800.0 else COLOR_FLOOR_SMALL
 
-		# 将矩形细分为 FOG_CELL_SIZE 大小的格子，按渐变 alpha 绘制（消除锯齿）
+		# 粗格子扫描
 		var cx: float = r[0]
 		while cx < r[1]:
 			var cx_end: float = minf(cx + FOG_CELL_SIZE, r[1])
-			var cell_cx: float = (cx + cx_end) * 0.5   # 格子中心 x
+			var cell_cx: float = (cx + cx_end) * 0.5
 
 			var cz: float = r[2]
 			while cz < r[3]:
 				var cz_end: float = minf(cz + FOG_CELL_SIZE, r[3])
-				var cell_cz: float = (cz + cz_end) * 0.5   # 格子中心 z
+				var cell_cz: float = (cz + cz_end) * 0.5
 
 				var alpha: float = _fog_alpha(cell_cx, cell_cz)
-				if alpha > 0.01:
-					var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * alpha)
+
+				if alpha <= EDGE_LO:
+					# 完全遮蔽，跳过
+					pass
+				elif alpha >= EDGE_HI:
+					# 完全探索：绘制底色
 					var tl := _world_to_ui(cx, cz, ms) - Vector2(RECT_INFLATE, RECT_INFLATE)
 					var br := _world_to_ui(cx_end, cz_end, ms) + Vector2(RECT_INFLATE, RECT_INFLATE)
-					canvas.draw_rect(Rect2(tl, br - tl), c)
+					var rect := Rect2(tl, br - tl)
+					var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * alpha)
+					canvas.draw_rect(rect, c)
+				else:
+					# 边缘渐变区（迷雾边缘）：细分消除锯齿，无轮廓线
+					var fx: float = cx
+					while fx < cx_end:
+						var fx_end: float = minf(fx + fine_cell, cx_end)
+						var fcx: float = (fx + fx_end) * 0.5
+						var fz: float = cz
+						while fz < cz_end:
+							var fz_end: float = minf(fz + fine_cell, cz_end)
+							var fcz: float = (fz + fz_end) * 0.5
+							var fa: float = _fog_alpha(fcx, fcz)
+							if fa > EDGE_LO:
+								var c := Color(floor_color.r, floor_color.g, floor_color.b, floor_color.a * fa)
+								var tl := _world_to_ui(fx, fz, ms) - Vector2(RECT_INFLATE, RECT_INFLATE)
+								var br := _world_to_ui(fx_end, fz_end, ms) + Vector2(RECT_INFLATE, RECT_INFLATE)
+								canvas.draw_rect(Rect2(tl, br - tl), c)
+							fz = fz_end
+						fx = fx_end
 
 				cz = cz_end
 			cx = cx_end
-
-		# 不画矩形描边——地板颜色本身形成自然轮廓，与暗黑3风格一致
 
 	# 2. 地标（3 层发光，只在已探索区域显示）
 	for lm in _landmarks:
@@ -378,15 +409,6 @@ func _do_draw(canvas: Control) -> void:
 	if _player != null:
 		_draw_player_triangle(canvas, ms)
 
-	# 4. 金色外边框（最后画，覆盖溢出内容）
-	canvas.draw_rect(Rect2(0.0, 0.0, ms, ms), COLOR_BORDER, false, 3.0)
-
-	# 5. 四角装饰块
-	var s := maxf(ms * 0.038, 4.0)
-	canvas.draw_rect(Rect2(0.0,    0.0,    s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(ms - s, 0.0,    s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(0.0,    ms - s, s, s), COLOR_BORDER)
-	canvas.draw_rect(Rect2(ms - s, ms - s, s, s), COLOR_BORDER)
 
 
 # ── 地标 3 层发光绘制 ─────────────────────────────────────────────────────
