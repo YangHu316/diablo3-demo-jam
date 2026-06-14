@@ -175,7 +175,10 @@ func _rebuild() -> void:
 	_build_obstacles()
 	# 战斗逻辑:只在运行时建(编辑器里不跑刷怪/出口/落点,避免编辑器误触发)
 	if not Engine.is_editor_hint():
-		_build_encounters()
+		# V3.0:遭遇改「敌人集团蓝图」手动摆放(scenes/enemies/groups/*.tscn → scenes/levels/level_02_encounters.tscn,
+		# 已由 level_02_play.tscn 实例化)。不再脚本生成固定位置/数量;下方 ENCOUNTERS/ENCOUNTER_ENEMY 常量保留仅供参考。
+		# 需临时回退脚本刷怪:取消下一行注释即可。
+		#_build_encounters()
 		_build_exit()
 		call_deferred("_place_player")
 

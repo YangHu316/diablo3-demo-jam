@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+; 敌人集团蓝图 · 走尸集群(10 个一组)
+; 用法:拖入关卡 → 移动本节点改位置 → Inspector 改 count 改数量。preplaced=true → 关卡加载即生成 IDLE,玩家走近(enemy_base detection)自启追击。
+[ext_resource type="Script" path="res://scripts/components/spawn_trigger.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_zombie.tscn" id="2"]
+[ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="3"]
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 5.5
+
+[node name="Group_Zombie_x10" type="Area3D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1")
+enemy_scene = ExtResource("2")
+enemy_data = ExtResource("3")
+count = 10
+formation = "cluster"
+spawn_radius = 5.5
+spawn_at_self = true
+one_shot = true
+target_player = false
+monster_id = "trash"
+drop_source = "trash"
+preplaced = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("shape")
