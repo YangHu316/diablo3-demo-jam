@@ -38,8 +38,8 @@ func _build_visual() -> void:
 	add_child(body)
 	if body is Node3D:
 		(body as Node3D).scale = Vector3(1.2, 1.2, 1.2)   # 比玩家略大,体现"古老守护者"压迫感
-		# 让石像面朝南门(玩家方向, +Z), Synty 模型默认 +Z 朝向需要 180° 翻面对玩家
-		(body as Node3D).rotation = Vector3(0, PI, 0)
+		# V3.13f:Synty 石像 default 朝 +Z (玩家从南门 +Z 方向走来), 无需旋转.
+		# 之前 PI(180°) 反而让石像背对玩家.
 	# V3.13e:Synty 模型默认 T-pose(双臂张开), 注入 UAL Idle 让它站立呼吸.
 	var ap: AnimationPlayer = _find_animation_player(body)
 	if ap != null:
@@ -89,13 +89,14 @@ func _find_animation_player(n: Node) -> AnimationPlayer:
 	light.omni_range = 8.0
 	add_child(light)
 
-	# 点击碰撞体 (胶囊, 覆盖身体).
+	# 点击碰撞体 (胶囊, 覆盖整个石像;石像 1.2x 缩放后约 2.4m 高 / 1.0m 宽).
+	# V3.13f:之前 r=0.6 h=2.2 太小, 玩家点石像头/肩膀超出胶囊范围 → PhysicsPicking 不触发.
 	var cs := CollisionShape3D.new()
 	var sh := CapsuleShape3D.new()
-	sh.radius = 0.6
-	sh.height = 2.2
+	sh.radius = 1.2
+	sh.height = 3.6
 	cs.shape = sh
-	cs.position = Vector3(0, 1.1, 0)
+	cs.position = Vector3(0, 1.8, 0)
 	add_child(cs)
 
 	# 头顶名牌 + 点击提示.
@@ -110,7 +111,7 @@ func _find_animation_player(n: Node) -> AnimationPlayer:
 	plate.outline_size = 6
 	plate.outline_modulate = Color(0, 0, 0, 0.9)
 	plate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	plate.position = Vector3(0, 2.6, 0)
+	plate.position = Vector3(0, 4.0, 0)
 	add_child(plate)
 
 # 出场演出: 从地面淡入 + 轻微浮起.
