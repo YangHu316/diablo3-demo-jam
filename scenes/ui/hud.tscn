@@ -5,18 +5,6 @@
 [ext_resource type="Texture2D" path="res://assets/ui/hp_orb.png" id="3_hporb"]
 [ext_resource type="Texture2D" path="res://assets/ui/mp_orb.png" id="4_mporb"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_enl5e"]
-bg_color = Color(0.04, 0.04, 0.05, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.72, 0.56, 0.26, 1)
-corner_radius_top_left = 33
-corner_radius_top_right = 33
-corner_radius_bottom_right = 33
-corner_radius_bottom_left = 33
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xl2ol"]
 bg_color = Color(0.04, 0.04, 0.05, 0.95)
 border_width_left = 2
@@ -156,6 +144,32 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_riftframe"]
+bg_color = Color(0.07, 0.055, 0.04, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.62, 0.46, 0.2, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rifttrack"]
+bg_color = Color(0.03, 0.025, 0.02, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.27, 0.13, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="HUD" type="CanvasLayer" unique_id=864773421]
 layer = 100
 script = ExtResource("1_abbni")
@@ -176,59 +190,106 @@ offset_bottom = 14.0
 mouse_filter = 2
 theme_override_constants/separation = 5
 
-[node name="RiftBox" type="VBoxContainer" parent="Root" unique_id=1359989841]
+[node name="RiftPanel" type="Control" parent="Root" unique_id=1359989841]
 layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -180.0
-offset_top = 12.0
-offset_right = 180.0
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -284.0
+offset_top = 300.0
+offset_right = -16.0
+offset_bottom = 338.0
 mouse_filter = 2
-theme_override_constants/separation = 2
 
-[node name="RiftLabel" type="Label" parent="Root/RiftBox" unique_id=752788471]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.6, 1, 1)
-text = "大秘境进度  0%"
-horizontal_alignment = 1
-
-[node name="RiftBar" type="ProgressBar" parent="Root/RiftBox" unique_id=1851348932]
-modulate = Color(0.65, 0.45, 1, 1)
-custom_minimum_size = Vector2(360, 12)
-layout_mode = 2
-mouse_filter = 2
-max_value = 106.0
-show_percentage = false
-
-[node name="TimeOrb" type="Panel" parent="Root" unique_id=1427405047]
-clip_contents = true
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -33.0
-offset_top = 54.0
-offset_right = 33.0
-offset_bottom = 120.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_enl5e")
-
-[node name="Fill" type="ColorRect" parent="Root/TimeOrb" unique_id=1313073209]
-layout_mode = 0
-anchor_top = 0.0019333333
+[node name="Frame" type="Panel" parent="Root/RiftPanel" unique_id=1851200001]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 14.0
 mouse_filter = 2
-color = Color(0.62, 0.42, 1, 0.92)
+theme_override_styles/panel = SubResource("StyleBoxFlat_riftframe")
 
-[node name="TimeLabel" type="Label" parent="Root/TimeOrb" unique_id=1646516773]
-layout_mode = 0
+[node name="Track" type="Panel" parent="Root/RiftPanel/Frame" unique_id=1851200002]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_colors/font_color = Color(1, 0.97, 0.85, 1)
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rifttrack")
+
+[node name="Fill" type="ColorRect" parent="Root/RiftPanel/Frame/Track" unique_id=1851200003]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = -1.0
+mouse_filter = 2
+color = Color(0.55, 0.32, 0.95, 1)
+
+[node name="Skull" type="Label" parent="Root/RiftPanel" unique_id=1851200004]
+layout_mode = 0
+offset_left = -2.0
+offset_top = -4.0
+offset_right = 22.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.85, 0.82, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 16
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "☠"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PctLabel" type="Label" parent="Root/RiftPanel" unique_id=752788471]
+layout_mode = 0
+offset_left = 22.0
+offset_top = -3.0
+offset_right = 120.0
+offset_bottom = 17.0
+theme_override_colors/font_color = Color(0.92, 0.88, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 15
+text = "0%"
+vertical_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="Root/RiftPanel" unique_id=1646516773]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -60.0
+offset_top = -3.0
+offset_right = -16.0
+offset_bottom = 17.0
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 15
 text = "2:00"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Hourglass" type="Label" parent="Root/RiftPanel" unique_id=1427405047]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -16.0
+offset_top = -4.0
+offset_right = 6.0
+offset_bottom = 18.0
+theme_override_colors/font_color = Color(0.9, 0.85, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "⌛"
 horizontal_alignment = 1
 vertical_alignment = 1
 
