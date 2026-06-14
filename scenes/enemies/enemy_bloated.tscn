@@ -1,6 +1,6 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=9 format=3 uid="uid://b3bloatedm9r2x"]
 
-[ext_resource type="Script" path="res://scripts/entities/enemy_bloated.gd" id="1"]
+[ext_resource type="Script" uid="uid://dd0moffjm2dfg" path="res://scripts/entities/enemy_bloated.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/knockback_component.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/components/stagger_component.gd" id="3"]
 [ext_resource type="PackedScene" path="res://assets/characters/synty/Character_Skeleton_Slave_01.tscn" id="4"]
