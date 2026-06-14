@@ -450,6 +450,10 @@ func _enter_phase2() -> void:
 	phase = 2
 	_set_state(State.ROAR)
 	phase_changed.emit(2)
+	# Boss P2 咆哮 SFX(charge 充能音效复用作咆哮)
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("channel_charge", global_position, 3.0, 0.05)
 
 # ── 状态效果(免控,只接受减速)─────────────────────
 func apply_status(effect: String, duration: float) -> void:
@@ -494,6 +498,11 @@ func _die(source, overkill: int) -> void:
 		charge_warning.visible = false
 	if basic_warning != null:
 		basic_warning.visible = false
+	# Boss 死亡 SFX(火焰爆炸 + enemy_death 复合)
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("explode", global_position, 4.0, 0.05)
+		sfx.play("enemy_death", global_position, 3.0, 0.0)
 	# 广播击杀(系统组 ProgressionManager 据此给 XP;Inventory 据此掉传奇)
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null:
