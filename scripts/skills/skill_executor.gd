@@ -189,7 +189,7 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 	# channel_radius=6 → r ∈ [3.0, 5.5],最远箭已经接近 AOE 边界,绕得开。
 	var r_min: float = max(2.0, channel_radius * 0.5)
 	var r_max: float = max(r_min + 1.0, channel_radius * 0.95)
-	var n: int = 6   # V3.10:从 12 调回 6;每箭挂 mprojectile VFX(内部多 GPU 粒子),12 支 ≈ 36+ 发射器,低端 GPU 顶不住
+	var n: int = 12   # V3.10:重新拉回 12(用户要求);粒子开销已通过关 glow/fog/4K 释放
 	for i in range(n):
 		# 用一个 pivot Node3D 作为绕主角的支点(每帧设到玩家位置),
 		# 子节点是箭模型,绕 Y 转 angle 后向前推 radius → 公转
