@@ -56,8 +56,15 @@ func configure_from_skill(sd, dmg_info: Dictionary) -> void:
 	# V3.2:按 element 给箭矢 + 拖尾染色(冰箭蓝、火箭橙、毒箭绿…)
 	_apply_element_tint(element)
 
-# 按 element 给箭头加染色 + 光源 + 粒子尾迹。physical 不染。
+# 按 element 给箭头染色 / 替换尾迹。physical 不动,保留默认观感。
 func _apply_element_tint(elem: String) -> void:
+	if elem == "" or elem == "physical":
+		return
+	# V3.5:用户反馈"冰箭不要火光" — 任何非物理 element,直接干掉默认 mprojectile 火焰拖尾。
+	# 不再加光源 / 光晕(那些反而看起来像火),只把箭模型 mesh 本身染成对应元素色。
+	var trail: Node = get_node_or_null("TrailVFX")
+	if trail != null:
+		trail.queue_free()
 	var tint: Color
 	var emit: Color
 	match elem:
@@ -72,41 +79,9 @@ func _apply_element_tint(elem: String) -> void:
 			emit = Color(0.4, 1.0, 0.3, 1.0)
 		_:
 			return
-	# V3.4:Synty FBX 的 mesh 来自 mesh 资源自带材质,surface_override 和 material_overlay
-	# 都不可靠(出现"完全没颜色"的 case)。改用三件套确保肉眼可见的染色:
-	#   a) 仍尝试 material_overlay(若管用,叠加发光层最美)
-	#   b) 加一个 OmniLight3D 子节点 → 不依赖 mesh 材质,纯光源把箭周围染成对应颜色
-	#   c) 在箭周围裹一层 unshaded 半透"光晕"球(轻微 emission,Sprite3D 简化版)
 	var pivot: Node = get_node_or_null("ModelPivot")
 	if pivot != null:
 		_tint_meshes(pivot, tint, emit)
-	var trail: Node = get_node_or_null("TrailVFX")
-	if trail != null:
-		_tint_particles(trail, tint)
-	# 光源(冰蓝/火橙)— 这一定生效
-	var light: OmniLight3D = OmniLight3D.new()
-	light.light_color = emit
-	light.light_energy = 2.0
-	light.omni_range = 2.0
-	light.position = Vector3(0, 0, 0)
-	add_child(light)
-	# 光晕球(裹在箭外,unshaded 半透,确保肉眼能看到颜色变化)
-	var halo: MeshInstance3D = MeshInstance3D.new()
-	var sphere: SphereMesh = SphereMesh.new()
-	sphere.radius = 0.18
-	sphere.height = 0.36
-	var halo_mat: StandardMaterial3D = StandardMaterial3D.new()
-	halo_mat.albedo_color = Color(emit.r, emit.g, emit.b, 0.45)
-	halo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	halo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	halo_mat.emission_enabled = true
-	halo_mat.emission = emit
-	halo_mat.emission_energy_multiplier = 3.0
-	halo_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	halo_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	sphere.material = halo_mat
-	halo.mesh = sphere
-	add_child(halo)
 
 func _tint_meshes(node: Node, tint: Color, emit: Color) -> void:
 	if node is MeshInstance3D:

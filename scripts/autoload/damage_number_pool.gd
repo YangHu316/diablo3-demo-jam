@@ -14,9 +14,9 @@ const FLOAT_DURATION: float = 0.85         # 总时长
 const FADE_START_RATIO: float = 0.55       # 飘到 55% 才开始淡出(读秒更久)
 
 # 字号(V3.4:再砍一档,屏幕上更克制)
-const NORMAL_FONT_SIZE: int = 22
-const CRIT_FONT_SIZE: int = 32
-const HEAVY_FONT_SIZE: int = 44           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
+const NORMAL_FONT_SIZE: int = 32
+const CRIT_FONT_SIZE: int = 44
+const HEAVY_FONT_SIZE: int = 56           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
 
 # 重击阈值(单次伤害 >= 此值且暴击 → 升级到红橙重击样式)
 const HEAVY_DAMAGE_THRESHOLD: int = 800
@@ -69,8 +69,10 @@ func _setup_pool() -> void:
 		lbl.text = ""
 		lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		lbl.no_depth_test = true
-		lbl.fixed_size = true
-		lbl.pixel_size = 0.006            # 字小了 → pixel_size 调大维持屏幕可读性
+		# V3.5 根因修复:之前 fixed_size=true 让 label 固定屏幕大小,pixel_size 放大成半屏
+		# 改成 fixed_size=false → 像普通 3D 物体那样随距离缩放,pixel_size 才是"世界单位/像素"。
+		lbl.fixed_size = false
+		lbl.pixel_size = 0.003
 		lbl.font_size = NORMAL_FONT_SIZE
 		lbl.outline_size = 6              # 描边收薄
 		lbl.outline_modulate = OUTLINE_COLOR

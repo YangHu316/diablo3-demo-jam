@@ -199,23 +199,39 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 		# V3.4:加回一条魔法尾迹 — 但用程序化 CPUParticles3D(冰蓝拉丝)替代 mprojectile
 		# 火焰拖尾。火粒子是 fire-base 模板很难调出"圣箭"质感,所以自己拼一个简短的
 		# 冷光蓝白拖尾,挂在 anchor 上,跟着箭走。
+		# V3.5:CPUParticles3D 必须设 mesh,否则什么都不画(这就是上一版"公转箭特效不见了"的原因)
 		var trail: CPUParticles3D = CPUParticles3D.new()
-		trail.amount = 24
-		trail.lifetime = 0.35
+		# 粒子用一个小 quad billboard,unshaded + 加色混合 → 像光斑
+		var quad: QuadMesh = QuadMesh.new()
+		quad.size = Vector2(0.25, 0.25)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		pmat.albedo_color = Color(0.7, 0.95, 1.0, 1.0)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.55, 0.85, 1.0, 1.0)
+		pmat.emission_energy_multiplier = 3.0
+		pmat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		pmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		quad.material = pmat
+		trail.mesh = quad
+		trail.amount = 32
+		trail.lifetime = 0.45
 		trail.local_coords = false   # 世界坐标,粒子留在身后不被 anchor 旋转拽走
 		trail.emitting = true
 		trail.one_shot = false
 		trail.explosiveness = 0.0
-		trail.spread = 8.0
+		trail.spread = 6.0
 		trail.initial_velocity_min = 0.0
-		trail.initial_velocity_max = 0.4
+		trail.initial_velocity_max = 0.3
 		trail.gravity = Vector3.ZERO
-		trail.scale_amount_min = 0.18
-		trail.scale_amount_max = 0.32
-		trail.color = Color(0.6, 0.85, 1.0, 0.85)   # 冷光蓝白
+		trail.scale_amount_min = 0.6
+		trail.scale_amount_max = 1.0
+		trail.color = Color(0.7, 0.95, 1.0, 1.0)   # 冷光蓝白
 		# 简单淡出曲线(CPUParticles3D.color_ramp 在 Godot 4 直接接 Gradient)
 		var ramp: Gradient = Gradient.new()
-		ramp.add_point(0.0, Color(0.7, 0.95, 1.0, 0.95))
+		ramp.add_point(0.0, Color(0.85, 0.97, 1.0, 1.0))
 		ramp.add_point(1.0, Color(0.4, 0.7, 1.0, 0.0))
 		trail.color_ramp = ramp
 		anchor.add_child(trail)
