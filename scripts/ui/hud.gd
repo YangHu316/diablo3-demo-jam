@@ -123,12 +123,15 @@ func _build_ui() -> void:
 	for i in range(5):
 		var panel: Panel = Panel.new()
 		panel.custom_minimum_size = Vector2(slot_size, slot_size)
+		# 关键:HBoxContainer 默认 fill 高度,显式指定 size_flags 强制 panel 不被压扁/拉伸
+		panel.size_flags_horizontal = Control.SIZE_FILL
+		panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_theme_stylebox_override("panel", _frame_box(DARK, 4))
 		slots.add_child(panel)
 		_slot_panels.append(panel)
 
-		# 技能图标(最底层):从图集切区域
+		# 技能图标(最底层):从图集切区域 — 改为完全填充(STRETCH_SCALE)
 		var icon: TextureRect = TextureRect.new()
 		if ResourceLoader.exists(SKILL_SHEET):
 			var at: AtlasTexture = AtlasTexture.new()
@@ -137,7 +140,8 @@ func _build_ui() -> void:
 			at.region = Rect2(rc.x * SKILL_CELL, rc.y * SKILL_CELL, SKILL_CELL, SKILL_CELL)
 			icon.texture = at
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		# SCALE 拉伸到 panel 大小(不留 letterbox)
+		icon.stretch_mode = TextureRect.STRETCH_SCALE
 		icon.anchor_right = 1.0
 		icon.anchor_bottom = 1.0
 		icon.offset_left = 3
@@ -147,20 +151,28 @@ func _build_ui() -> void:
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(icon)
 
-		# 按键标签(右下)
+		# 按键标签:右下角 + 半透明黑底 stylebox(避免和图标颜色混)
+		var key_bg: Panel = Panel.new()
+		key_bg.add_theme_stylebox_override("panel", _solid_box(Color(0, 0, 0, 0.7), 2))
+		key_bg.anchor_right = 1.0
+		key_bg.anchor_bottom = 1.0
+		key_bg.offset_left = -22
+		key_bg.offset_top = -16
+		key_bg.offset_right = -2
+		key_bg.offset_bottom = -2
+		key_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(key_bg)
+
 		var key_lbl: Label = Label.new()
 		key_lbl.text = SKILL_KEY_LABELS[i]
-		key_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
-		key_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
-		key_lbl.add_theme_constant_override("outline_size", 4)
+		key_lbl.add_theme_color_override("font_color", Color(1, 0.95, 0.55))
 		key_lbl.add_theme_font_size_override("font_size", 12)
 		key_lbl.anchor_right = 1.0
 		key_lbl.anchor_bottom = 1.0
-		key_lbl.offset_left = -34
-		key_lbl.offset_top = -18
-		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		key_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		key_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(key_lbl)
+		key_bg.add_child(key_lbl)
 
 		# CD 灰蒙板(从下往上消)
 		var cd_overlay: ColorRect = ColorRect.new()
@@ -260,6 +272,13 @@ func _frame_box(bg: Color, radius: int) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.set_border_width_all(2)
 	sb.border_color = GOLD
+	sb.set_corner_radius_all(radius)
+	return sb
+
+# 纯背景 stylebox(无金边),给小标签底用
+func _solid_box(bg: Color, radius: int) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
 	sb.set_corner_radius_all(radius)
 	return sb
 
