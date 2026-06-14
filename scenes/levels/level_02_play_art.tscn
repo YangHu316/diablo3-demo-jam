@@ -3095,21 +3095,6 @@ transform = Transform3D(-4.37114e-06, 0, 100, 0, 100, 0, -100, 0, -4.37114e-06, 
 [node name="SM_Env_Door_Large_Frame_02" parent="LevelArt/Walls" unique_id=221035905 instance=ExtResource("23_4osnp")]
 transform = Transform3D(178.63861, 0, 0, 0, 170.85362, 0, 0, 0, 156.49342, -52.614197, -1.1473894e-06, -2.7262115)
 
-[node name="Tower_Damage" parent="LevelArt/Walls" unique_id=1955542070 instance=ExtResource("23_nsb4i")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -91.428665, -1.937151e-07, 57.20547)
-
-[node name="Tower_Speed" parent="LevelArt/Walls" unique_id=96545456 instance=ExtResource("24_p5cgg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.44756, 7.599592e-07, 29.697113)
-
-[node name="Tower_Damage2" parent="LevelArt/Walls" unique_id=1340654107 instance=ExtResource("23_nsb4i")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.96484, -1.937151e-07, 93.146736)
-
-[node name="Group_Dog_x5" parent="LevelArt/Walls" unique_id=426397952 instance=ExtResource("11_rmmqy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.499435, 7.599592e-07, -105.84197)
-
-[node name="Group_Zombie_x10" parent="LevelArt/Walls" unique_id=410232012 instance=ExtResource("9_7kxde")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.080364, 7.599592e-07, -106.81061)
-
 [node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
@@ -3215,10 +3200,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.01652, 1.1803426, 99.99138
 [node name="SettlementPanel" parent="." unique_id=618811148 instance=ExtResource("19")]
 
 [node name="Tower_Damage" parent="." unique_id=877338579 instance=ExtResource("23_nsb4i")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.386387, -4.0084124e-06, 17.78807)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -124.54602, -1.937151e-07, -6.0479126)
 
-[node name="Tower_Speed" parent="." unique_id=1187771579 instance=ExtResource("24_p5cgg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.71192, 3.6209822e-06, -119.80326)
+[node name="Tower_Speed" parent="." unique_id=96545456 instance=ExtResource("24_p5cgg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130.00809, -1.937151e-07, -6.0312433)
 
 [node name="SM_Env_Entrance_Crypt_02" parent="." unique_id=886197259 instance=ExtResource("25_makso")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.996506, -1.937151e-07, -17.31354)
