@@ -28,3 +28,6 @@ addons/godot_mcp/
 export/
 *.pck
 *.zip
+
+# 个人本地配置覆盖 (Godot override.cfg) — 不推到 origin,只在本机生效
+override.cfg

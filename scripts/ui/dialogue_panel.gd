@@ -78,7 +78,7 @@ func _build_ui() -> void:
 	_name_lbl = Label.new()
 	_name_lbl.text = ""
 	_name_lbl.add_theme_color_override("font_color", NAME_COL)
-	_name_lbl.add_theme_font_size_override("font_size", 28)
+	_name_lbl.add_theme_font_size_override("font_size", 22)
 	_name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_name_lbl)
 
@@ -96,7 +96,7 @@ func _build_ui() -> void:
 	_line_lbl.text = ""
 	_line_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_line_lbl.add_theme_color_override("font_color", TEXT)
-	_line_lbl.add_theme_font_size_override("font_size", 24)
+	_line_lbl.add_theme_font_size_override("font_size", 20)
 	_line_lbl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_line_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_line_lbl)
@@ -106,7 +106,7 @@ func _build_ui() -> void:
 	_hint_lbl.text = "▼ 点击继续"
 	_hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_hint_lbl.add_theme_color_override("font_color", HINT_COL)
-	_hint_lbl.add_theme_font_size_override("font_size", 18)
+	_hint_lbl.add_theme_font_size_override("font_size", 15)
 	_hint_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_hint_lbl)
 
