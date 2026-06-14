@@ -86,10 +86,10 @@ func _build_visual() -> void:
 	cs.position = Vector3(0, 1.8, 0)
 	add_child(cs)
 
-	# 头顶名牌 + 点击提示.
+	# 头顶名牌(NPC 名).
 	var plate := Label3D.new()
 	plate.name = "Nameplate"
-	plate.text = "%s\n[ 点击对话 ]" % NPC_NAME
+	plate.text = NPC_NAME
 	plate.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	plate.no_depth_test = true
 	plate.fixed_size = true
@@ -100,6 +100,21 @@ func _build_visual() -> void:
 	plate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	plate.position = Vector3(0, 4.0, 0)
 	add_child(plate)
+
+	# 点击提示(独立小字 Label3D, 比名牌小一档不抢戏).
+	var hint := Label3D.new()
+	hint.name = "ClickHint"
+	hint.text = "[ 点击对话 ]"
+	hint.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	hint.no_depth_test = true
+	hint.fixed_size = true
+	hint.pixel_size = 0.0018          # 名牌 0.0032 → 提示 0.0018,小一档
+	hint.modulate = Color(0.85, 0.78, 0.50)
+	hint.outline_size = 4
+	hint.outline_modulate = Color(0, 0, 0, 0.85)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.position = Vector3(0, 3.55, 0)
+	add_child(hint)
 
 # 递归找 AnimationPlayer (Synty 模型层级里 AnimationPlayer 是直接子节点, 但保险起见递归).
 func _find_animation_player(n: Node) -> AnimationPlayer:
@@ -134,9 +149,9 @@ func _start_dialogue() -> void:
 	# 进对话即冻结玩家 (停走/停攻击), 防止点对话框时误走位.
 	_set_player_frozen(true)
 	# 收起点击提示, 防止玩家以为还能再点.
-	var plate := get_node_or_null("Nameplate")
-	if plate is Label3D:
-		(plate as Label3D).text = NPC_NAME
+	var hint := get_node_or_null("ClickHint")
+	if hint != null:
+		hint.queue_free()
 	var panel: Node = get_tree().get_first_node_in_group("dialogue_panel")
 	if panel != null and panel.has_method("start_dialogue"):
 		if not panel.dialogue_finished.is_connected(_on_dialogue_finished):
