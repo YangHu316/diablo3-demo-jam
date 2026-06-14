@@ -10,23 +10,45 @@ setlocal
 REM 项目根 = 本脚本所在目录
 set "PROJECT_DIR=%~dp0"
 
-REM Godot 可执行文件 (本机在 Downloads, 即项目上一级)。
-REM 控制台版可看 stdout 日志; 若只想正常窗口玩, 把下行换成无 _console 的 GUI 版。
-set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
-
-if not exist "%GODOT%" (
-  echo [!] 找不到 Godot: %GODOT%
-  echo     请改本脚本里的 GODOT 路径指向你的 Godot 4.6.3 可执行文件。
-  pause
-  exit /b 1
+REM 依次尝试常见 Godot 路径
+set "GODOT="
+for %%P in (
+  "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
+  "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe"
+  "%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe"
+  "%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe"
+  "%PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe"
+  "%PROJECT_DIR%Godot_v4.6.3-stable_win64.exe"
+) do (
+  if exist "%%~P" (
+    set "GODOT=%%~P"
+    goto found
+  )
 )
 
-echo [*] 启动速通测试模式...
-echo     Godot : %GODOT%
-echo     项目  : %PROJECT_DIR%
+echo [!] 没找到 Godot 4.6.x 可执行文件,尝试过的路径:
+echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe
+echo     %PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe
+echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe
+echo     %PROJECT_DIR%..\Godot_v4.6-stable_win64.exe
+echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64_console.exe
+echo     %PROJECT_DIR%Godot_v4.6.3-stable_win64.exe
+echo.
+echo 解决:把 Godot 4.6.x 可执行文件放到上面任一路径,或编辑本脚本修 GODOT 变量
+pause
+exit /b 1
+
+:found
+echo [*] 找到 Godot: %GODOT%
+echo [*] 项目: %PROJECT_DIR%
+echo [*] 启动速通模式 (--speedrun)...
 echo     生效后控制台应打印: [RiftManager] 速通模式生效: goal=15 守门人HP=4000
 echo.
 
 "%GODOT%" --path "%PROJECT_DIR%" -- --speedrun
+
+echo.
+echo [*] Godot 进程已结束,按任意键关闭窗口...
+pause >nul
 
 endlocal
