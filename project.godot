@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="ARPG 3C Demo"
-run/main_scene="res://scenes/levels/level_02_play.tscn"
+run/main_scene="res://scenes/levels/level_02_play_art.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
@@ -39,10 +39,10 @@ EntityRegistry="*res://scripts/autoload/entity_registry.gd"
 
 [display]
 
-window/size/viewport_width=3840
-window/size/viewport_height=2160
-window/size/window_width_override=3840
-window/size/window_height_override=2160
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1920
+window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

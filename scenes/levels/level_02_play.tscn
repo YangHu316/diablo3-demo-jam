@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_dog.tscn" id="17_2rkws"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_bloated_x5.tscn" id="18_pg437"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="19"]
+[ext_resource type="PackedScene" path="res://scenes/props/towers/tower_damage.tscn" id="20_uwex3"]
+[ext_resource type="PackedScene" path="res://scenes/props/towers/tower_speed.tscn" id="21_2rkws"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_archer_x5.tscn" id="22_2rkws"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -55,7 +58,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.79977, -1.937151e-07, -3.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.03876, -1.937151e-07, 55.436813)
 
 [node name="Group_Dog_x5" parent="." unique_id=1937043361 instance=ExtResource("11_rmmqy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2229, 7.599592e-07, 17.830088)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60.102856, 7.599592e-07, 19.600573)
 
 [node name="EliteGroup_Zombie" parent="." unique_id=2094737365 instance=ExtResource("12_rqg3x")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.8029, 7.599592e-07, 51.203316)
@@ -70,13 +73,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.51008, 7.599592e-07, 39.3
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.018833, 7.599592e-07, -23.078289)
 
 [node name="EliteGroup_SkeletonGuard" parent="." unique_id=138393122 instance=ExtResource("13_tlxbo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.986954, 1.1803445, -57.14684)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.327938, 1.1803445, -50.946922)
 
 [node name="Group_Dog_x8" parent="." unique_id=1862062614 instance=ExtResource("11_rmmqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.86521, 7.599592e-07, -70.93914)
 
 [node name="EliteGroup_SkeletonGuard2" parent="." unique_id=207396896 instance=ExtResource("13_tlxbo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.68863, 1.1803445, -111.79422)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.877193, 1.1803464, -109.77218)
 
 [node name="Group_Summoner_x3" parent="." unique_id=196169633 instance=ExtResource("14_ewwkk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -111.60408, 7.599592e-07, 52.32769)
@@ -126,4 +129,31 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.25
 [node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.98991, 1.1803445, 99.99161)
 
-[node name="SettlementPanel" parent="." instance=ExtResource("19")]
+[node name="SettlementPanel" parent="." unique_id=477043764 instance=ExtResource("19")]
+
+[node name="Tower_Speed" parent="." unique_id=1883170582 instance=ExtResource("21_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.336456, 7.599592e-07, -118.96608)
+
+[node name="Group_Dog_x10" parent="." unique_id=1848810536 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63.61511, -1.1473894e-06, -106.045204)
+
+[node name="Group_Summoner_x5" parent="." unique_id=941659591 instance=ExtResource("14_ewwkk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45.653023, 7.599592e-07, -106.55377)
+
+[node name="Tower_Damage" parent="." unique_id=690431598 instance=ExtResource("20_uwex3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.192799, 7.599592e-07, -60.858253)
+
+[node name="Tower_Damage2" parent="." unique_id=972703747 instance=ExtResource("20_uwex3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.11946, 0.7999996, 50.887344)
+
+[node name="Tower_Speed2" parent="." unique_id=2024188968 instance=ExtResource("21_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.300034, 7.599592e-07, 32.140312)
+
+[node name="Group_Archer_x5" parent="." unique_id=1297144194 instance=ExtResource("22_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80.718636, 7.599592e-07, 41.388073)
+
+[node name="Group_Archer_x6" parent="." unique_id=82961384 instance=ExtResource("22_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5077915, 7.599592e-07, 29.936121)
+
+[node name="Tower_Damage3" parent="." unique_id=1370760493 instance=ExtResource("20_uwex3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100.26509, 7.599592e-07, 107.81439)

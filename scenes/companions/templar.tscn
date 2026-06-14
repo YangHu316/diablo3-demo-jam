@@ -46,6 +46,8 @@ mesh = SubResource("templar_mesh")
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="PlantModel" parent="Visual" unique_id=794577457 instance=ExtResource("2")]
+; V3.13d:在 PlantModel 实例上做 0.75x 缩放,而不是 Visual 父节点 — 后者在该模型上会让其消失
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0, 0)
 
 [node name="PlantAnim" type="Node" parent="." unique_id=1178337773]
 script = ExtResource("3")

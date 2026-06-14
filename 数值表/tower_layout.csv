@@ -1,3 +1,2 @@
 tower_id,pos_x,pos_y,pos_z,rot_y,备注
-damage_tower,-80,0,-7,0,伤害塔:出生点右侧
-speed_tower,-86,0,-7,0,加速塔:出生点左侧
+,,,,,两塔已改为手动蓝图布置(scenes/props/towers/tower_damage·tower_speed)·本表清空→TowerSpawner不再自动布塔·避免与手摆塔重复
