@@ -1,14 +1,14 @@
 extends Area3D
 
 # floor_burn_zone.gd — 屠夫烧地板单象限版本(策划 03 §6.3 简化)。
-# WARNING(2s 红光预警,无伤)→ BURNING(6s 燃烧,玩家在内每 0.5s 掉 max_hp×10%,即 ~20%/s)→ 自毁。
+# V3.0:WARNING(2s 红光预警,无伤)→ BURNING(6s 燃烧,玩家在内每 0.5s 掉 max_hp×6%,即 ~12%/s)→ 自毁。
 # 玩家进 / 出 zone 由 body_entered / body_exited 跟踪。
 
 @export var radius: float = 4.0
 @export var warning_duration: float = 2.0
 @export var burning_duration: float = 6.0
 @export var damage_tick_interval: float = 0.5
-@export var damage_pct_per_tick: float = 0.10  # 玩家最大 HP 百分比
+@export var damage_pct_per_tick: float = 0.06  # V3.0: 6%/tick × 2 tick/s = 12%/s
 
 enum Phase { WARNING, BURNING, DONE }
 var _phase: int = Phase.WARNING

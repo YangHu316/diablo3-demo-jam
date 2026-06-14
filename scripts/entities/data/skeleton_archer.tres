@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"skeleton_archer"
+enemy_name = "骷髅弓手"
+archetype = 1
+max_health = 120
+attack_damage = 33
+move_speed = 6.0
+detection_range = 22.0
+lose_aggro_range = 28.0
+attack_range = 18.0
+attack_windup = 0.7
+attack_recovery = 0.5
+attack_hit_window = 0.1
+albedo_color = Color(0.85, 0.85, 0.7, 1)
