@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" path="res://scripts/levels/tower_spawner.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="9"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -34,3 +35,5 @@ script = ExtResource("4")
 
 [node name="TowerSpawner" type="Node3D" parent="."]
 script = ExtResource("8")
+
+[node name="SettlementPanel" parent="." instance=ExtResource("9")]

@@ -22,9 +22,14 @@ const TEXT := Color(0.85, 0.82, 0.74)
 const MUTED := Color(0.6, 0.55, 0.46)
 
 var _root: Control = null
+var _title_lbl: Label = null
+var _loot_title: Label = null
 var _time_kill_lbl: Label = null
 var _loot_box: VBoxContainer = null
 var _visible: bool = false
+var _is_fail: bool = false
+
+const FAIL_TITLE := Color(0.92, 0.24, 0.20)   # 失败红
 
 func _ready() -> void:
 	layer = 120
@@ -94,6 +99,7 @@ func _build_ui() -> void:
 	title.add_theme_color_override("font_color", TITLE)
 	title.add_theme_font_size_override("font_size", 56)
 	vbox.add_child(title)
+	_title_lbl = title
 
 	vbox.add_child(_gold_rule())
 
@@ -114,6 +120,7 @@ func _build_ui() -> void:
 	loot_title.add_theme_color_override("font_color", GOLD)
 	loot_title.add_theme_font_size_override("font_size", 20)
 	vbox.add_child(loot_title)
+	_loot_title = loot_title
 
 	# 掉落列表 (滚动容器防溢出).
 	var loot_frame := PanelContainer.new()
@@ -144,6 +151,8 @@ func _connect() -> void:
 	var rm: Node = get_node_or_null("/root/RiftManager")
 	if rm != null and rm.has_signal("run_cleared"):
 		rm.run_cleared.connect(_on_run_cleared)
+	if rm != null and rm.has_signal("rift_failed"):
+		rm.rift_failed.connect(_on_rift_failed)
 
 func _dt() -> Node:
 	return get_node_or_null("/root/DataTables")
@@ -152,6 +161,10 @@ func _dt() -> Node:
 func _on_run_cleared(clear_time_sec: float, kill_count: int) -> void:
 	if _visible:
 		return
+	_is_fail = false
+	_title_lbl.text = "大秘境通关！"
+	_title_lbl.add_theme_color_override("font_color", TITLE)
+	_loot_title.text = "战利品"
 	_time_kill_lbl.text = "用时 %s      击杀 %d" % [_fmt_time(clear_time_sec), kill_count]
 	_fill_loot()
 	_visible = true
@@ -159,6 +172,35 @@ func _on_run_cleared(clear_time_sec: float, kill_count: int) -> void:
 	_root.modulate.a = 0.0
 	var tw: Tween = create_tween()
 	tw.tween_property(_root, "modulate:a", 1.0, 0.5)
+
+# 超时失败: 倒计时归零未满进度. 复用结算页, 红标题 + 无战利品.
+func _on_rift_failed(rift_progress: float, rift_goal: float, kill_count: int) -> void:
+	if _visible:
+		return
+	_is_fail = true
+	_title_lbl.text = "任务失败"
+	_title_lbl.add_theme_color_override("font_color", FAIL_TITLE)
+	_loot_title.text = "结算"
+	var pct: int = int(clampf(rift_progress / maxf(rift_goal, 1.0), 0.0, 1.0) * 100.0)
+	_time_kill_lbl.text = "时间耗尽 · 进度 %d%%      击杀 %d" % [pct, kill_count]
+	_fill_fail()
+	_visible = true
+	_root.visible = true
+	_root.modulate.a = 0.0
+	var tw: Tween = create_tween()
+	tw.tween_property(_root, "modulate:a", 1.0, 0.5)
+
+# 失败页战利品区: 清空 + 一行「未通关 · 无奖励」(灰).
+func _fill_fail() -> void:
+	for c in _loot_box.get_children():
+		c.queue_free()
+	var lbl := Label.new()
+	lbl.text = "未通关 · 无奖励"
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_color_override("font_color", MUTED)
+	lbl.add_theme_font_size_override("font_size", 18)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_loot_box.add_child(lbl)
 
 func _fill_loot() -> void:
 	for c in _loot_box.get_children():
