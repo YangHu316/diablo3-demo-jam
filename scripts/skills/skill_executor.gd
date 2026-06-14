@@ -366,6 +366,17 @@ func _execute_projectile(sd: Resource, slot_index: int = -1) -> void:
 	else:
 		spawn_pos = _player.global_position + Vector3(0, 1.0, 0)
 
+	# V3.13 关键修复:level_02 关卡组把 EliteGroup_SkeletonGuard 摆在 y=1.18 高台上,
+	# 箭固定 y=1.0 水平飞 → 从骷髅脚下 18cm 处穿过,永远 miss。
+	# 修法:如果玩家锁定了攻击目标 → 箭方向重算成"spawn → 目标胸口",含 Y 分量。
+	# 这样无论目标在 y=0 平地还是 y=2 高台,箭都能精准命中。
+	if "_attack_target" in _player and _player._attack_target != null and is_instance_valid(_player._attack_target):
+		var t: Node3D = _player._attack_target as Node3D
+		var aim_point: Vector3 = t.global_position + Vector3(0, 1.0, 0)  # 胸口高度
+		var aim_dir: Vector3 = aim_point - spawn_pos
+		if aim_dir.length() > 0.001:
+			fwd = aim_dir.normalized()
+
 	var count: int = max(1, int(sd.projectile_count))
 	var spread: float = float(sd.projectile_spread_angle)
 	var scene_root: Node = get_tree().current_scene

@@ -87,10 +87,12 @@ func _reposition_rift_panel() -> void:
 	const MAP_SIZE_RATIO: float = 0.14   # 同 minimap_panel.gd
 	const MARGIN: float = 16.0           # 同 minimap_panel.gd
 	const GAP: float = 8.0               # 小地图与进度条之间的竖向间隙
+	const TEXT_ROW: float = 14.0         # 进度条上方文字行(骷髅/百分比/时间)高度
+	const BAR_HEIGHT: float = 60.0       # 进度条本体(Frame)厚度; 调这个改 Y 方向粗细
 	var vw: float = float(get_viewport().size.x)
 	var map_size: float = vw * MAP_SIZE_RATIO
 	var minimap_bottom: float = MARGIN + map_size
-	# 右上角锚定: 右边距 MARGIN, 宽度=小地图宽度.
+	# 右上角锚定: 右边距 MARGIN, 宽度=小地图宽度(X 不变).
 	_rift_panel.anchor_left = 1.0
 	_rift_panel.anchor_top = 0.0
 	_rift_panel.anchor_right = 1.0
@@ -98,7 +100,7 @@ func _reposition_rift_panel() -> void:
 	_rift_panel.offset_left = -(map_size + MARGIN)
 	_rift_panel.offset_right = -MARGIN
 	_rift_panel.offset_top = minimap_bottom + GAP
-	_rift_panel.offset_bottom = minimap_bottom + GAP + 38.0   # Frame(24高) + 上方文字行(14)
+	_rift_panel.offset_bottom = minimap_bottom + GAP + TEXT_ROW + BAR_HEIGHT
 	# 重定位后 Track 宽度变了, 重算填充宽度.
 	call_deferred("_apply_rift_fill")
 
