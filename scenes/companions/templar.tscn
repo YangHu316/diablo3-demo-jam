@@ -43,7 +43,8 @@ mesh = SubResource("templar_mesh")
 
 [node name="Visual" type="Node3D" parent="." unique_id=1421216713]
 ; V3.13:模型前后反 → 绕 Y 转 180°,让正面朝向 Templar 的 forward(-Z)
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+; V3.13d:整体缩 0.75x,随从体型比玩家小一圈,主次分明
+transform = Transform3D(-0.75, 0, 0, 0, 0.75, 0, 0, 0, -0.75, 0, 0, 0)
 
 [node name="PlantModel" parent="Visual" unique_id=794577457 instance=ExtResource("2")]
 
