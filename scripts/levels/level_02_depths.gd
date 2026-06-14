@@ -100,6 +100,7 @@ const PLAYER_SPAWN := Vector3(-83, 0, -7)   # 西门
 var nav_region: NavigationRegion3D = null
 
 func _ready() -> void:
+	add_to_group("level")
 	_rebuild()
 
 func _rebuild() -> void:

@@ -12,7 +12,7 @@
 [node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83, 0, -7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=708971309]
 transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, -83, 12, 5)
@@ -23,6 +23,6 @@ script = ExtResource("3")
 [node name="ScreenShake" type="Node" parent="Camera3D" unique_id=154599739]
 script = ExtResource("4")
 
-[node name="HUD" parent="." instance=ExtResource("5")]
+[node name="HUD" parent="." unique_id=1591168324 instance=ExtResource("5")]
 
-[node name="InventoryPanel" parent="." instance=ExtResource("6")]
+[node name="InventoryPanel" parent="." unique_id=1503968696 instance=ExtResource("6")]

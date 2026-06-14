@@ -31,12 +31,17 @@ var _death_label: Label = null
 var _death_hint: Label = null
 var _is_dead: bool = false
 
+const MinimapPanel := preload("res://scripts/ui/minimap_panel.gd")
+
 func _ready() -> void:
 	layer = 100
 	add_to_group("hud")
 	_build_ui()
 	_connect_signals()
 	_initial_refresh()
+	# 常驻小地图（独立 CanvasLayer layer=105，挂到场景根）
+	var minimap := MinimapPanel.new()
+	get_tree().root.call_deferred("add_child", minimap)
 
 # ── UI 构建 ───────────────────────────────────────────────────
 func _build_ui() -> void:
