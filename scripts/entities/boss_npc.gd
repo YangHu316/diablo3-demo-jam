@@ -40,6 +40,28 @@ func _build_visual() -> void:
 		(body as Node3D).scale = Vector3(1.2, 1.2, 1.2)   # 比玩家略大,体现"古老守护者"压迫感
 		# 让石像面朝南门(玩家方向, +Z), Synty 模型默认 +Z 朝向需要 180° 翻面对玩家
 		(body as Node3D).rotation = Vector3(0, PI, 0)
+	# V3.13e:Synty 模型默认 T-pose(双臂张开), 注入 UAL Idle 让它站立呼吸.
+	var ap: AnimationPlayer = _find_animation_player(body)
+	if ap != null:
+		var anim_lib: Node = get_node_or_null("/root/AnimLib")
+		if anim_lib != null and anim_lib.has_method("inject_library"):
+			anim_lib.inject_library(ap, "ual1")
+			if ap.has_animation("ual1/Idle"):
+				# 设循环(UAL 导入默认非循环, 必须显式设)
+				var idle: Animation = ap.get_animation("ual1/Idle")
+				if idle != null:
+					idle.loop_mode = Animation.LOOP_LINEAR
+				ap.play("ual1/Idle")
+
+# 递归找 AnimationPlayer (Synty 模型层级里 AnimationPlayer 是直接子节点, 但保险起见递归).
+func _find_animation_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n as AnimationPlayer
+	for c in n.get_children():
+		var r: AnimationPlayer = _find_animation_player(c)
+		if r != null:
+			return r
+	return null
 
 	# 地面光环 (扁圆柱, 半透明金).
 	var halo := MeshInstance3D.new()
