@@ -1,28 +1,36 @@
 extends CanvasLayer
 
-# 简版 HUD(占位,美术 D 后期重做):
-#   TopLeft   : Lv X + XP 条
-#   BottomLeft: HP 红条 (current/max)
-#   BottomCtr : 5 技能槽 + CD 灰蒙板 + 剩余秒数
-#   BottomRight: Focus 蓝条 (current/max)
-#
-# 完全由脚本程序化生成 Control 树,不依赖具体 tscn 节点结构。
-# 监听:ProgressionManager.{xp_gained,level_up}, FocusResource.focus_changed,
-#       Player.health_changed, SkillSlotManager.cooldown_changed
+# HUD(角色D 美术布局,按 D3 参考重排;数据绑定沿用系统组契约,未改信号)
+#   TopLeft   : 状态/Buff 占位容器(无 buff 系统前留空)
+#   TopCenter : 大秘境进度条 (RiftManager.progress_changed)
+#   TopRight  : 小地图框(占位)
+#   BottomLeft: 生命球 (Player.health_changed)
+#   BottomRight: 资源球·复仇/专注 (FocusResource.focus_changed)
+#   BottomCenter: 5 技能槽(D3 图标 + 金框 + CD 扫描遮罩 + 按键)(SkillSlotManager.cooldown_changed)
+#   Bottom    : 经验条 + 等级 (ProgressionManager.xp_gained/level_up)
+# 信号:ProgressionManager / FocusResource / RiftManager / Player / SkillSlotManager
 
 const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
+# 技能图标:从 D3 恶魔猎手图集(64px 格)按 (列,行) 取区域(对应 利箭/多重/冰霜/翻滚/箭雨)
+# 只依赖一张图集 png,代码里建 AtlasTexture,避免依赖易丢的切片 .tres
+const SKILL_SHEET: String = "res://assets/ui/skills/2DUI_Skills_DemonHunter.png"
+const SKILL_CELL: int = 64
+const SKILL_REGIONS: Array = [Vector2i(2, 0), Vector2i(5, 0), Vector2i(9, 0), Vector2i(1, 1), Vector2i(1, 2)]
+const GOLD := Color(0.72, 0.56, 0.26)
+const DARK := Color(0.06, 0.05, 0.04, 0.92)
 
 var _player: Node = null
 var _slot_mgr: Node = null
 
+var _hp_fill: ColorRect = null
 var _hp_label: Label = null
-var _hp_bar: ProgressBar = null
+var _focus_fill: ColorRect = null
 var _focus_label: Label = null
-var _focus_bar: ProgressBar = null
 var _xp_label: Label = null
 var _xp_bar: ProgressBar = null
 var _rift_label: Label = null
 var _rift_bar: ProgressBar = null
+var _buff_box: HBoxContainer = null
 var _slot_panels: Array = []
 var _slot_cd_overlays: Array = []
 var _slot_cd_labels: Array = []
@@ -47,25 +55,14 @@ func _build_ui() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	# ── TopLeft: 等级 + XP ─────────────────────────────
-	var tl: VBoxContainer = VBoxContainer.new()
-	tl.position = Vector2(16, 16)
-	tl.custom_minimum_size = Vector2(220, 40)
-	tl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(tl)
+	# ── TopLeft: 状态/Buff 占位容器(留空,等 buff 系统)──
+	_buff_box = HBoxContainer.new()
+	_buff_box.position = Vector2(16, 14)
+	_buff_box.add_theme_constant_override("separation", 5)
+	_buff_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_buff_box)
 
-	_xp_label = Label.new()
-	_xp_label.text = "Lv 1   0/300"
-	_xp_label.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
-	tl.add_child(_xp_label)
-
-	_xp_bar = ProgressBar.new()
-	_xp_bar.show_percentage = false
-	_xp_bar.custom_minimum_size = Vector2(220, 8)
-	_xp_bar.modulate = Color(1, 0.85, 0.4, 1)
-	tl.add_child(_xp_bar)
-
-	# ── TopCenter: 大秘境进度条 (RiftManager) ──────────
+	# ── TopCenter: 大秘境进度条 ──
 	var tc: VBoxContainer = VBoxContainer.new()
 	tc.anchor_left = 0.5
 	tc.anchor_right = 0.5
@@ -75,39 +72,56 @@ func _build_ui() -> void:
 	tc.add_theme_constant_override("separation", 2)
 	tc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(tc)
-
 	_rift_label = Label.new()
 	_rift_label.text = "大秘境进度  0%"
 	_rift_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_rift_label.add_theme_color_override("font_color", Color(0.75, 0.55, 1.0))
+	_rift_label.add_theme_color_override("font_color", Color(0.78, 0.6, 1.0))
 	_rift_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tc.add_child(_rift_label)
-
 	_rift_bar = ProgressBar.new()
 	_rift_bar.show_percentage = false
 	_rift_bar.custom_minimum_size = Vector2(360, 12)
 	_rift_bar.modulate = Color(0.65, 0.45, 1.0, 1)
 	_rift_bar.max_value = 100.0
-	_rift_bar.value = 0.0
 	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tc.add_child(_rift_bar)
 
-	# ── BottomLeft: HP ─────────────────────────────────
-	_hp_label = _make_anchored_label(root, Vector2(16, -82), Vector2(220, 22),
-			"HP", Color(1, 1, 1), Vector2(0, 1))
-	_hp_bar = _make_anchored_bar(root, Vector2(16, -56), Vector2(220, 22),
-			Color(0.95, 0.2, 0.2), Vector2(0, 1))
+	# ── TopRight: 小地图框(占位)──
+	var mm: Panel = Panel.new()
+	mm.anchor_left = 1.0
+	mm.anchor_right = 1.0
+	mm.offset_left = -150
+	mm.offset_top = 12
+	mm.offset_right = -14
+	mm.offset_bottom = 148
+	mm.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mm.add_theme_stylebox_override("panel", _frame_box(Color(0.05, 0.07, 0.05, 0.85), 4))
+	root.add_child(mm)
+	var mm_lbl: Label = Label.new()
+	mm_lbl.text = "小地图"
+	mm_lbl.anchor_right = 1.0
+	mm_lbl.anchor_bottom = 1.0
+	mm_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mm_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mm_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+	mm_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mm.add_child(mm_lbl)
 
-	# ── BottomRight: Focus ─────────────────────────────
-	_focus_label = _make_anchored_label(root, Vector2(-236, -82), Vector2(220, 22),
-			"Focus", Color(0.7, 0.85, 1), Vector2(1, 1))
-	_focus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_focus_bar = _make_anchored_bar(root, Vector2(-236, -56), Vector2(220, 22),
-			Color(0.3, 0.5, 1.0), Vector2(1, 1))
+	# ── BottomLeft: 生命球 ──
+	_hp_fill = _make_orb(root, Vector2(0, 1), Vector2(20, -118), 96, Color(0.64, 0.10, 0.07))
+	_hp_label = _make_anchored_label(root, Vector2(20, -46), Vector2(96, 18),
+			"生命", Color(1, 0.92, 0.92), Vector2(0, 1))
+	_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-	# ── BottomCenter: 5 个技能槽 ────────────────────────
+	# ── BottomRight: 资源球(复仇/专注)──
+	_focus_fill = _make_orb(root, Vector2(1, 1), Vector2(-116, -118), 96, Color(0.16, 0.30, 0.55))
+	_focus_label = _make_anchored_label(root, Vector2(-128, -46), Vector2(120, 18),
+			"专注", Color(0.85, 0.92, 1), Vector2(1, 1))
+	_focus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	# ── BottomCenter: 5 技能槽 ──
 	var slots: HBoxContainer = HBoxContainer.new()
-	var slot_size: float = 56.0
+	var slot_size: float = 58.0
 	var spacing: int = 6
 	var total_w: float = slot_size * 5 + spacing * 4
 	slots.anchor_left = 0.5
@@ -115,9 +129,9 @@ func _build_ui() -> void:
 	slots.anchor_right = 0.5
 	slots.anchor_bottom = 1.0
 	slots.offset_left = -total_w * 0.5
-	slots.offset_top = -slot_size - 16
+	slots.offset_top = -slot_size - 30
 	slots.offset_right = total_w * 0.5
-	slots.offset_bottom = -16
+	slots.offset_bottom = -30
 	slots.add_theme_constant_override("separation", spacing)
 	slots.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(slots)
@@ -126,23 +140,45 @@ func _build_ui() -> void:
 		var panel: Panel = Panel.new()
 		panel.custom_minimum_size = Vector2(slot_size, slot_size)
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_theme_stylebox_override("panel", _frame_box(DARK, 4))
 		slots.add_child(panel)
 		_slot_panels.append(panel)
+
+		# 技能图标(最底层):从图集切区域
+		var icon: TextureRect = TextureRect.new()
+		if ResourceLoader.exists(SKILL_SHEET):
+			var at: AtlasTexture = AtlasTexture.new()
+			at.atlas = load(SKILL_SHEET)
+			var rc: Vector2i = SKILL_REGIONS[i]
+			at.region = Rect2(rc.x * SKILL_CELL, rc.y * SKILL_CELL, SKILL_CELL, SKILL_CELL)
+			icon.texture = at
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.anchor_right = 1.0
+		icon.anchor_bottom = 1.0
+		icon.offset_left = 3
+		icon.offset_top = 3
+		icon.offset_right = -3
+		icon.offset_bottom = -3
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.add_child(icon)
 
 		# 按键标签(右下)
 		var key_lbl: Label = Label.new()
 		key_lbl.text = SKILL_KEY_LABELS[i]
 		key_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
+		key_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+		key_lbl.add_theme_constant_override("outline_size", 4)
 		key_lbl.add_theme_font_size_override("font_size", 12)
 		key_lbl.anchor_right = 1.0
 		key_lbl.anchor_bottom = 1.0
-		key_lbl.offset_left = -32
+		key_lbl.offset_left = -34
 		key_lbl.offset_top = -18
 		key_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		key_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(key_lbl)
 
-		# CD 灰蒙板 — 从下往上消(anchor_top 动态)
+		# CD 灰蒙板(从下往上消)
 		var cd_overlay: ColorRect = ColorRect.new()
 		cd_overlay.color = Color(0, 0, 0, 0.7)
 		cd_overlay.anchor_right = 1.0
@@ -152,7 +188,7 @@ func _build_ui() -> void:
 		panel.add_child(cd_overlay)
 		_slot_cd_overlays.append(cd_overlay)
 
-		# CD 剩余秒数(中央)
+		# CD 剩余秒数
 		var cd_lbl: Label = Label.new()
 		cd_lbl.add_theme_color_override("font_color", Color(1, 1, 1))
 		cd_lbl.add_theme_font_size_override("font_size", 18)
@@ -165,7 +201,34 @@ func _build_ui() -> void:
 		panel.add_child(cd_lbl)
 		_slot_cd_labels.append(cd_lbl)
 
-	# ── Death Overlay(红屏 + 大字)─────────────────────
+	# ── Bottom: 经验条 + 等级(技能栏下方)──
+	var xp_box: VBoxContainer = VBoxContainer.new()
+	xp_box.anchor_left = 0.5
+	xp_box.anchor_top = 1.0
+	xp_box.anchor_right = 0.5
+	xp_box.anchor_bottom = 1.0
+	xp_box.offset_left = -250
+	xp_box.offset_top = -24
+	xp_box.offset_right = 250
+	xp_box.offset_bottom = -6
+	xp_box.add_theme_constant_override("separation", 1)
+	xp_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(xp_box)
+	_xp_bar = ProgressBar.new()
+	_xp_bar.show_percentage = false
+	_xp_bar.custom_minimum_size = Vector2(500, 8)
+	_xp_bar.modulate = Color(1, 0.85, 0.4, 1)
+	_xp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xp_box.add_child(_xp_bar)
+	_xp_label = Label.new()
+	_xp_label.text = "Lv 1   0/300"
+	_xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_xp_label.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
+	_xp_label.add_theme_font_size_override("font_size", 11)
+	_xp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	xp_box.add_child(_xp_label)
+
+	# ── Death Overlay ──
 	_death_overlay = ColorRect.new()
 	_death_overlay.color = Color(0.55, 0.05, 0.05, 0.0)
 	_death_overlay.anchor_right = 1.0
@@ -173,7 +236,6 @@ func _build_ui() -> void:
 	_death_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_death_overlay.visible = false
 	root.add_child(_death_overlay)
-
 	_death_label = Label.new()
 	_death_label.text = "你死了"
 	_death_label.anchor_left = 0.5
@@ -191,7 +253,6 @@ func _build_ui() -> void:
 	_death_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_death_label.visible = false
 	root.add_child(_death_label)
-
 	_death_hint = Label.new()
 	_death_hint.text = "按 R 重新开始"
 	_death_hint.anchor_left = 0.5
@@ -209,13 +270,49 @@ func _build_ui() -> void:
 	_death_hint.visible = false
 	root.add_child(_death_hint)
 
-# ── 锚定工具函数(anchor 设到 0 或 1,offset 是负数表示从右/下边贴边)
-# anchor_xy: Vector2(left_anchor, top_anchor) ∈ {0, 1}
+# ── 工具:哥特金框 StyleBox ──
+func _frame_box(bg: Color, radius: int) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.set_border_width_all(2)
+	sb.border_color = GOLD
+	sb.set_corner_radius_all(radius)
+	return sb
+
+# ── 工具:圆形球体(返回 fill ColorRect,refresh 时改 anchor_top)──
+func _make_orb(parent: Node, anchor_xy: Vector2, off: Vector2, diam: float, fill_color: Color) -> ColorRect:
+	var orb: Panel = Panel.new()
+	orb.anchor_left = anchor_xy.x
+	orb.anchor_top = anchor_xy.y
+	orb.anchor_right = anchor_xy.x
+	orb.anchor_bottom = anchor_xy.y
+	orb.offset_left = off.x
+	orb.offset_top = off.y
+	orb.offset_right = off.x + diam
+	orb.offset_bottom = off.y + diam
+	orb.clip_contents = true
+	orb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb.add_theme_stylebox_override("panel", _frame_box(Color(0.04, 0.04, 0.05, 0.95), int(diam / 2)))
+	parent.add_child(orb)
+	var fill: ColorRect = ColorRect.new()
+	fill.color = fill_color
+	fill.anchor_left = 0.0
+	fill.anchor_top = 0.5
+	fill.anchor_right = 1.0
+	fill.anchor_bottom = 1.0
+	fill.offset_top = 0.0
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb.add_child(fill)
+	return fill
+
+# anchor_xy: Vector2(left_anchor, top_anchor) ∈ {0,1}
 func _make_anchored_label(parent: Node, off: Vector2, size: Vector2,
 		text: String, color: Color, anchor_xy: Vector2) -> Label:
 	var lbl: Label = Label.new()
 	lbl.text = text
 	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+	lbl.add_theme_constant_override("outline_size", 3)
 	lbl.anchor_left = anchor_xy.x
 	lbl.anchor_top = anchor_xy.y
 	lbl.anchor_right = anchor_xy.x
@@ -228,24 +325,7 @@ func _make_anchored_label(parent: Node, off: Vector2, size: Vector2,
 	parent.add_child(lbl)
 	return lbl
 
-func _make_anchored_bar(parent: Node, off: Vector2, size: Vector2,
-		color: Color, anchor_xy: Vector2) -> ProgressBar:
-	var bar: ProgressBar = ProgressBar.new()
-	bar.show_percentage = false
-	bar.modulate = color
-	bar.anchor_left = anchor_xy.x
-	bar.anchor_top = anchor_xy.y
-	bar.anchor_right = anchor_xy.x
-	bar.anchor_bottom = anchor_xy.y
-	bar.offset_left = off.x
-	bar.offset_top = off.y
-	bar.offset_right = off.x + size.x
-	bar.offset_bottom = off.y + size.y
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	parent.add_child(bar)
-	return bar
-
-# ── 信号连接 ──────────────────────────────────────────────
+# ── 信号连接(沿用系统组契约,未改)──────────────────────
 func _connect_signals() -> void:
 	var pm: Node = get_node_or_null("/root/ProgressionManager")
 	if pm != null:
@@ -253,15 +333,12 @@ func _connect_signals() -> void:
 			pm.xp_gained.connect(_on_xp_gained)
 		if pm.has_signal("level_up"):
 			pm.level_up.connect(_on_level_up)
-
 	var fr: Node = get_node_or_null("/root/FocusResource")
 	if fr != null and fr.has_signal("focus_changed"):
 		fr.focus_changed.connect(_on_focus_changed)
-
 	var rm: Node = get_node_or_null("/root/RiftManager")
 	if rm != null and rm.has_signal("progress_changed"):
 		rm.progress_changed.connect(_on_rift_progress)
-
 	call_deferred("_acquire_player")
 
 func _acquire_player() -> void:
@@ -276,7 +353,6 @@ func _acquire_player() -> void:
 		_player.health_changed.connect(_on_health_changed)
 	if _player.has_signal("player_died"):
 		_player.player_died.connect(_on_player_died)
-	# Skill slot manager — 战斗组挂在 Player 子节点
 	for c in _player.get_children():
 		if c.has_signal("cooldown_changed"):
 			_slot_mgr = c
@@ -285,7 +361,6 @@ func _acquire_player() -> void:
 		_slot_mgr.cooldown_changed.connect(_on_cooldown_changed)
 	_initial_refresh()
 
-# ── 首次刷新(信号连上之前已经发生的状态)──────────────
 func _initial_refresh() -> void:
 	var pm: Node = get_node_or_null("/root/ProgressionManager")
 	if pm != null and "level" in pm and "current_xp" in pm:
@@ -331,24 +406,23 @@ func _on_rift_progress(value: float, goal: float) -> void:
 	_rift_bar.value = value
 	var pct: int = int(clampf(value / maxf(goal, 1.0), 0.0, 1.0) * 100.0)
 	if _rift_label != null:
-		if value >= goal:
-			_rift_label.text = "守门人降临!"
-		else:
-			_rift_label.text = "大秘境进度  %d%%" % pct
+		_rift_label.text = "守门人降临!" if value >= goal else "大秘境进度  %d%%" % pct
 
 func _on_focus_changed(cur: float, max_focus: float) -> void:
-	if _focus_bar == null:
+	if _focus_fill == null:
 		return
-	_focus_bar.max_value = max(max_focus, 1.0)
-	_focus_bar.value = cur
-	_focus_label.text = "Focus  %d/%d" % [int(cur), int(max_focus)]
+	var ratio: float = clampf(cur / maxf(max_focus, 1.0), 0.0, 1.0)
+	_focus_fill.anchor_top = 1.0 - ratio
+	_focus_fill.offset_top = 0.0
+	_focus_label.text = "专注 %d/%d" % [int(cur), int(max_focus)]
 
 func _on_health_changed(cur: int, mx: int) -> void:
-	if _hp_bar == null:
+	if _hp_fill == null:
 		return
-	_hp_bar.max_value = max(mx, 1)
-	_hp_bar.value = cur
-	_hp_label.text = "HP  %d/%d" % [cur, mx]
+	var ratio: float = clampf(float(cur) / float(max(mx, 1)), 0.0, 1.0)
+	_hp_fill.anchor_top = 1.0 - ratio
+	_hp_fill.offset_top = 0.0
+	_hp_label.text = "生命 %d" % cur
 
 func _on_cooldown_changed(slot_index: int, remaining: float, total: float) -> void:
 	if slot_index < 0 or slot_index >= _slot_cd_overlays.size():
@@ -361,7 +435,6 @@ func _on_cooldown_changed(slot_index: int, remaining: float, total: float) -> vo
 	else:
 		overlay.visible = true
 		var ratio: float = clamp(remaining / max(total, 0.01), 0.0, 1.0)
-		# 蒙板从下往上消:anchor_top 越接近 1,蒙板越小
 		overlay.anchor_top = 1.0 - ratio
 		overlay.offset_top = 0.0
 		label.text = "%.1f" % remaining
@@ -379,7 +452,6 @@ func _on_player_died() -> void:
 	var tw: Tween = create_tween()
 	tw.tween_property(_death_overlay, "color:a", 0.55, 0.5)
 
-# Boss 死亡演出:全屏短暂白闪(由 butcher.gd 调用)
 func boss_killed_flash() -> void:
 	var root: Control = get_node_or_null("Root")
 	if root == null:
