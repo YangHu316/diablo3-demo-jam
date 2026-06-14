@@ -10,13 +10,14 @@ extends Node
 @export var anim_player_path: NodePath
 # UAL 状态→动画名(默认对齐 ual1 命名)
 @export var anim_library: String = "ual1"
-@export var idle_anim: String = "Idle_Loop"
-@export var move_anim: String = "Jog_Fwd_Loop"
-@export var dodge_anim: String = "Dodge_Fwd"
-@export var attack_anim: String = "Bow_Attack"  # 暂未触发,留 hook
+# 名字必须对齐 ual1 库实际动画名(Idle/Jog_Fwd/Roll…),否则 _resolve 回退到不存在名 → 不播 → T-pose
+@export var idle_anim: String = "Idle"
+@export var move_anim: String = "Jog_Fwd"
+@export var dodge_anim: String = "Roll"
+@export var attack_anim: String = "Pistol_Shoot"  # 远程射击姿势(ual1 无弓,暂代),暂未触发留 hook
 @export var death_anim: String = "Death01"
 # 循环动画(导入的 glTF 默认不循环)
-@export var loop_anims: PackedStringArray = ["Idle_Loop", "Jog_Fwd_Loop", "Walk_Loop"]
+@export var loop_anims: PackedStringArray = ["Idle", "Jog_Fwd", "Walk"]
 
 enum State { IDLE, MOVE, DODGE, DEATH }
 
