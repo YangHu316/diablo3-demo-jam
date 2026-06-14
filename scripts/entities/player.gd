@@ -112,6 +112,11 @@ func _update_camera_ref() -> void:
 # ── 输入解析 + 移动 ────────────────────────────────
 # 优先级:Shift 站桩 > 翻滚(在外层) > force_move > LMB 点击意图 > 当前移动/攻击目标 > 停
 func _tick_input_and_movement(delta: float) -> void:
+	# 对话/演出冻结: 完全屏蔽点击意图 (不走动/不锁敌), 仅停在原地.
+	if is_frozen:
+		_clear_targets()
+		_stop_horizontal_motion()
+		return
 	var shift_held: bool = Input.is_action_pressed("force_stand")
 	var force_move_held: bool = Input.is_action_pressed("force_move")
 	var lmb_held: bool = Input.is_action_pressed("attack_primary")

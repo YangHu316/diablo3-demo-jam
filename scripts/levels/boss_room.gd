@@ -9,8 +9,12 @@ extends Node3D
 
 const BUTCHER := preload("res://scenes/enemies/butcher.tscn")
 const SPAWN_TRIGGER := preload("res://scripts/components/spawn_trigger.gd")
+const BOSS_NPC := preload("res://scripts/entities/boss_npc.gd")
 
 const PLAYER_SPAWN := Vector3(0, 0, 15)   # 南门入口内侧
+
+# 守门人死亡掉落位置 (供 NPC 在此附近现身). _build_boss 时记下 BossSpawn 坐标.
+var _boss_pos: Vector3 = Vector3(0, 0, -8)
 
 func _ready() -> void:
 	for c in get_children():
@@ -20,6 +24,10 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		_build_boss()
 		call_deferred("_place_player")
+		# 守门人死亡 → 先现身 NPC (对话两轮后才弹结算).
+		var rm: Node = get_node_or_null("/root/RiftManager")
+		if rm != null and rm.has_signal("boss_defeated"):
+			rm.boss_defeated.connect(_on_boss_defeated)
 
 func _mat(col: Color, emissive: bool = false) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -112,10 +120,23 @@ func _build_boss() -> void:
 	# (原占位"走尸"monster_id 非 butcher, 不触发掉落/结算/速通HP覆写, 已弃用.)
 	var spawn: Node3D = get_node_or_null("BossSpawn")
 	var pos: Vector3 = spawn.global_position if spawn != null else Vector3(0, 0, -8)
+	_boss_pos = pos
 	var boss: Node = BUTCHER.instantiate()
 	add_child(boss)
 	if boss is Node3D:
 		(boss as Node3D).global_position = pos
+
+# 守门人死亡: 在 boss 倒下处稍前方现身 NPC. 玩家仍可走向 NPC 点击它;
+# 冻结/解冻由 NPC 自己在对话开始/结束时负责 (见 boss_npc.gd).
+func _on_boss_defeated(_clear_time_sec: float, _kill_count: int) -> void:
+	var npc := Area3D.new()
+	npc.set_script(BOSS_NPC)
+	add_child(npc)
+	# 落点: boss 处朝南门(玩家方向)偏移 2.5 单位, 贴地.
+	var p: Vector3 = _boss_pos
+	p.z += 2.5
+	p.y = 0.0
+	npc.global_position = p
 
 func _place_player() -> void:
 	var ps := get_tree().get_nodes_in_group("player")

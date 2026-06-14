@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/levels/boss_room.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dialogue_panel.tscn" id="8"]
 
 [node name="BossRoomPlay" type="Node3D"]
 
@@ -30,3 +31,5 @@ script = ExtResource("4")
 [node name="InventoryPanel" parent="." instance=ExtResource("6")]
 
 [node name="SettlementPanel" parent="." instance=ExtResource("7")]
+
+[node name="DialoguePanel" parent="." instance=ExtResource("8")]
