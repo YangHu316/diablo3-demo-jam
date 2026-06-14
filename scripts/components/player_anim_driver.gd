@@ -159,6 +159,13 @@ func _on_skill_activated(_slot: int, sd: Resource) -> void:
 	var t: int = int(sd.skill_type)
 	if t != 0 and t != 3:
 		return
+	# V3.9:玩家移动中不放抬手扣扳机动画 — 真正攻击时玩家已停在射程内 (is_moving=false)
+	# 走路途中经过敌人触发的 LMB armed 自动开火,不该把跑步动画打断为射击姿势
+	var moving: bool = false
+	if _player != null and "is_moving" in _player:
+		moving = bool(_player.is_moving)
+	if moving:
+		return
 	_state = State.ATTACK
 	var full: String = _resolve(attack_anim)
 	_play(full)
