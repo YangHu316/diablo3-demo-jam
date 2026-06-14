@@ -13,8 +13,10 @@ const FOG_UPDATE_INTERVAL: float = 0.15   # 迷雾采样间隔（秒）
 const MAP_SIZE_RATIO: float      = 0.14   # 小地图边长 = 屏幕宽 × 此值（缩小一半）
 const MARGIN: float              = 16.0   # 距屏幕右/上边缘的像素距离
 const RECT_INFLATE: float        = 1.5    # 矩形扩展量（消除拼接缝隙）
-# 格子目标像素大小：自适应分辨率，始终约 2px/格（越小越平滑）
-const FOG_CELL_PX: float         = 2.0   # 每格目标屏幕像素数
+# 格子目标像素大小：自适应分辨率，越小越平滑但绘制调用越多（性能敏感）
+# 4K屏(3840px)下 FOG_CELL_PX=6 → FOG_CELL_SIZE≈1.2，draw_rect调用数约2.5万次/帧（可接受）
+# FOG_CELL_PX=2 时约22万次/帧 → 卡顿根本原因
+const FOG_CELL_PX: float         = 6.0   # 每格目标屏幕像素数（提高9倍减少绘制调用）
 const FOG_FADE_WIDTH: float      = 10.0  # 渐变过渡带宽度（世界单位，加大柔化）
 # FOG_CELL_SIZE 在运行时由 _map_size 动态计算，见 _update_fog_cell_size()
 var FOG_CELL_SIZE: float         = 3.0   # 运行时动态值，不要直接用
@@ -81,8 +83,15 @@ var _player_wx: float = 0.0
 var _player_wz: float = 0.0
 var _player_ry: float = 0.0
 
+const DRAW_FPS: float = 20.0  # 小地图绘制帧率上限，防止每帧都触发 draw_rect
+
 var _fog_timer: float = 0.0
+var _draw_timer: float = 0.0  # 限速计时器
 var _arrow_tex: Texture2D = null
+# 脏标志：仅当玩家移动或迷雾更新时触发重绘，避免每帧无效重绘
+var _needs_redraw: bool = true
+var _last_draw_wx: float = INF
+var _last_draw_wz: float = INF
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -150,7 +159,8 @@ func _on_viewport_resized() -> void:
 func _update_fog_cell_size() -> void:
 	# 每像素对应的世界单位 = VIEW_RADIUS / (_map_size * 0.5)
 	var world_per_px: float = VIEW_RADIUS / (_map_size * 0.5)
-	FOG_CELL_SIZE = maxf(FOG_CELL_PX * world_per_px, 0.5)
+	# 最小值 1.5：防止 4K 高分辨率下格子过小导致 draw_rect 调用数爆炸
+	FOG_CELL_SIZE = maxf(FOG_CELL_PX * world_per_px, 1.5)
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -222,8 +232,17 @@ func _process(delta: float) -> void:
 		_fog_timer = 0.0
 		_record_fog_circle(_player_wx, _player_wz)
 
-	if _canvas != null:
-		_canvas.queue_redraw()
+	# 脏标志 + 帧率限速：玩家移动超过半格且距上次绘制超过 1/DRAW_FPS 秒才重绘
+	_draw_timer += delta
+	var move_sq: float = (_player_wx - _last_draw_wx) * (_player_wx - _last_draw_wx) \
+		+ (_player_wz - _last_draw_wz) * (_player_wz - _last_draw_wz)
+	if (_needs_redraw or move_sq > 0.25) and _draw_timer >= 1.0 / DRAW_FPS:
+		_draw_timer = 0.0
+		_needs_redraw = false
+		_last_draw_wx = _player_wx
+		_last_draw_wz = _player_wz
+		if _canvas != null:
+			_canvas.queue_redraw()
 
 
 # ── 迷雾：记录探索圆心 ───────────────────────────────────────────────────
@@ -231,16 +250,24 @@ func _record_fog_circle(wx: float, wz: float) -> void:
 	var cur := Vector2(wx, wz)
 	if _last_fog_pos.distance_to(cur) < EXPLORE_RADIUS * 0.5:
 		return
-	# 超上限时移除最旧的圆心（FIFO）并从空间哈希删除
+	# 超上限时移除最旧的圆心（FIFO）并从空间哈希完全清除
 	if _fog_circles.size() >= MAX_FOG_CIRCLES:
 		var old: Vector2 = _fog_circles[0]
 		_fog_circles.remove_at(0)
-		var ok: Vector2i = Vector2i(int(old.x / SPATIAL_CELL), int(old.y / SPATIAL_CELL))
-		if _fog_spatial.has(ok):
-			(_fog_spatial[ok] as Array).erase(old)
+		# 必须清除所有写入时覆盖的格子，否则引用泄漏导致越玩越卡
+		var r_del: int = int(ceil(EXPLORE_RADIUS / SPATIAL_CELL)) + 1
+		var ocx: int = int(old.x / SPATIAL_CELL)
+		var ocz: int = int(old.y / SPATIAL_CELL)
+		for dx in range(-r_del, r_del + 1):
+			for dz in range(-r_del, r_del + 1):
+				var key := Vector2i(ocx + dx, ocz + dz)
+				if _fog_spatial.has(key):
+					(_fog_spatial[key] as Array).erase(old)
 	_fog_circles.append(cur)
 	_last_fog_pos = cur
-	# 写入空间哈希（覆盖 3×3 邻域格子，确保边界圆心被查到）
+	_needs_redraw = true
+	# 写入空间哈希：覆盖圆能影响到的格子范围（ceil(R/CELL)+1），去重写入
+	# EXPLORE_RADIUS=16, SPATIAL_CELL=12 → r=2（5×5=25格），比原来81格减少67%
 	var r: int = int(ceil(EXPLORE_RADIUS / SPATIAL_CELL)) + 1
 	var cx: int = int(cur.x / SPATIAL_CELL)
 	var cz: int = int(cur.y / SPATIAL_CELL)
@@ -249,10 +276,13 @@ func _record_fog_circle(wx: float, wz: float) -> void:
 			var key := Vector2i(cx + dx, cz + dz)
 			if not _fog_spatial.has(key):
 				_fog_spatial[key] = []
-			(_fog_spatial[key] as Array).append(cur)
+			var arr: Array = _fog_spatial[key] as Array
+			# 去重：同一圆心不重复写入同一格子（之前未去重导致 distance_to 重复计算）
+			if not arr.has(cur):
+				arr.append(cur)
 
 
-# ── 空间哈希辅助：取点所在格子的候选圆心列表 ────────────────────────────
+# ── 空间哈希辅助：取点所在格子的候选圆心列表（无重复）─────────────────────
 func _spatial_candidates(wx: float, wz: float) -> Array:
 	var key := Vector2i(int(wx / SPATIAL_CELL), int(wz / SPATIAL_CELL))
 	if _fog_spatial.has(key):
@@ -260,31 +290,40 @@ func _spatial_candidates(wx: float, wz: float) -> Array:
 	return []
 
 
-# ── 判断世界坐标点是否在任意探索圆内（O(1) 空间哈希）───────────────────────
+# ── 判断世界坐标点是否在任意探索圆内（全程 distance_squared，无平方根）────────
 func _in_fog(wx: float, wz: float) -> bool:
-	var p := Vector2(wx, wz)
+	var px: float = wx
+	var pz: float = wz
+	var r2: float = EXPLORE_RADIUS * EXPLORE_RADIUS
 	for c in _spatial_candidates(wx, wz):
-		if p.distance_squared_to(c) <= EXPLORE_RADIUS * EXPLORE_RADIUS:
+		var dx: float = px - c.x
+		var dz: float = pz - c.y
+		if dx * dx + dz * dz <= r2:
 			return true
 	return false
 
 
-# ── 计算点到探索圆边缘的渐变 alpha（O(1) 空间哈希）──────────────────────────
+# ── 计算点到探索圆边缘的渐变 alpha（全程 distance_squared，仅最终开一次平方根）
 func _fog_alpha(wx: float, wz: float) -> float:
-	var p := Vector2(wx, wz)
-	var min_dist: float = INF
+	var px: float = wx
+	var pz: float = wz
 	var inner: float = EXPLORE_RADIUS - FOG_FADE_WIDTH
+	var inner2: float = inner * inner
+	var explore2: float = EXPLORE_RADIUS * EXPLORE_RADIUS
+	var min_dist2: float = INF
 	for c in _spatial_candidates(wx, wz):
-		var d: float = p.distance_to(c)
-		if d < min_dist:
-			min_dist = d
-		if min_dist <= inner:
-			return 1.0   # 早退：已完全可见
-	if min_dist == INF:
+		var dx: float = px - c.x
+		var dz: float = pz - c.y
+		var d2: float = dx * dx + dz * dz
+		if d2 < min_dist2:
+			min_dist2 = d2
+		if min_dist2 <= inner2:
+			return 1.0   # 早退：完全在圆内，无需平方根
+	if min_dist2 == INF or min_dist2 > explore2:
 		return 0.0
-	if min_dist <= EXPLORE_RADIUS:
-		return 1.0 - (min_dist - inner) / FOG_FADE_WIDTH
-	return 0.0
+	# 仅到这里才开一次平方根（渐变区域）
+	var min_dist: float = sqrt(min_dist2)
+	return 1.0 - (min_dist - inner) / FOG_FADE_WIDTH
 
 
 # ═════════════════════════════════════════════════════════════════════════

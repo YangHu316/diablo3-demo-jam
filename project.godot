@@ -35,26 +35,26 @@ RiftManager="*res://scripts/autoload/rift_manager.gd"
 Sfx="*res://scripts/autoload/sfx_manager.gd"
 SfxBind="*res://scripts/autoload/sfx_binder.gd"
 TowerBuffManager="*res://scripts/autoload/tower_buff_manager.gd"
+EntityRegistry="*res://scripts/autoload/entity_registry.gd"
 
 [display]
 
-window/size/viewport_width=3840
-window/size/viewport_height=2160
-window/size/window_width_override=3840
-window/size/window_height_override=2160
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1920
+window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
 [rendering]
 
-; 4K 原生渲染压力过大: 3D 内部按 67% 分辨率渲染再 FSR 锐化放大到 4K (UI 仍原生 4K 清晰).
-; GPU 像素着色压力 ≈ 降到 2K 量级, 画面几乎无损. 低端机可把 scale 调到 0.5.
-scaling_3d/mode=2
-scaling_3d/scale=0.67
-; 4K 下方向光阴影图集偏大, 降一档省显存与带宽.
+; V3.10:从 4K(3840×2160 + FSR2 0.67x)降到 1080p 原生,4 个人电脑都卡的根因。
+; 4K 像素 = 1080p 的 4x,即使 FSR2 缩到 67% 内部仍按 ~2570 渲染,低端 GPU 顶不住。
+; 1080p 原生 + 无 FSR + 无 MSAA = 兼容低端机的稳定 60fps 配置。
+scaling_3d/mode=0
+scaling_3d/scale=1.0
 lights_and_shadows/directional_shadow/size=2048
 lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1
-; 缩放后无需 MSAA (FSR 自带边缘处理), 关掉省开销.
 anti_aliasing/quality/msaa_3d=0
 
 [filesystem]
@@ -123,3 +123,10 @@ toggle_map={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194306,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
+
+[rendering]
+
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1
+scaling_3d/mode=2
+scaling_3d/scale=0.67

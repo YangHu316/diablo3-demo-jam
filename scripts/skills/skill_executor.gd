@@ -151,7 +151,7 @@ func _emit_channel_tick(sd: Resource) -> void:
 	var center: Vector3 = _player.global_position
 	var radius: float = float(sd.channel_radius)
 	# 命中:范围内每个敌人一次伤害(独立暴击卷点)
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = EntityRegistry.enemies
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):
 			continue
@@ -189,7 +189,7 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 	# channel_radius=6 → r ∈ [3.0, 5.5],最远箭已经接近 AOE 边界,绕得开。
 	var r_min: float = max(2.0, channel_radius * 0.5)
 	var r_max: float = max(r_min + 1.0, channel_radius * 0.95)
-	var n: int = 12   # V3.9:6 → 12,围成更密的"魔法弧光"
+	var n: int = 6   # V3.10:从 12 调回 6;每箭挂 mprojectile VFX(内部多 GPU 粒子),12 支 ≈ 36+ 发射器,低端 GPU 顶不住
 	for i in range(n):
 		# 用一个 pivot Node3D 作为绕主角的支点(每帧设到玩家位置),
 		# 子节点是箭模型,绕 Y 转 angle 后向前推 radius → 公转
@@ -428,7 +428,7 @@ func _execute_summon(sd: Resource) -> void:
 	var group_name: String = SUMMON_GROUP_PREFIX + String(sd.skill_id)
 
 	# 检查同种召唤物上限,超出移除最旧的(get_nodes_in_group 返回顺序≈添加顺序)
-	var existing: Array = get_tree().get_nodes_in_group(group_name)
+	var existing: Array = get_tree().get_nodes_in_group(group_name)  # 召唤物用专属 group，不能改
 	while existing.size() >= max_count and not existing.is_empty():
 		var oldest: Node = existing[0]
 		if is_instance_valid(oldest):
@@ -476,7 +476,7 @@ func _execute_melee(sd: Resource) -> void:
 	var hit: Dictionary = DC.compute(sd)
 	var dmg: int = int(hit.get("damage", 0))
 	var is_crit: bool = bool(hit.get("is_crit", false))
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = EntityRegistry.enemies
 	var hit_count: int = 0
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):

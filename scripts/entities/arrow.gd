@@ -244,7 +244,7 @@ func _apply_aoe(primary_target: Node) -> void:
 	if status_effect == "" or status_duration <= 0.0:
 		return
 	var center: Vector3 = global_position
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = EntityRegistry.enemies
 	for e in enemies:
 		if e == primary_target:
 			continue

@@ -41,10 +41,15 @@ var _slot_cd_overlays: Array = []
 var _slot_cd_labels: Array = []
 var _is_dead: bool = false
 
+# F3 调试 FPS 面板(代码创建,非美术素材;合并自远端 perf 提交)
+var _debug_label: Label = null
+var _debug_visible: bool = false
+
 func _ready() -> void:
 	layer = 100
 	add_to_group("hud")
 	_collect_slots()
+	_build_debug_label()
 	_connect_signals()
 	_initial_refresh()
 	# 常驻小地图 / Tab 大地图(独立 CanvasLayer,挂到场景根)
@@ -52,6 +57,30 @@ func _ready() -> void:
 	get_tree().root.call_deferred("add_child", minimap)
 	var tab_map := TabMap.new()
 	get_tree().root.call_deferred("add_child", tab_map)
+
+# F3 调试标签(挂 Root 左上,默认隐藏)
+func _build_debug_label() -> void:
+	var root: Node = get_node_or_null("Root")
+	if root == null:
+		return
+	_debug_label = Label.new()
+	_debug_label.add_theme_font_size_override("font_size", 14)
+	_debug_label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.4))
+	_debug_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_debug_label.add_theme_constant_override("outline_size", 3)
+	_debug_label.offset_left = 8
+	_debug_label.offset_top = 8
+	_debug_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_debug_label.visible = false
+	root.add_child(_debug_label)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F3:
+			_debug_visible = not _debug_visible
+			if _debug_label != null:
+				_debug_label.visible = _debug_visible
+			get_viewport().set_input_as_handled()
 
 # 从 hud.tscn 的 Skills 容器收集 5 个技能槽的 CD 蒙板/文字引用.
 func _collect_slots() -> void:
@@ -340,3 +369,6 @@ func _process(delta: float) -> void:
 	if _time_orb_accum >= 0.25:
 		_time_orb_accum = 0.0
 		_refresh_time_orb()
+	# F3 调试 FPS
+	if _debug_label != null and _debug_label.visible:
+		_debug_label.text = "FPS: %d" % Engine.get_frames_per_second()
