@@ -40,6 +40,42 @@ func _ready() -> void:
 	# 兜底:连接器晚于已存在的节点时, 扫一遍当前场景树.
 	call_deferred("_hook_existing")
 
+	# ── 背景音乐 ──
+	_start_bgm()
+
+# ── BGM(背景音乐)─────────────────────────────────────────────
+# autoload 常驻 → 游戏一启动就放、切场景不中断、循环。改音量调 BGM_VOLUME_DB。
+const BGM_PATH: String = "res://assets/SFX/BGM.wav"
+const BGM_VOLUME_DB: float = -13.1   # 原 -10dB 的 70% 线性音量(-10 + 20·log10(0.7) ≈ -13.1)
+
+var _bgm: AudioStreamPlayer = null
+
+func _start_bgm() -> void:
+	var stream: AudioStream = load(BGM_PATH) as AudioStream
+	if stream == null:
+		push_warning("[SfxBind] BGM 加载失败: " + BGM_PATH)
+		return
+	# WAV 设为整段无缝循环(导入未开循环也能在运行时循环)
+	if stream is AudioStreamWAV:
+		var wav: AudioStreamWAV = stream
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_begin = 0
+		wav.loop_end = int(wav.get_length() * float(wav.mix_rate))
+	_bgm = AudioStreamPlayer.new()
+	_bgm.name = "BGM"
+	_bgm.stream = stream
+	_bgm.volume_db = BGM_VOLUME_DB
+	_bgm.bus = "Master"
+	add_child(_bgm)
+	# 兜底:万一 loop_mode 没生效,放完自动重播(loop 生效时此信号不会触发)
+	if not _bgm.finished.is_connected(_on_bgm_finished):
+		_bgm.finished.connect(_on_bgm_finished)
+	_bgm.play()
+
+func _on_bgm_finished() -> void:
+	if _bgm != null:
+		_bgm.play()
+
 func _try(obj: Object, sig: String, cb: Callable) -> void:
 	if obj.has_signal(sig) and not obj.is_connected(sig, cb):
 		obj.connect(sig, cb)

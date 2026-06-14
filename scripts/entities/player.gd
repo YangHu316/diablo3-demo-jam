@@ -21,10 +21,10 @@ const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 # 功能塔·加速塔全局乘区 (TowerBuffManager 写: 激活=1+加成, 清除=1.0).
 var speed_buff_mult: float = 1.0
 
-# V3.0 锁死玩家面板:HP 8000(策划案 player_loadout.csv 爽快割草版)
-@export var max_health: int = 8000
+# V3.0 锁死玩家面板:HP 6000(策划案 player_loadout.csv·2026-06-14 微调)
+@export var max_health: int = 6000
 
-var current_health: int = 8000
+var current_health: int = 6000
 var is_moving: bool = false
 var is_invulnerable: bool = false
 var is_frozen: bool = false
@@ -112,6 +112,11 @@ func _update_camera_ref() -> void:
 # ── 输入解析 + 移动 ────────────────────────────────
 # 优先级:Shift 站桩 > 翻滚(在外层) > force_move > LMB 点击意图 > 当前移动/攻击目标 > 停
 func _tick_input_and_movement(delta: float) -> void:
+	# 对话/演出冻结: 完全屏蔽点击意图 (不走动/不锁敌), 仅停在原地.
+	if is_frozen:
+		_clear_targets()
+		_stop_horizontal_motion()
+		return
 	var shift_held: bool = Input.is_action_pressed("force_stand")
 	var force_move_held: bool = Input.is_action_pressed("force_move")
 	var lmb_held: bool = Input.is_action_pressed("attack_primary")
@@ -448,7 +453,7 @@ func _end_dodge() -> void:
 
 # ── 受伤 / 死亡 ─────────────────────────────────────
 # V3.0 锁死护甲减伤 70%(player_loadout.csv 爽快割草版)
-const ARMOR_DAMAGE_REDUCTION: float = 0.70
+const ARMOR_DAMAGE_REDUCTION: float = 0.40
 
 func take_damage(amount: int, source = null) -> void:
 	if is_dead or is_invulnerable or amount <= 0:

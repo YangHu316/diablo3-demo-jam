@@ -16,6 +16,9 @@ signal progress_changed(value: float, goal: float)
 signal guardian_ready()
 # 守门人 (=屠夫) 死亡 = 单局通关. 携本局用时(秒) 与 击杀总数.
 signal run_cleared(clear_time_sec: float, kill_count: int)
+# 守门人死亡瞬间先发此信号 (而非直接 run_cleared): boss_room 据此生成 NPC, 玩家与 NPC
+# 对话两轮后, 由对话流程回调 emit_run_cleared() 才真正弹结算. 携用时(秒) 与 击杀总数.
+signal boss_defeated(clear_time_sec: float, kill_count: int)
 # 倒计时归零且进度未满 (未触发守门人) = 任务失败. 携超时时的进度/目标/击杀数.
 signal rift_failed(progress: float, goal: float, kill_count: int)
 
@@ -61,6 +64,8 @@ var progress: float = 0.0
 var guardian_triggered: bool = false
 # 超时失败已触发标志 (防 _process 重复发 rift_failed; 触发后冻结判定).
 var run_failed: bool = false
+# 守门人已死 = 已进入"通关流程"(NPC 对话 → 结算). 防 boss_defeated/run_cleared 重复触发.
+var run_cleared_triggered: bool = false
 
 # 本局计时起点 (ms) 与 击杀总数 (供结算面板).
 var run_start_ms: int = 0
@@ -85,6 +90,7 @@ func reset_rift() -> void:
 	progress = 0.0
 	guardian_triggered = false
 	run_failed = false
+	run_cleared_triggered = false
 	_counted.clear()
 	run_start_ms = Time.get_ticks_msec()
 	kill_count = 0
@@ -118,9 +124,12 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	var mid: StringName = &"trash"
 	if enemy.has_meta("monster_id"):
 		mid = StringName(enemy.get_meta("monster_id"))
-	# 守门人 (屠夫) 死亡 = 单局通关: 发结算事件, 不喂进度.
+	# 守门人 (屠夫) 死亡 = 单局通关: 先发 boss_defeated (触发 NPC 对话演出),
+	# 不立即结算. 对话两轮结束后由 emit_run_cleared() 才真正弹结算页.
 	if mid == &"butcher" or mid == &"guardian":
-		run_cleared.emit(get_clear_time(), kill_count)
+		if not run_cleared_triggered:
+			run_cleared_triggered = true
+			boss_defeated.emit(get_clear_time(), kill_count)
 		return
 	# 精英: 击杀本身不加权 (靠掉落的进度球加进度). 仅计 kill_count (上面已 +1).
 	if NO_KILL_PROGRESS.has(mid):
@@ -169,6 +178,11 @@ func _go_boss() -> void:
 	tree.change_scene_to_file(BOSS_SCENE)
 
 # ── 结算访问器 ────────────────────────────────────────────────
+# NPC 对话两轮结束后调用: 真正发 run_cleared → 结算面板弹出.
+# 用冻结的用时快照 (boss 进场已冻结), 故对话期间用时不再增长.
+func emit_run_cleared() -> void:
+	run_cleared.emit(get_clear_time(), kill_count)
+
 func get_kill_count() -> int:
 	return kill_count
 

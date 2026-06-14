@@ -18,6 +18,11 @@ extends Node3D
 # 规模:SCALE 统一缩放,按 ~6 分钟单程通关校准(见 verify_level02.gd 测的临界路径长度)。
 
 const SCALE: float = 1.5   # 统一缩放:房间/走廊放大,避免局促;临界路径随之拉长
+
+# 装饰开关:true=脚本生成 地标拱门/哥特结构件/立柱阻挡物(白盒默认);
+# false=跳过这些「立柱/门框/装饰」(美术层 level_02_play_art 用真资产顶替,见其 Level02Depths 实例)。
+# 任何情况都不影响:地面 / 墙 / 栅格导航 / 串灯火把(整体结构与光照)。
+@export var build_decorations: bool = true
 const ENEMY := preload("res://scenes/enemies/enemy_zombie.tscn")
 const CORPSE := preload("res://scripts/entities/data/walking_corpse.tres")
 const ARCHER_DATA := preload("res://scripts/entities/data/skeleton_archer.tres")
@@ -169,10 +174,13 @@ func _rebuild() -> void:
 	# 视觉几何:编辑器 + 运行时都建(编辑器里可见预览)
 	_build_floors()
 	_build_grid_nav_and_walls()
-	_build_landmarks()
 	_build_torches()
-	_build_structures()
-	_build_obstacles()
+	# 「立柱/门框/装饰」= 地标拱门 + 哥特结构件 + 立柱阻挡物:build_decorations=false 时整体跳过
+	# (美术层 level_02_play_art 用真资产顶替);地面/墙/导航/火把灯光照常,不动整体结构与光照。
+	if build_decorations:
+		_build_landmarks()
+		_build_structures()
+		_build_obstacles()
 	# 战斗逻辑:只在运行时建(编辑器里不跑刷怪/出口/落点,避免编辑器误触发)
 	if not Engine.is_editor_hint():
 		# V3.0:遭遇改「敌人集团蓝图」手动摆放(scenes/enemies/groups/*.tscn → scenes/levels/level_02_encounters.tscn,

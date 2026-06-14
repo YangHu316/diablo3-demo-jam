@@ -8,7 +8,7 @@ extends CanvasLayer
 #
 # 盖在 HUD(100)/背包(110) 之上 (layer=120)。掉落行为带金框的占位条, 美术可替换图标。
 
-const START_SCENE: String = "res://scenes/levels/level_02_play.tscn"
+const START_SCENE: String = "res://scenes/levels/level_02_play_art.tscn"
 const SET_COLOR: Color = Color(0.2, 0.85, 0.2)   # 套装绿 (与 ItemInstance.display_color 一致)
 
 # ── D3 配色 ───────────────────────────────────────────────────

@@ -16,7 +16,7 @@ extends CharacterBody3D
 signal heal_pulsed(amount: int)
 
 const MOVE_SPEED: float = 6.5
-const FOLLOW_DEADZONE: float = 1.6        # 玩家距离 < 此值不动(避免抖)
+const FOLLOW_DEADZONE: float = 2.8        # 玩家距离 < 此值不动(避免抖); V3.13:1.6→2.8 防穿模
 const ENGAGE_RANGE: float = 8.0           # 此范围内主动找敌人;外则保持跟随
 const TARGET_LOST_RANGE: float = 12.0     # 当前目标超出此距离 → 切目标
 const ATTACK_RANGE: float = 1.8

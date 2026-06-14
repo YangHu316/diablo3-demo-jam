@@ -8,10 +8,10 @@ extends RefCounted
 #          DamageCalculator.compute(sd)
 
 # ── V3.0 锁死面板(数值表/player_loadout.csv 爽快割草版)──────────────
-# weapon_avg 40, dexterity 400, crit 45%, crit_damage ×6.0(+500%), elem +40%
+# weapon_avg 40, dexterity 400, crit 35%(微调·原45%), crit_damage ×6.0(+500%), elem +40%
 const LOCKED_WEAPON_AVG: float = 40.0
 const LOCKED_DEXTERITY: int = 400
-const LOCKED_CRIT_RATE: float = 0.45
+const LOCKED_CRIT_RATE: float = 0.35
 const LOCKED_CRIT_DAMAGE: float = 6.0      # +500% = ×6.0
 const LOCKED_ELEMENTAL_BONUS: float = 0.40 # +40%
 
