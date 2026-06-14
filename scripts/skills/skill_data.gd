@@ -12,6 +12,7 @@ enum SkillType {
 	MOVEMENT = 1,    # 位移 (如冲刺、闪避)
 	SUMMON = 2,      # 召唤 / 召唤物
 	MELEE = 3,       # 近战
+	CHANNEL = 4,     # 引导(按住释放,松开停;期间持续耗专注)
 }
 
 # ── 通用 ────────────────────────────────────────────
@@ -46,3 +47,10 @@ enum SkillType {
 @export var summon_scene: PackedScene = null
 @export_range(0.0, 600.0, 0.5) var summon_duration: float = 0.0   # 召唤物存在时长
 @export_range(1, 16, 1) var summon_max_count: int = 1             # 同种召唤物上限,超出移除最旧
+
+# ── 引导技能专用(箭雨风暴/暴风等)──────────────
+@export_range(0.05, 2.0, 0.05) var channel_tick_interval: float = 0.3  # 每多久 emit 一轮命中(s)
+@export_range(0.0, 200.0, 0.5) var channel_focus_per_sec: float = 0.0  # 引导期间每秒消耗专注
+@export_range(0.5, 30.0, 0.1) var channel_radius: float = 6.0          # 360° AoE 命中半径
+@export_range(0.05, 2.0, 0.05) var channel_movement_mult: float = 0.5  # 引导期玩家移速倍率(0.5=半速)
+@export_range(1, 32, 1) var channel_projectiles_per_tick: int = 12     # 每轮射出箭数(360° 均布)

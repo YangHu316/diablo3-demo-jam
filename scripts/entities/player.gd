@@ -52,6 +52,12 @@ var _lmb_attack_armed: bool = false
 const CAST_FREEZE_DURATION: float = 0.18
 var _cast_freeze_timer: float = 0.0
 
+# ── 引导(箭雨风暴 E)────────────────────────────────
+# 引导期间:不冻结,可移动但移速倍率 _channel_movement_mult(默认 0.5);
+# 不触发施法急停(set_channeling 为 true 时 _on_skill_activated 跳过急停)
+var _is_channeling: bool = false
+var _channel_movement_mult: float = 1.0
+
 var _last_forward: Vector3 = Vector3.FORWARD
 var _camera: Camera3D = null
 var _ground_plane: Plane = Plane(Vector3.UP, 0.0)
@@ -239,8 +245,10 @@ func _move_toward(target: Vector3, _delta: float) -> void:
 		_stop_horizontal_motion()
 		return
 	var dir: Vector3 = to.normalized()
-	velocity.x = dir.x * SPEED
-	velocity.z = dir.z * SPEED
+	# 引导期(箭雨风暴):移速降到 channel_movement_mult(默认 50%)
+	var spd: float = SPEED * (_channel_movement_mult if _is_channeling else 1.0)
+	velocity.x = dir.x * spd
+	velocity.z = dir.z * spd
 	is_moving = true
 	move_and_slide()
 
@@ -333,11 +341,22 @@ func get_aim_direction() -> Vector3:
 func _on_skill_activated(slot_index: int, _sd: Resource) -> void:
 	if slot_index == 0:
 		return  # LMB 利箭不急停(连射手感)
+	# 引导态(箭雨风暴 E)期间不急停
+	if _is_channeling:
+		return
 	# 立即面向光标 — 给 SkillExecutor 同帧读取 basis 时拿到正确朝向
 	_face_mouse()
 	_cast_freeze_timer = CAST_FREEZE_DURATION
 	# 急停瞬间清掉攻击目标,但保留 _move_target —— freeze 结束后会自动恢复朝点行走
 	_attack_target = null
+
+# 引导启停:由 SkillExecutor._on_channel_started/stopped 调
+func set_channeling(active: bool, movement_mult: float) -> void:
+	_is_channeling = active
+	_channel_movement_mult = movement_mult if active else 1.0
+	# 进入引导:取消任何挂着的施法急停,并清攻击目标(避免 LMB armed 干扰 E 的输入循环)
+	if active:
+		_cast_freeze_timer = 0.0
 
 # 翻滚方向源:V3.0 改为"光标方向前滚",无 WASD。
 # 也对外暴露当前面向供 fallback。

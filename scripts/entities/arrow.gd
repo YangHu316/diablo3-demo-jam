@@ -16,6 +16,10 @@ var can_penetrate: bool = false
 var aoe_radius: float = 0.0       # >0 时命中后做范围状态附加
 var status_effect: String = ""     # frost / burn / ...
 var status_duration: float = 0.0
+# 纯观感箭(箭雨风暴):不打人,只飞固定 lifetime 后销毁
+var is_visual_only: bool = false
+var lifetime: float = 0.0  # >0 时启用计时销毁(代替 MAX_DISTANCE)
+var _life_timer: float = 0.0
 
 var _direction: Vector3 = Vector3.FORWARD
 var _travelled: float = 0.0
@@ -56,12 +60,18 @@ func _physics_process(delta: float) -> void:
 	var step: float = SPEED * delta
 	global_position += _direction * step
 	_travelled += step
+	if lifetime > 0.0:
+		_life_timer += delta
+		if _life_timer >= lifetime:
+			_consumed = true
+			queue_free()
+			return
 	if _travelled >= MAX_DISTANCE:
 		_consumed = true
 		queue_free()
 
 func _on_body_entered(body: Node) -> void:
-	if _consumed:
+	if _consumed or is_visual_only:
 		return
 	if not is_instance_valid(body):
 		return
@@ -69,7 +79,7 @@ func _on_body_entered(body: Node) -> void:
 		_apply_hit(body)
 
 func _on_area_entered(area: Area3D) -> void:
-	if _consumed:
+	if _consumed or is_visual_only:
 		return
 	if not is_instance_valid(area):
 		return
