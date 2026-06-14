@@ -12,9 +12,10 @@ func _ready() -> void:
 	# 自愈:墙被队友提交/编辑器回写覆盖回 scale-1(0.05,看不见)时,加载即自动 ×100 修回。
 	# 编辑器+运行时都跑;幂等(已是 scale-100 则跳过,不产生改动/脏标记)。
 	call_deferred("_fix_wall_scales")
-	# D3 氛围只在运行时搭建:编辑器里不创建节点,避免污染/被回写进 .tscn。按 F6 运行可见。
+	# D3 氛围+墙上火把只在运行时搭建:编辑器里不创建节点,避免污染/被回写进 .tscn。按 F6 运行可见。
 	if not Engine.is_editor_hint():
 		call_deferred("_setup_d3_atmosphere")
+		call_deferred("_place_wall_torches")
 
 # 墙尺寸自愈:LevelArt/Walls 下任何 basis 缩放 ~1 的墙(应为 ~100)自动放大 100 倍,保持旋转/原点。
 func _fix_wall_scales() -> void:
@@ -93,6 +94,77 @@ func _setup_d3_atmosphere() -> void:
 			rect.material = mat
 		cl.add_child(rect)
 		p.add_child(cl)
+
+# ── 墙上批量火把(运行时)──────────────────────────────────────────────
+# 沿墙按间距均匀布壁挂火把(背靠墙、朝最近地砖即室内方向),每个配暖色火光。
+const TORCH_FBX := "res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Torch_Ornate_02.fbx"
+const TORCH_MIN_SPACING := 22.0   # 火把最小间距(世界单位,5=一格)
+const TORCH_HEIGHT := 2.7         # 离地高度(墙高约5)
+const TORCH_MAX := 110            # 火光数量上限(性能保护)
+
+func _place_wall_torches() -> void:
+	var walls: Node = get_node_or_null("Walls")
+	var floors: Node = get_node_or_null("Floors")
+	if walls == null or floors == null:
+		return
+	var ps := load(TORCH_FBX) as PackedScene
+	if ps == null:
+		return
+	# 地砖中心点(用于判断"内侧"=室内方向)
+	var floor_pts: Array[Vector3] = []
+	for f in floors.get_children():
+		if f is Node3D:
+			floor_pts.append((f as Node3D).position)
+	if floor_pts.is_empty():
+		return
+	var holder := Node3D.new()
+	holder.name = "Torches"
+	add_child(holder)
+	var placed: Array[Vector3] = []
+	for w in walls.get_children():
+		if placed.size() >= TORCH_MAX:
+			break
+		if not (w is Node3D):
+			continue
+		var wp: Vector3 = (w as Node3D).position
+		# 间距去重(均匀分布)
+		var too_close := false
+		for p in placed:
+			if p.distance_to(wp) < TORCH_MIN_SPACING:
+				too_close = true
+				break
+		if too_close:
+			continue
+		# 最近地砖 → 内侧水平方向
+		var nearest := floor_pts[0]
+		var nd := 1.0e20
+		for fp in floor_pts:
+			var d := Vector2(fp.x - wp.x, fp.z - wp.z).length_squared()
+			if d < nd:
+				nd = d
+				nearest = fp
+		var inward := Vector3(nearest.x - wp.x, 0.0, nearest.z - wp.z)
+		if inward.length() < 0.01:
+			inward = Vector3(0.0, 0.0, 1.0)
+		inward = inward.normalized()
+		# 朝向:本地 +Z(伸出臂)指向室内;scale 100(原生)
+		var xc := Vector3.UP.cross(inward).normalized()
+		var b := Basis(xc * 100.0, Vector3.UP * 100.0, inward * 100.0)
+		var pos := wp + inward * 0.35 + Vector3(0.0, TORCH_HEIGHT, 0.0)
+		var torch := ps.instantiate() as Node3D
+		torch.transform = Transform3D(b, pos)
+		holder.add_child(torch)
+		# 火光
+		var lt := OmniLight3D.new()
+		lt.light_color = Color(1.0, 0.6, 0.28)
+		lt.light_energy = 3.0
+		lt.omni_range = 8.5
+		lt.omni_attenuation = 1.5
+		lt.shadow_enabled = false   # 关阴影:几十盏灯也不卡
+		lt.position = pos + inward * 0.45 + Vector3(0.0, 0.35, 0.0)
+		holder.add_child(lt)
+		placed.append(wp)
+	print("[level_02_art] 墙上火把:%d 个" % placed.size())
 
 func _make_d3_env() -> Environment:
 	var e := Environment.new()
