@@ -18,9 +18,10 @@ extends Node
 @export var idle_anim: String = "Idle"
 @export var move_anim: String = "Jog_Fwd"
 @export var dodge_anim: String = "Roll"
-# V3.11:LMB 攻击动画 — UAL 没专门的拉弓,用 ual2 的 OverhandThrow(过肩抛投)
-# 是抬手射姿势最像的;之前的 Pistol_Shoot 是扣扳机不抬手。
-@export var attack_anim: String = "OverhandThrow"
+# V3.12:用户选定 Pistol_Shoot(扣扳机)— UAL 没拉弓,这个最贴近"瞬发射击"。
+@export var attack_anim: String = "Pistol_Shoot"
+# 备选(若 attack_anim 不存在则按顺序回退)
+@export var attack_anim_fallbacks: PackedStringArray = ["OverhandThrow", "Spell_Simple_Shoot"]
 @export var channel_enter_anim: String = "Spell_Simple_Enter"  # 进引导
 @export var channel_loop_anim: String = "Spell_Simple_Idle"    # 同短名规则,Spell_Simple_Idle_Loop → _Idle
 @export var channel_exit_anim: String = "Spell_Simple_Exit"
@@ -66,6 +67,12 @@ func _ready() -> void:
 			for an in lib.get_animation_list():
 				loaded_names.append("%s/%s" % [ln, an] if ln != "" else String(an))
 	print("PlayerAnimDriver: %d 个动画上线" % loaded_names.size())
+	# V3.11:把所有 anim 名打到日志,方便核对(找 OverhandThrow / Spell_Simple_Shoot 是否真烤进来)
+	if loaded_names.size() > 0:
+		print("[AnimDriver] anims: ", ", ".join(loaded_names))
+	# V3.11:把所有 anim 名打到日志,方便核对(找 OverhandThrow / Spell_Simple_Shoot 是否真烤进来)
+	if loaded_names.size() > 0:
+		print("[AnimDriver] anims: ", ", ".join(loaded_names))
 	# 设循环
 	for a in loop_anims:
 		var full: String = "%s/%s" % [anim_library, a] if anim_library != "" else a
@@ -190,7 +197,15 @@ func _on_skill_activated(_slot: int, sd: Resource) -> void:
 	if moving:
 		return
 	_state = State.ATTACK
+	# V3.11:attack_anim + fallback 链 — 第一个能 resolve 的就用
 	var full: String = _resolve(attack_anim)
+	if _ap == null or not _ap.has_animation(full):
+		for fb in attack_anim_fallbacks:
+			var f: String = _resolve(String(fb))
+			if _ap != null and _ap.has_animation(f):
+				full = f
+				break
+	print("[AnimDriver] ATTACK → ", full)
 	_play(full)
 	_oneshot_lock_until = _anim_length(full) * 0.7
 
