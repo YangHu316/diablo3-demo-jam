@@ -85,11 +85,29 @@ func _apply_element_tint(elem: String) -> void:
 		# V3.7:冰箭整体放大,但比上一版克制(1.8x → 1.3x)
 		if elem == "frost" and pivot is Node3D:
 			(pivot as Node3D).scale = (pivot as Node3D).scale * 1.3
-	# V3.8:冰箭加专属雪花/小粒子拖尾(挂 self,跟着箭飞)
+	# V3.8:冰箭专属拖尾 — V3.13g:从程序化 CPU 雪花换成 BinbunVFX 蓝色魔法粒子(vfx_02),
+	# 视觉与 E 技能橙红(vfx_04)对位形成"蓝冰 vs 橙火"的色彩对比。
 	if elem == "frost":
-		_spawn_frost_trail()
+		_spawn_frost_trail_binbun()
 
-# V3.8:程序化雪花拖尾 — CPUParticles3D + 小 quad 加色 mesh,白蓝飘洒。
+# V3.13g:冰箭蓝色拖尾 — 直接复用 BinbunVFX vfx_02(蓝色魔法粒子方案),
+# 替代 V3.8 的程序化 CPU 雪花。视觉跟 E 技能橙红(vfx_04)对位形成色彩区分。
+const FROST_TRAIL_BINBUN_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_02.tscn"
+
+func _spawn_frost_trail_binbun() -> void:
+	if not ResourceLoader.exists(FROST_TRAIL_BINBUN_PATH):
+		return
+	var scn: PackedScene = load(FROST_TRAIL_BINBUN_PATH)
+	if scn == null:
+		return
+	var trail: Node = scn.instantiate()
+	trail.name = "FrostTrail"
+	add_child(trail)
+	# 与 arrow.tscn 原 TrailVFX 同一变换 (BinbunVFX 长轴在 X, 飞行方向 -Z, 绕 Y 转 +90° 让 +X 对到 -Z; scale 0.3)
+	if trail is Node3D:
+		(trail as Node3D).transform = Transform3D(0, 0, -0.3, 0, 0.3, 0, 0.3, 0, 0, 0, 0, 0)
+
+# V3.8 旧版程序化雪花拖尾 (已弃用, 保留代码备查): CPUParticles3D + 小 quad 加色 mesh, 白蓝飘洒。
 func _spawn_frost_trail() -> void:
 	var trail: CPUParticles3D = CPUParticles3D.new()
 	trail.name = "FrostTrail"

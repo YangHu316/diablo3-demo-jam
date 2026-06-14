@@ -8,7 +8,7 @@ const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
 const ARROW_SCENE_PATH: String = "res://scenes/projectiles/arrow.tscn"
 # V3.2:E 技能视觉 = 5~6 支箭以不同角速度/方向/半径绕主角公转(伤害逻辑不变)
 const ORBIT_ARROW_MODEL_PATH: String = "res://assets/PolygonDungeon/Models/FX/SM_Arrow_01.fbx"
-const ORBIT_ARROW_TRAIL_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_02.tscn"
+const ORBIT_ARROW_TRAIL_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_04.tscn"
 
 # SkillType 枚举值(与 skill_data.gd 中 SkillType 保持同步)
 const TYPE_PROJECTILE: int = 0
