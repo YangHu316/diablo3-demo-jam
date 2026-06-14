@@ -23,6 +23,9 @@ const PLAYER_LOADOUT_PATH: String = "res://数值表/player_loadout.csv"
 # 功能塔 buff 表 (伤害塔/加速塔: 加成幅度/持续/CD, 热调).
 const TOWER_BUFFS_PATH: String = "res://数值表/tower_buffs.csv"
 
+# 功能塔布点表 (手动布置: 每行一座塔 tower_id+坐标+朝向, 关卡由 TowerSpawner 读表实例化).
+const TOWER_LAYOUT_PATH: String = "res://数值表/tower_layout.csv"
+
 var _affixes: Array[AffixDef] = []
 var _affix_by_id: Dictionary = {}            # StringName -> AffixDef
 var _affixes_by_slot: Dictionary = {}        # slot StringName -> Array[AffixDef]
@@ -51,6 +54,7 @@ var _player_loadout: Dictionary = {}
 
 # 功能塔 buff (tower_buffs.csv): id -> { buff_type, magnitude, duration, cooldown, note }.
 var _tower_buffs: Dictionary = {}
+var _tower_layout: Array = []                # [{tower_id, pos:Vector3, rot_y_deg, note}, ...]
 
 var is_loaded: bool = false
 
@@ -66,6 +70,7 @@ func _load_all() -> void:
 	_load_boss_drops()
 	_load_player_loadout()
 	_load_tower_buffs()
+	_load_tower_layout()
 	xp_curve = _load_res(XP_CURVE_PATH) as XPCurve
 	tier_table = _load_res(TIER_TABLE_PATH) as TierTable
 	is_loaded = true
@@ -220,6 +225,38 @@ func _load_tower_buffs() -> void:
 		}
 	f.close()
 
+# 功能塔布点表. 每行 tower_id,pos_x,pos_y,pos_z,rot_y,备注 -> _tower_layout 追加一座塔.
+# 手动布置: 改塔位置/增删塔只编辑此 CSV, 不动场景文件. TowerSpawner 据此实例化.
+func _load_tower_layout() -> void:
+	_tower_layout.clear()
+	if not FileAccess.file_exists(TOWER_LAYOUT_PATH):
+		push_warning("DataTables: missing %s" % TOWER_LAYOUT_PATH)
+		return
+	var f := FileAccess.open(TOWER_LAYOUT_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var headers: PackedStringArray = f.get_csv_line()  # tower_id,pos_x,pos_y,pos_z,rot_y,备注
+	while not f.eof_reached():
+		var cols: PackedStringArray = f.get_csv_line()
+		if cols.size() < 4 or String(cols[0]).strip_edges() == "":
+			continue
+		var row: Dictionary = {}
+		for i in headers.size():
+			row[String(headers[i]).strip_edges()] = String(cols[i]).strip_edges() if i < cols.size() else ""
+		var tid: String = String(row.get("tower_id", ""))
+		if tid == "":
+			continue
+		_tower_layout.append({
+			"tower_id": tid,
+			"pos": Vector3(
+				float(row.get("pos_x", "0")),
+				float(row.get("pos_y", "0")),
+				float(row.get("pos_z", "0"))),
+			"rot_y_deg": float(row.get("rot_y", "0")),
+			"note": String(row.get("备注", "")),
+		})
+	f.close()
+
 # ---------------------------------------------------------------------------
 # Query API (对外稳定接口)
 # ---------------------------------------------------------------------------
@@ -331,6 +368,10 @@ func get_tower_buff(id: String) -> Dictionary:
 
 func get_all_tower_buff_ids() -> Array:
 	return _tower_buffs.keys()
+
+# 功能塔布点: 返回 [{tower_id:String, pos:Vector3, rot_y_deg:float, note:String}, ...].
+func get_tower_layout() -> Array:
+	return _tower_layout
 
 # 把 "45%" / "+400%" / "约50%" 之类含符号字符串抽成纯数值 (float). 解析失败回退 fallback.
 func _loadout_num(key: String, fallback: float) -> float:

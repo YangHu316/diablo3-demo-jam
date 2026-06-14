@@ -30,19 +30,34 @@ func _ready() -> void:
 	add_child(_player)
 	_player.global_position = Vector3(-83, 0.5, -7)
 
-	_dmg_tower = load("res://scenes/props/tower_trigger.tscn").instantiate()
-	_dmg_tower.tower_id = &"damage_tower"
-	add_child(_dmg_tower)
-	_dmg_tower.global_position = Vector3(-80, 0, -7)
-
-	_spd_tower = load("res://scenes/props/tower_trigger.tscn").instantiate()
-	_spd_tower.tower_id = &"speed_tower"
-	add_child(_spd_tower)
-	_spd_tower.global_position = Vector3(-86, 0, -7)
+	# 经真实 TowerSpawner 读布点表 CSV 实例化两座塔 (验证蓝图布置全链路, 非手摆).
+	_checks += 1
+	var layout: Array = dt.get_tower_layout()
+	if layout.size() < 2:
+		_fail("⓪布点表加载: get_tower_layout 行数=%d (期望≥2)" % layout.size())
+	else:
+		print("OK⓪ tower_layout.csv 加载 %d 座塔" % layout.size())
+	var spawner = load("res://scripts/levels/tower_spawner.gd").new()
+	add_child(spawner)
+	# spawner 用 call_deferred 布塔; 这里同步直接调以便本帧就绪.
+	spawner._spawn_from_layout()
+	for c in get_children():
+		if c.is_in_group("tower"):
+			if String(c.tower_id) == "damage_tower":
+				_dmg_tower = c
+			elif String(c.tower_id) == "speed_tower":
+				_spd_tower = c
+	_checks += 1
+	if _dmg_tower == null or _spd_tower == null:
+		_fail("⓪TowerSpawner 未实例化出 damage/speed 两座塔")
+	elif _dmg_tower.global_position.distance_to(Vector3(-80, 0, -7)) > 0.01 or _spd_tower.global_position.distance_to(Vector3(-86, 0, -7)) > 0.01:
+		_fail("⓪塔坐标与 CSV 不符 dmg=%s spd=%s" % [_dmg_tower.global_position, _spd_tower.global_position])
+	else:
+		print("OK⓪ TowerSpawner 按 CSV 坐标实例化两座塔 (dmg@-80 / spd@-86)")
 
 	DamageCalculator.tower_dmg_mult = 1.0
 	_player.speed_buff_mult = 1.0
-	print("itest: 场景搭建完成, autoload 就绪, 开始物理步进...")
+	print("itest: 场景搭建完成(经布点表+Spawner), 开始物理步进...")
 
 func _physics_process(_delta: float) -> void:
 	_step += 1
