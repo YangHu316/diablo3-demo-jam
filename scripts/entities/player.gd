@@ -389,6 +389,10 @@ func dodge(direction: Vector3, distance: float, duration: float) -> bool:
 	# 翻滚开始 — 清掉移动/攻击目标,避免翻完又往原点走
 	_clear_targets()
 	dodge_started.emit(d, duration)
+	# SFX 翻滚
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("dodge", global_position, -3.0, 0.08)
 	return true
 
 func _tick_dodge(delta: float) -> void:
@@ -422,6 +426,10 @@ func take_damage(amount: int, source = null) -> void:
 	var dmg: int = max(1, int(round(actual)))
 	current_health = clamp(current_health - dmg, 0, max_health)
 	health_changed.emit(current_health, max_health)
+	# SFX 受击
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("player_hurt", global_position, -2.0, 0.05)
 	var cm = get_node_or_null("/root/CombatManager")
 	if cm != null:
 		cm.player_damaged.emit(dmg, source)

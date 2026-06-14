@@ -98,6 +98,11 @@ func _apply_hit(target: Node) -> void:
 	if target.has_method("take_damage"):
 		target.take_damage(damage, self)
 
+	# SFX 命中肉感
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("arrow_hit", global_position, -3.0, 0.1)
+
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null:
 		var hit_pos: Vector3 = global_position

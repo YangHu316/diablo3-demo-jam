@@ -220,6 +220,10 @@ func _execute_projectile(sd: Resource, slot_index: int = -1) -> void:
 			arrow.set_direction(dir)
 		if arrow.has_method("configure_from_skill"):
 			arrow.configure_from_skill(sd, dmg_info)
+	# SFX:射出(每次开火只播一次,即使 5 箭)
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("arrow_shoot", spawn_pos, -4.0, 0.08)
 
 # ── 位移类(翻滚) ─────────────────────────────────────
 func _execute_movement(sd: Resource) -> void:

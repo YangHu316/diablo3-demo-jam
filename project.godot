@@ -32,6 +32,7 @@ SpawnManager="*res://scripts/autoload/spawn_manager.gd"
 LootManager="*res://scripts/autoload/loot_manager.gd"
 AnimLib="*res://scripts/autoload/anim_lib.gd"
 RiftManager="*res://scripts/autoload/rift_manager.gd"
+Sfx="*res://scripts/autoload/sfx_manager.gd"
 
 [display]
 
