@@ -31,6 +31,9 @@ var _xp_label: Label = null
 var _xp_bar: ProgressBar = null
 var _rift_label: Label = null
 var _rift_bar: ProgressBar = null
+var _time_orb_fill: ColorRect = null
+var _time_orb_label: Label = null
+var _time_orb_accum: float = 0.0
 var _buff_box: HBoxContainer = null
 var _tower_buff_panel: Panel = null
 var _tower_buff_fill: ColorRect = null
@@ -97,6 +100,10 @@ func _build_ui() -> void:
 	_rift_bar.max_value = 100.0
 	_rift_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tc.add_child(_rift_bar)
+
+	# ── TopCenter 下方: 大秘境时间球(倒计时) ──
+	# 圆形球, 紫色填充随剩余时间从满到空(从下往上消), 中央显示 MM:SS.
+	_build_time_orb(root)
 
 	# ── BottomLeft: 生命球 ──
 	_hp_fill = _make_orb(root, Vector2(0, 1), Vector2(20, -118), 96, Color(0.64, 0.10, 0.07))
@@ -315,6 +322,46 @@ func _make_orb(parent: Node, anchor_xy: Vector2, off: Vector2, diam: float, fill
 	orb.add_child(fill)
 	return fill
 
+# ── 时间球(倒计时): 居中圆球, 顶部一圈金边, 紫填充 + MM:SS 文字 ──
+# 复用 _make_orb 的"从下往上消"填充语义(anchor_top = 1 - ratio); ratio = 剩余/总时.
+func _build_time_orb(root: Control) -> void:
+	var diam: float = 66.0
+	# 居中略低于进度条(TopCenter 进度条约 y=12~50, 球放其下).
+	var off: Vector2 = Vector2(-diam * 0.5, 54.0)
+	_time_orb_fill = _make_orb(root, Vector2(0.5, 0.0), off, diam, Color(0.62, 0.42, 1.0, 0.92))
+	# 中央倒计时文字(挂在 orb 上, 即 fill 的父节点), 盖在填充之上.
+	var orb: Control = _time_orb_fill.get_parent() as Control
+	_time_orb_label = Label.new()
+	_time_orb_label.text = "2:00"
+	_time_orb_label.add_theme_font_size_override("font_size", 16)
+	_time_orb_label.add_theme_color_override("font_color", Color(1, 0.97, 0.85))
+	_time_orb_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_time_orb_label.add_theme_constant_override("outline_size", 3)
+	_time_orb_label.anchor_right = 1.0
+	_time_orb_label.anchor_bottom = 1.0
+	_time_orb_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_time_orb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_time_orb_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb.add_child(_time_orb_label)
+
+# 读 RiftManager 剩余时间, 刷新时间球填充高度与 MM:SS 文字.
+func _refresh_time_orb() -> void:
+	if _time_orb_fill == null:
+		return
+	var rm: Node = get_node_or_null("/root/RiftManager")
+	if rm == null or not rm.has_method("get_time_remaining"):
+		return
+	var remaining: float = float(rm.get_time_remaining())
+	var limit: float = float(rm.get_time_limit()) if rm.has_method("get_time_limit") else 120.0
+	var ratio: float = clampf(remaining / maxf(limit, 1.0), 0.0, 1.0)
+	_time_orb_fill.anchor_top = 1.0 - ratio
+	_time_orb_fill.offset_top = 0.0
+	# 时间紧迫(<20%)转红, 提示玩家.
+	_time_orb_fill.color = Color(0.85, 0.20, 0.20, 0.92) if ratio < 0.2 else Color(0.62, 0.42, 1.0, 0.92)
+	if _time_orb_label != null:
+		var secs: int = int(ceil(remaining))
+		_time_orb_label.text = "%d:%02d" % [secs / 60, secs % 60]
+
 # anchor_xy: Vector2(left_anchor, top_anchor) ∈ {0,1}
 func _make_anchored_label(parent: Node, off: Vector2, size: Vector2,
 		text: String, color: Color, anchor_xy: Vector2) -> Label:
@@ -389,6 +436,7 @@ func _initial_refresh() -> void:
 	var rm: Node = get_node_or_null("/root/RiftManager")
 	if rm != null and "progress" in rm:
 		_on_rift_progress(float(rm.progress), float(rm.GOAL))
+	_refresh_time_orb()
 	if _player != null and "current_health" in _player and "max_health" in _player:
 		_on_health_changed(int(_player.current_health), int(_player.max_health))
 
@@ -588,7 +636,12 @@ func boss_killed_flash() -> void:
 	tw.tween_property(flash, "color:a", 0.0, 0.6)
 	tw.tween_callback(Callable(flash, "queue_free"))
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _is_dead and Input.is_key_pressed(KEY_R):
 		_is_dead = false
 		get_tree().reload_current_scene()
+	# 时间球: 倒计时每帧推进, 节流 0.25s 刷新 UI(MM:SS 整秒粒度足够).
+	_time_orb_accum += delta
+	if _time_orb_accum >= 0.25:
+		_time_orb_accum = 0.0
+		_refresh_time_orb()
