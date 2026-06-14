@@ -50,6 +50,13 @@
 [ext_resource type="PackedScene" uid="uid://bpid0xbi4gypk" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candle_02.fbx" id="48_16uhi"]
 [ext_resource type="PackedScene" uid="uid://ckrp5va6pfddn" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candle_Chandelier_01.fbx" id="49_wt0e1"]
 [ext_resource type="PackedScene" uid="uid://bxceerbgtueuq" path="res://assets/PolygonDungeon/Models/Environment/Doors/SM_Env_Door_Large_Frame_01.fbx" id="50_ni4gb"]
+[ext_resource type="PackedScene" uid="uid://cpqfkcjgv1i5k" path="res://assets/PolygonDungeon/Models/Props/Containers/SM_Prop_Barrel_02.fbx" id="51_8cnfu"]
+[ext_resource type="PackedScene" uid="uid://7rv0o30vpvxj" path="res://assets/PolygonDungeon/Models/Props/Valuables/SM_Prop_Gem_04.fbx" id="52_evp7l"]
+[ext_resource type="PackedScene" uid="uid://be2w6fefqhci5" path="res://assets/PolygonDungeon/Models/Props/Valuables/SM_Prop_Gem_01.fbx" id="53_3dfea"]
+[ext_resource type="PackedScene" uid="uid://inyw1umdubjt" path="res://assets/PolygonDungeon/Models/Props/Valuables/SM_Prop_Jewel_01.fbx" id="54_afxsc"]
+[ext_resource type="PackedScene" uid="uid://bg4b8ws3yijbh" path="res://assets/PolygonDungeon/Models/Props/Valuables/SM_Prop_Jewel_06.fbx" id="55_cvi1u"]
+[ext_resource type="PackedScene" uid="uid://bh1itj8jqedbt" path="res://assets/PolygonDungeon/Models/Props/Creatures/SM_Prop_Goblin_Fence_02.fbx" id="56_xomiv"]
+[ext_resource type="PackedScene" uid="uid://mhte2nyu0sy5" path="res://assets/PolygonDungeon/Models/Props/Creatures/SM_Prop_Goblin_Fence_01.fbx" id="57_h0ret"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -3310,3 +3317,78 @@ transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0,
 
 [node name="SM_Env_Cave_Background_01_DoubleSided2" parent="." unique_id=1737213110 instance=ExtResource("34_hl14s")]
 transform = Transform3D(4.2554817, 1.438853, 218.23099, 98.557205, -4.8258243, -9.30786, 3.8484168, 121.99732, -2.942048, -24.766935, 3.7309484, 42.72584)
+
+[node name="SM_Prop_Candle_03" parent="." unique_id=393461788 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.3022, 2.8312206e-07, 53.190956)
+
+[node name="SM_Prop_Candle_04" parent="." unique_id=392178792 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -90.92144, -1.937151e-07, 51.97107)
+
+[node name="SM_Prop_Candle_05" parent="." unique_id=165402157 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.06118, 2.8312206e-07, 51.3836)
+
+[node name="SM_Prop_Candle_06" parent="." unique_id=174429754 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.37369, -1.937151e-07, 54.19889)
+
+[node name="SM_Prop_Candle_07" parent="." unique_id=1513107250 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -90.96457, -1.937151e-07, 53.7874)
+
+[node name="SM_Prop_Candle_08" parent="." unique_id=129472866 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -93.12286, -6.7055225e-07, 51.82264)
+
+[node name="SM_Prop_Candle_09" parent="." unique_id=1166976286 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.871895, -1.937151e-07, 54.371506)
+
+[node name="SM_Prop_Candle_10" parent="." unique_id=58146034 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.78166, -1.937151e-07, 54.477352)
+
+[node name="SM_Prop_Candle_11" parent="." unique_id=418569027 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.145325, 2.8312206e-07, 51.332047)
+
+[node name="SM_Prop_Candle_12" parent="." unique_id=1888273043 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -94.31037, -1.937151e-07, 52.36609)
+
+[node name="SM_Prop_Candle_13" parent="." unique_id=2143361447 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.135864, -1.937151e-07, 53.54296)
+
+[node name="SM_Prop_Candle_14" parent="." unique_id=1570838420 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.47495, -1.937151e-07, 54.936264)
+
+[node name="SM_Prop_Candle_15" parent="." unique_id=1022919276 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.43333, -1.937151e-07, 50.59059)
+
+[node name="SM_Prop_Candle_16" parent="." unique_id=776468517 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -92.05212, -1.937151e-07, 50.55357)
+
+[node name="SM_Prop_Candle_17" parent="." unique_id=167283576 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -93.25058, -1.937151e-07, 50.298664)
+
+[node name="SM_Prop_Candle_18" parent="." unique_id=92947078 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.21645, -1.937151e-07, 50.631794)
+
+[node name="SM_Prop_Candle_19" parent="." unique_id=1054721221 instance=ExtResource("48_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -93.457825, -1.937151e-07, 53.58341)
+
+[node name="SM_Prop_Candle_20" parent="." unique_id=491005257 instance=ExtResource("47_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -93.78216, -1.937151e-07, 50.746284)
+
+[node name="SM_Prop_Barrel_02" parent="." unique_id=48366302 instance=ExtResource("51_8cnfu")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -81.81533, -1.937151e-07, 64.94087)
+
+[node name="SM_Prop_Gem_04" parent="." unique_id=1059517188 instance=ExtResource("52_evp7l")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -65.62861, 1.3262417, 22.834658)
+
+[node name="SM_Prop_Gem_01" parent="." unique_id=727334488 instance=ExtResource("53_3dfea")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -65.564125, 1.7538617, 22.217937)
+
+[node name="SM_Prop_Jewel_01" parent="." unique_id=388650723 instance=ExtResource("54_afxsc")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -65.71153, 1.9983437, 24.08036)
+
+[node name="SM_Prop_Jewel_06" parent="." unique_id=1328691433 instance=ExtResource("55_cvi1u")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -65.71216, 2.151645, 25.147427)
+
+[node name="SM_Prop_Goblin_Fence_02" parent="." unique_id=1728172103 instance=ExtResource("56_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 12.347055, 0.11340832, 86.04411)
+
+[node name="SM_Prop_Goblin_Fence_01" parent="." unique_id=1227612523 instance=ExtResource("57_h0ret")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 1.6247559, 7.599592e-07, 74.590744)
