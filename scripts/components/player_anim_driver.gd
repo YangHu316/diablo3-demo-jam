@@ -58,9 +58,6 @@ func _ready() -> void:
 	# V3.11:注入额外库(ual2)— OverhandThrow 等动作在 ual2 里
 	for extra in extra_libraries:
 		_inject_extra_library(String(extra))
-	# V3.11:注入额外库(ual2)— OverhandThrow 等动作在 ual2 里
-	for extra in extra_libraries:
-		_inject_extra_library(String(extra))
 	# 调试:启动时列动画清单
 	var loaded_names: PackedStringArray = PackedStringArray()
 	for ln in _ap.get_animation_library_list():
@@ -115,15 +112,6 @@ func _inject_ual_library() -> void:
 	if lib_node == null or not lib_node.has_method("inject_library"):
 		return
 	lib_node.inject_library(_ap, anim_library)
-
-# V3.11:把额外的 UAL 库(如 ual2)也注入到 AnimationPlayer
-func _inject_extra_library(lib_name: String) -> void:
-	if lib_name == "" or lib_name == anim_library:
-		return
-	var lib_node: Node = get_node_or_null("/root/AnimLib")
-	if lib_node == null or not lib_node.has_method("inject_library"):
-		return
-	lib_node.inject_library(_ap, lib_name)
 
 # V3.11:把额外的 UAL 库(如 ual2)也注入到 AnimationPlayer
 func _inject_extra_library(lib_name: String) -> void:
