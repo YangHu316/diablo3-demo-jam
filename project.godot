@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="ARPG 3C Demo"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/levels/level_02_play.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
@@ -31,6 +31,7 @@ CombatJuiceManager="*res://scripts/autoload/combat_juice_manager.gd"
 SpawnManager="*res://scripts/autoload/spawn_manager.gd"
 LootManager="*res://scripts/autoload/loot_manager.gd"
 AnimLib="*res://scripts/autoload/anim_lib.gd"
+RiftManager="*res://scripts/autoload/rift_manager.gd"
 
 [display]
 

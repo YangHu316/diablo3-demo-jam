@@ -53,17 +53,18 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir: Vector3) -> void:
 		origin = (enemy as Node3D).global_position
 	_spawn_loot(items, origin)
 
-# 多件掉落在落点周围散开.
+# 多件掉落在落点周围散开. 守门人爆装(14件)用更大半径, 满地光柱观感.
 func _spawn_loot(items: Array[ItemInstance], origin: Vector3) -> void:
 	var inv: Node = get_node_or_null("/root/Inventory")
 	var n: int = items.size()
+	# 件数多(守门人爆装)时半径随之放大, 避免光柱重叠.
+	var radius: float = 0.0 if n == 1 else clampf(0.8 + float(n) * 0.18, 0.8, 3.5)
 	for i in range(n):
 		var item: ItemInstance = items[i]
 		var drop := _loot_scene.instantiate()
 		_attach_to_world(drop)
 		var angle: float = TAU * float(i) / float(max(n, 1))
-		var spread: float = 0.0 if n == 1 else 0.8
-		var pos: Vector3 = origin + Vector3(cos(angle) * spread, 0.0, sin(angle) * spread)
+		var pos: Vector3 = origin + Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
 		if drop is Node3D:
 			(drop as Node3D).global_position = pos
 		drop.setup(item)

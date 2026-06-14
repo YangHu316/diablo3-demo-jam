@@ -39,15 +39,16 @@ func setup(loot_item: ItemInstance) -> void:
 		_apply_visuals()
 
 func _apply_visuals() -> void:
-	var color: Color = ItemInstance.QUALITY_COLORS.get(item.quality, Color.WHITE)
-	# 名牌文本: 品质着色; 弓附 DPS 数字 (DUI-02).
+	# 显示色: 套装绿优先于橙, 否则按品质 (DUI-02).
+	var color: Color = item.display_color()
+	# 名牌文本: 着色; 弓附 DPS 数字 (DUI-02).
 	var label: String = item.display_name
 	if item.slot == EquipSlots.Slot.BOW:
 		label += "  DPS %d" % _weapon_dps()
 	nameplate.text = label
 	nameplate.modulate = color
-	# 光柱仅传奇可见 (表现分级稀缺, §1 红线3).
-	beam.visible = item.is_legendary()
+	# 光柱: 传奇(橙)或套装(绿)可见 (表现分级稀缺, §1 红线3; V3.0 守门人满地光柱).
+	beam.visible = item.is_legendary() or item.is_set
 	if beam.visible:
 		var mat := beam.get_active_material(0)
 		if mat is StandardMaterial3D:
