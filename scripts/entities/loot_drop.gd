@@ -19,7 +19,12 @@ var _base_y: float = 0.0
 var _t: float = 0.0
 
 @onready var nameplate: Label3D = $Nameplate
-@onready var beam: MeshInstance3D = $Beam
+@onready var beam: Node3D = $Beam   # V3.13:从 MeshInstance3D 圆柱 → Node3D 容器,装 BinbunVFX 拉长光柱
+
+# V3.13:用 BinbunVFX 魔法粒子拉长当光柱,替代原 CylinderMesh.
+# vfx_04(橙红)给传奇,vfx_01(金黄)给套装 — 视觉与品质色对得上.
+const BEAM_VFX_LEGENDARY: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_04.tscn"
+const BEAM_VFX_SET: String = "res://assets/MagicVFX/assets/BinbunVFX/magic_projectiles/effects/mprojectile_basic/mprojectile_basic_vfx_01.tscn"
 
 func _ready() -> void:
 	add_to_group("loot")
@@ -47,15 +52,33 @@ func _apply_visuals() -> void:
 		label += "  DPS %d" % _weapon_dps()
 	nameplate.text = label
 	nameplate.modulate = color
-	# 光柱: 传奇(橙)或套装(绿)可见 (表现分级稀缺, §1 红线3; V3.0 守门人满地光柱).
+	# 光柱: 传奇(橙)或套装(绿)可见 (表现分级稀缺, §1 红线3).
+	# V3.13:换成 BinbunVFX projectile 沿 X 轴拉长 + 绕 Z -90° 立起来当光柱.
 	beam.visible = item.is_legendary() or item.is_set
 	if beam.visible:
-		var mat := beam.get_active_material(0)
-		if mat is StandardMaterial3D:
-			var dup: StandardMaterial3D = (mat as StandardMaterial3D).duplicate()
-			dup.albedo_color = color
-			dup.emission = color
-			beam.set_surface_override_material(0, dup)
+		_build_beam_vfx(item.is_set)
+
+func _build_beam_vfx(is_set: bool) -> void:
+	# 清干净旧 VFX (复用 spawn 时清前一次)
+	for c in beam.get_children():
+		c.queue_free()
+	var path: String = BEAM_VFX_SET if is_set else BEAM_VFX_LEGENDARY
+	if not ResourceLoader.exists(path):
+		return
+	var scn: PackedScene = load(path)
+	if scn == null:
+		return
+	var vfx: Node = scn.instantiate()
+	beam.add_child(vfx)
+	if vfx is Node3D:
+		# BinbunVFX projectile 长轴在 +X.
+		# 绕 Z 轴 -90° 让 +X 转成 +Y(垂直向上)→ 立成光柱.
+		# scale.x = 拉长系数(8x),y/z 略放大让光柱更"粗"显眼.
+		var v3: Node3D = vfx as Node3D
+		v3.rotation = Vector3(0, 0, -PI * 0.5)
+		v3.scale = Vector3(8.0, 1.4, 1.4)
+		# 光柱底端贴地,需要把它沿世界 Y 抬起来一半身长 ≈ 4(x scale × 0.5)
+		v3.position = Vector3(0, 4.0, 0)
 
 # 弓 DPS 估算 = 该物品武器伤害词缀总和 (无则按 Tier 上沿近似).
 func _weapon_dps() -> int:
