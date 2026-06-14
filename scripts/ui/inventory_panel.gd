@@ -150,6 +150,8 @@ func _build_ui() -> void:
 
 	_build_bag(vbox)
 	_build_bottom_bar(vbox)
+	# 关闭键独立浮层,anchor 到 panel 右上角,绝对显眼(放最后保证渲染在最上层)
+	_build_close_button(panel)
 
 func _build_header(vbox: VBoxContainer) -> void:
 	var header := HBoxContainer.new()
@@ -164,17 +166,38 @@ func _build_header(vbox: VBoxContainer) -> void:
 	title.add_theme_color_override("font_color", TITLE)
 	title.add_theme_font_size_override("font_size", 30)
 	header.add_child(title)
-	# 关闭 X.
+	# 头部占位(对齐徽章宽度,不再放小关闭键 — 真关闭键移到面板右上角独立浮层)
+	var spacer_r := Control.new()
+	spacer_r.custom_minimum_size = Vector2(46, 46)
+	header.add_child(spacer_r)
+
+# V3.13:面板右上角独立浮层关闭键(脱离 header 布局,绝对定位到 panel 右上 corner)。
+# 用户反馈"加一个真的关闭键" — 之前的 X 嵌在 header 里小且被 panel 内部 padding 推走。
+# 这版直接 anchor 到 panel 右上,大尺寸 + 红底 + 白字,绝对显眼可点。
+func _build_close_button(panel: PanelContainer) -> void:
 	var close := Button.new()
 	close.text = "✕"
-	close.custom_minimum_size = Vector2(40, 40)
-	close.add_theme_color_override("font_color", Color(0.85, 0.4, 0.3))
-	close.add_theme_stylebox_override("normal", _sbox(SUB_FILL, 2, GOLD_DIM, 3, 0))
-	close.add_theme_stylebox_override("hover", _sbox(Color(0.2, 0.08, 0.06), 2, GOLD, 3, 0))
-	close.add_theme_stylebox_override("pressed", _sbox(SUB_FILL, 2, GOLD, 3, 0))
+	close.custom_minimum_size = Vector2(56, 56)
+	close.add_theme_color_override("font_color", Color(1, 1, 1))
+	close.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.85))
+	close.add_theme_color_override("font_pressed_color", Color(1, 0.8, 0.6))
+	close.add_theme_font_size_override("font_size", 28)
+	# 红底深红描边,hover/press 加亮
+	close.add_theme_stylebox_override("normal", _sbox(Color(0.55, 0.10, 0.08), 3, Color(0.85, 0.30, 0.22), 4, 0))
+	close.add_theme_stylebox_override("hover", _sbox(Color(0.78, 0.18, 0.12), 3, Color(1.0, 0.6, 0.4), 4, 0))
+	close.add_theme_stylebox_override("pressed", _sbox(Color(0.40, 0.06, 0.05), 3, Color(1.0, 0.6, 0.4), 4, 0))
+	# anchor 到 panel 右上角,向左下 8px 内缩一点不顶边
+	close.anchor_left = 1.0
+	close.anchor_top = 0.0
+	close.anchor_right = 1.0
+	close.anchor_bottom = 0.0
+	close.offset_left = -64
+	close.offset_top = 8
+	close.offset_right = -8
+	close.offset_bottom = 64
 	close.pressed.connect(func(): Sfx.play("ui_decline"); _set_open(false))
 	close.mouse_entered.connect(func(): Sfx.play("ui_hover"))
-	header.add_child(close)
+	panel.add_child(close)
 
 func _gold_rule() -> Panel:
 	var r := Panel.new()
