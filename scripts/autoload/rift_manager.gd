@@ -19,6 +19,9 @@ signal run_cleared(clear_time_sec: float, kill_count: int)
 const GOAL: float = 106.0                       # 总权重目标默认值 (~6min 填满). 外部 rm.GOAL 读此常量.
 const BOSS_SCENE: String = "res://scenes/levels/boss_room_play.tscn"
 
+# 大秘境时限 (秒). 仅供 HUD"时间球"倒计时展示 —— 当前不挂失败/结算逻辑 (展示用).
+const RIFT_TIME_LIMIT: float = 120.0
+
 # 运行期有效目标 (默认=GOAL). 速通模式 (--speedrun) 时被 speedrun_test.csv 覆写为 15.
 # 内部进度逻辑一律用 goal; progress_changed 信号携带 goal → HUD 自动跟随.
 var goal: float = GOAL
@@ -128,6 +131,14 @@ func get_kill_count() -> int:
 
 func get_clear_time() -> float:
 	return float(Time.get_ticks_msec() - run_start_ms) / 1000.0
+
+# 大秘境时限总长 (秒). HUD 时间球读此作满刻度.
+func get_time_limit() -> float:
+	return RIFT_TIME_LIMIT
+
+# 剩余时间 (秒, clamp 到 [0, RIFT_TIME_LIMIT]). 守门人触发后冻结在触发时刻的剩余.
+func get_time_remaining() -> float:
+	return clampf(RIFT_TIME_LIMIT - get_clear_time(), 0.0, RIFT_TIME_LIMIT)
 
 # ── 速通 override (仅 --speedrun) ─────────────────────────────
 # 读 speedrun_test.csv → 套用差量到运行期值. 不带开关 = 不读 = 正式值.

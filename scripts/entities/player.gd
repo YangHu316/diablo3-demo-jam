@@ -18,6 +18,9 @@ const SPEED: float = 7.0
 const ATTACK_RANGE: float = 18.0  # 利箭有效射程,目标在此范围内即停下射击
 const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 
+# 功能塔·加速塔全局乘区 (TowerBuffManager 写: 激活=1+加成, 清除=1.0).
+var speed_buff_mult: float = 1.0
+
 # V3.0 锁死玩家面板:HP 8000(策划案 player_loadout.csv 爽快割草版)
 @export var max_health: int = 8000
 
@@ -246,7 +249,7 @@ func _move_toward(target: Vector3, _delta: float) -> void:
 		return
 	var dir: Vector3 = to.normalized()
 	# 引导期(箭雨风暴):移速降到 channel_movement_mult(默认 50%)
-	var spd: float = SPEED * (_channel_movement_mult if _is_channeling else 1.0)
+	var spd: float = SPEED * speed_buff_mult * (_channel_movement_mult if _is_channeling else 1.0)
 	velocity.x = dir.x * spd
 	velocity.z = dir.z * spd
 	is_moving = true

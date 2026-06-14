@@ -114,14 +114,17 @@ func _compute_formation(formation: String, center: Vector3, radius: float, count
 	return positions
 
 # ── 信号回调 ─────────────────────────────────────────
-func _on_enemy_died(_enemy, wave_id: int) -> void:
+func _on_enemy_died(enemy, wave_id: int) -> void:
 	if not _wave_remaining.has(wave_id):
 		return
 	var arr: Array = _wave_remaining[wave_id]
-	# enemy.died 信号只带一个参数(自己),我们 bind 了 wave_id;
-	# 但收到时 _enemy 可能已经在 queue_free 队列里,instance_id 仍然有效
-	# 简化处理:一次少一个就行
-	if arr.size() > 0:
+	# 按正确的 instance_id 移除，而非盲目 pop_back（AoE 乱序死亡时 pop_back 会删错）
+	var id: int = enemy.get_instance_id()
+	var idx: int = arr.find(id)
+	if idx >= 0:
+		arr.remove_at(idx)
+	elif arr.size() > 0:
+		# 降级兜底：找不到 id（极少数情况）才 pop_back
 		arr.pop_back()
 	if arr.is_empty():
 		_wave_remaining.erase(wave_id)

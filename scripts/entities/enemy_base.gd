@@ -85,6 +85,14 @@ func _acquire_player() -> void:
 	if arr.size() > 0:
 		_player = arr[0] as Node3D
 
+func _exit_tree() -> void:
+	# 断开 stagger 信号，防止信号泄漏（敌人死亡/释放后回调仍然触发）
+	if stagger_comp != null:
+		if stagger_comp.has_signal("stagger_started") and stagger_comp.stagger_started.is_connected(_on_stagger_started):
+			stagger_comp.stagger_started.disconnect(_on_stagger_started)
+		if stagger_comp.has_signal("stagger_ended") and stagger_comp.stagger_ended.is_connected(_on_stagger_ended):
+			stagger_comp.stagger_ended.disconnect(_on_stagger_ended)
+
 func _apply_data() -> void:
 	if data == null:
 		current_health = max_health
@@ -127,9 +135,10 @@ func _physics_process(delta: float) -> void:
 		_slow_timer -= delta
 		if _slow_timer <= 0.0:
 			_slow_amount = 0.0
-	# 没找到玩家就持续重试(避免顺序问题)
+	# 没找到玩家就重试，但限频（每60帧最多一次），避免每帧都扫描场景树
 	if _player == null or not is_instance_valid(_player):
-		_acquire_player()
+		if Engine.get_process_frames() % 60 == 0:
+			_acquire_player()
 
 	match state:
 		State.IDLE:

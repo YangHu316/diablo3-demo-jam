@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+; 敌人集团蓝图 · 肿胀走尸集群(5 个一组)· 自爆逼站位(勿扎堆触发连环爆)
+; cluster 略松散;数值走 bloated_corpse.tres。
+[ext_resource type="Script" path="res://scripts/components/spawn_trigger.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_bloated.tscn" id="2"]
+[ext_resource type="Resource" path="res://scripts/entities/data/bloated_corpse.tres" id="3"]
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 4.5
+
+[node name="Group_Bloated_x5" type="Area3D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1")
+enemy_scene = ExtResource("2")
+enemy_data = ExtResource("3")
+count = 5
+formation = "cluster"
+spawn_radius = 4.5
+spawn_at_self = true
+one_shot = true
+target_player = false
+monster_id = "trash"
+drop_source = "trash"
+preplaced = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("shape")

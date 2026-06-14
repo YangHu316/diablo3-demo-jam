@@ -9,21 +9,65 @@ extends Node
 # 维护:把新增 SFX 加到 SOUND_TABLE,调用方用 key 不直接读路径
 
 const SOUND_TABLE: Dictionary = {
-	# 战斗
-	"arrow_shoot":      "res://assets/SFX/Player_Movement_SFX/56_Attack_03.wav",
-	"arrow_hit":        "res://assets/SFX/Battle_SFX/15_Impact_flesh_02.wav",
-	"arrow_hit_alt":    "res://assets/SFX/Battle_SFX/77_flesh_02.wav",
+	# ── 战斗 / 命中 (Battle_SFX) ──
 	"slash":            "res://assets/SFX/Battle_SFX/22_Slash_04.wav",
+	"claw":             "res://assets/SFX/Battle_SFX/03_Claw_03.wav",
+	"bite":             "res://assets/SFX/Battle_SFX/08_Bite_04.wav",
+	"impact_flesh":     "res://assets/SFX/Battle_SFX/15_Impact_flesh_02.wav",
+	"flesh_alt":        "res://assets/SFX/Battle_SFX/77_flesh_02.wav",
+	"block":            "res://assets/SFX/Battle_SFX/39_Block_03.wav",
+	"evade":            "res://assets/SFX/Battle_SFX/35_Miss_Evade_02.wav",
+	"flee":             "res://assets/SFX/Battle_SFX/51_Flee_02.wav",
+	"encounter":        "res://assets/SFX/Battle_SFX/55_Encounter_02.wav",
 	"enemy_death":      "res://assets/SFX/Battle_SFX/69_Enemy_death_01.wav",
-	"player_hurt":      "res://assets/SFX/Player_Movement_SFX/61_Hit_03.wav",
-	# 元素 / 技能
-	"frost_explode":    "res://assets/SFX/Atk_Magic_SFX/13_Ice_explosion_01.wav",
+	"arrow_hit":        "res://assets/SFX/Battle_SFX/15_Impact_flesh_02.wav",  # 兼容旧 key
+	"arrow_hit_alt":    "res://assets/SFX/Battle_SFX/77_flesh_02.wav",         # 兼容旧 key
+	"dodge":            "res://assets/SFX/Battle_SFX/35_Miss_Evade_02.wav",    # 兼容旧 key
+	# ── 元素 / 魔法 (Atk_Magic_SFX) ──
 	"fire_explode":     "res://assets/SFX/Atk_Magic_SFX/04_Fire_explosion_04_medium.wav",
+	"frost_explode":    "res://assets/SFX/Atk_Magic_SFX/13_Ice_explosion_01.wav",
+	"thunder":          "res://assets/SFX/Atk_Magic_SFX/18_Thunder_02.wav",
+	"water":            "res://assets/SFX/Atk_Magic_SFX/22_Water_02.wav",
+	"wind":             "res://assets/SFX/Atk_Magic_SFX/25_Wind_01.wav",
+	"earth":            "res://assets/SFX/Atk_Magic_SFX/30_Earth_02.wav",
+	"poison":           "res://assets/SFX/Atk_Magic_SFX/46_Poison_01.wav",
 	"channel_charge":   "res://assets/SFX/Atk_Magic_SFX/45_Charge_05.wav",
-	# 自爆
 	"explode":          "res://assets/SFX/Atk_Magic_SFX/04_Fire_explosion_04_medium.wav",
-	# 玩家
-	"dodge":            "res://assets/SFX/Battle_SFX/35_Miss_Evade_02.wav",
+	# ── 增益 / 治疗 (Buffs_Heals_SFX) ──
+	"heal":             "res://assets/SFX/Buffs_Heals_SFX/02_Heal_02.wav",
+	"buff_atk":         "res://assets/SFX/Buffs_Heals_SFX/16_Atk_buff_04.wav",
+	"buff_def":         "res://assets/SFX/Buffs_Heals_SFX/17_Def_buff_01.wav",
+	"debuff":           "res://assets/SFX/Buffs_Heals_SFX/21_Debuff_01.wav",
+	"revive":           "res://assets/SFX/Buffs_Heals_SFX/30_Revive_03.wav",
+	"absorb":           "res://assets/SFX/Buffs_Heals_SFX/39_Absorb_04.wav",
+	"sleep":            "res://assets/SFX/Buffs_Heals_SFX/44_Sleep_01.wav",
+	"speed_up":         "res://assets/SFX/Buffs_Heals_SFX/48_Speed_up_02.wav",
+	# ── 玩家移动 / 动作 (Player_Movement_SFX) ──
+	"step_grass":       "res://assets/SFX/Player_Movement_SFX/03_Step_grass_03.wav",
+	"step_rock":        "res://assets/SFX/Player_Movement_SFX/08_Step_rock_02.wav",
+	"step_wood":        "res://assets/SFX/Player_Movement_SFX/12_Step_wood_03.wav",
+	"step_water":       "res://assets/SFX/Player_Movement_SFX/14_Step_water_02.wav",
+	"swim":             "res://assets/SFX/Player_Movement_SFX/26_Swim_Submerged_02.wav",
+	"jump":             "res://assets/SFX/Player_Movement_SFX/30_Jump_03.wav",
+	"climb":            "res://assets/SFX/Player_Movement_SFX/42_Cling_climb_03.wav",
+	"landing":          "res://assets/SFX/Player_Movement_SFX/45_Landing_01.wav",
+	"dive":             "res://assets/SFX/Player_Movement_SFX/52_Dive_02.wav",
+	"attack_swing":     "res://assets/SFX/Player_Movement_SFX/56_Attack_03.wav",
+	"arrow_shoot":      "res://assets/SFX/Player_Movement_SFX/56_Attack_03.wav",
+	"player_hurt":      "res://assets/SFX/Player_Movement_SFX/61_Hit_03.wav",
+	"player_death":     "res://assets/SFX/Buffs_Heals_SFX/21_Debuff_01.wav",
+	"teleport":         "res://assets/SFX/Player_Movement_SFX/88_Teleport_02.wav",
+	# ── UI (UI_Menu_SFX) ──
+	"ui_hover":         "res://assets/SFX/UI_Menu_SFX/001_Hover_01.wav",
+	"ui_confirm":       "res://assets/SFX/UI_Menu_SFX/013_Confirm_03.wav",
+	"ui_decline":       "res://assets/SFX/UI_Menu_SFX/029_Decline_09.wav",
+	"ui_denied":        "res://assets/SFX/UI_Menu_SFX/033_Denied_03.wav",
+	"ui_use_item":      "res://assets/SFX/UI_Menu_SFX/051_use_item_01.wav",
+	"ui_equip":         "res://assets/SFX/UI_Menu_SFX/070_Equip_10.wav",
+	"ui_unequip":       "res://assets/SFX/UI_Menu_SFX/071_Unequip_01.wav",
+	"ui_buy_sell":      "res://assets/SFX/UI_Menu_SFX/079_Buy_sell_01.wav",
+	"ui_pause":         "res://assets/SFX/UI_Menu_SFX/092_Pause_04.wav",
+	"ui_unpause":       "res://assets/SFX/UI_Menu_SFX/098_Unpause_04.wav",
 }
 
 # StringName -> AudioStream 缓存(免运行时反复 load)

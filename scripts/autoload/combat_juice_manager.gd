@@ -133,9 +133,10 @@ func _apply_flash(target: Node) -> void:
 		if old_tw is Tween and (old_tw as Tween).is_valid():
 			(old_tw as Tween).kill()
 	mat.set_shader_parameter("flash_intensity", 1.0)
-	# 用 mesh 的 tween 让它随 mesh 一起释放(mesh free 时 tween 自动 kill)
 	var tw: Tween = mesh.create_tween()
 	tw.tween_property(mat, "shader_parameter/flash_intensity", 0.0, FLASH_DURATION)
+	# tween 结束后自动清理 dict 条目，防止无限增长
+	tw.finished.connect(func() -> void: _flash_tweens.erase(key))
 	_flash_tweens[key] = tw
 
 func _find_mesh(node: Node) -> MeshInstance3D:
@@ -198,6 +199,16 @@ func _ensure_flash_material(mesh: MeshInstance3D) -> ShaderMaterial:
 	# 冰冻结束时还原 → 不会出现"丢失贴图变纯色"的问题。
 	if not _original_overrides.has(key):
 		_original_overrides[key] = mesh.get_surface_override_material(0)
+		# mesh 释放时自动清理 3 个 dict，防止内存无限增长
+		mesh.tree_exited.connect(func() -> void:
+			_flash_materials.erase(key)
+			_original_overrides.erase(key)
+			if _flash_tweens.has(key):
+				var tw = _flash_tweens[key]
+				if tw is Tween and (tw as Tween).is_valid():
+					(tw as Tween).kill()
+				_flash_tweens.erase(key)
+		)
 	mesh.set_surface_override_material(0, mat)
 	_flash_materials[key] = mat
 	return mat

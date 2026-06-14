@@ -1,0 +1,3 @@
+tower_id,pos_x,pos_y,pos_z,rot_y,备注
+damage_tower,-80,0,-7,0,伤害塔:出生点右侧
+speed_tower,-86,0,-7,0,加速塔:出生点左侧

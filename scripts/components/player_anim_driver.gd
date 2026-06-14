@@ -11,18 +11,20 @@ extends Node
 @export var anim_player_path: NodePath
 # UAL 状态→动画名(默认对齐 ual1 命名)
 @export var anim_library: String = "ual1"
-@export var idle_anim: String = "Idle_Loop"
-@export var move_anim: String = "Jog_Fwd_Loop"
-@export var dodge_anim: String = "Roll"                       # UAL1 实际名
-@export var attack_anim: String = "Pistol_Shoot"               # 没拉弓动画,用扣扳机替代(瞬发)
+# V3.x 合并:名字采用 78ade47 美术验证过的短名(Godot 导入后 _Loop 后缀被剥掉,
+# Idle_Loop → Idle / Jog_Fwd_Loop → Jog_Fwd 才能命中,否则 _resolve 回退 → T-pose)
+@export var idle_anim: String = "Idle"
+@export var move_anim: String = "Jog_Fwd"
+@export var dodge_anim: String = "Roll"
+@export var attack_anim: String = "Pistol_Shoot"               # 没拉弓动画,用扣扳机替代
 @export var channel_enter_anim: String = "Spell_Simple_Enter"  # 进引导
-@export var channel_loop_anim: String = "Spell_Simple_Idle_Loop"
+@export var channel_loop_anim: String = "Spell_Simple_Idle"    # 同短名规则,Spell_Simple_Idle_Loop → _Idle
 @export var channel_exit_anim: String = "Spell_Simple_Exit"
 @export var hit_anim: String = "Hit_Chest"                     # 受击
 @export var death_anim: String = "Death01"
 # 循环动画(导入的 glTF 默认不循环)
 @export var loop_anims: PackedStringArray = [
-	"Idle_Loop", "Jog_Fwd_Loop", "Walk_Loop", "Sprint_Loop", "Spell_Simple_Idle_Loop",
+	"Idle", "Jog_Fwd", "Walk", "Sprint", "Spell_Simple_Idle",
 ]
 
 enum State { IDLE, MOVE, DODGE, ATTACK, CHANNEL, HIT, DEATH }

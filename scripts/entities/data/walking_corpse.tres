@@ -1,20 +1,12 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" format=3 uid="uid://pq70s8ll8qly"]
 
-[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dlp6k1hatm3c8" path="res://scripts/entities/enemy_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
 enemy_id = &"walking_corpse"
 enemy_name = "缓行走尸"
-archetype = 0
 max_health = 150
 attack_damage = 30
 move_speed = 5.1
-detection_range = 12.0
-aggro_range = 14.0
-lose_aggro_range = 18.0
-attack_range = 2.0
-attack_windup = 0.8
-attack_recovery = 0.4
-attack_hit_window = 0.2
 albedo_color = Color(0.827451, 0.184314, 0.184314, 1)

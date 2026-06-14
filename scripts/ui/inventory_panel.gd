@@ -172,7 +172,8 @@ func _build_header(vbox: VBoxContainer) -> void:
 	close.add_theme_stylebox_override("normal", _sbox(SUB_FILL, 2, GOLD_DIM, 3, 0))
 	close.add_theme_stylebox_override("hover", _sbox(Color(0.2, 0.08, 0.06), 2, GOLD, 3, 0))
 	close.add_theme_stylebox_override("pressed", _sbox(SUB_FILL, 2, GOLD, 3, 0))
-	close.pressed.connect(func(): _set_open(false))
+	close.pressed.connect(func(): Sfx.play("ui_decline"); _set_open(false))
+	close.mouse_entered.connect(func(): Sfx.play("ui_hover"))
 	header.add_child(close)
 
 func _gold_rule() -> Panel:
@@ -215,6 +216,8 @@ func _build_stats_column(parent: HBoxContainer) -> void:
 	detail.add_theme_stylebox_override("normal", _sbox(Color(0.16, 0.05, 0.04), 2, GOLD_DIM, 3, 4))
 	detail.add_theme_stylebox_override("hover", _sbox(Color(0.24, 0.08, 0.06), 2, GOLD, 3, 4))
 	detail.add_theme_stylebox_override("pressed", _sbox(Color(0.16, 0.05, 0.04), 2, GOLD, 3, 4))
+	detail.pressed.connect(func(): Sfx.play("ui_confirm"))
+	detail.mouse_entered.connect(func(): Sfx.play("ui_hover"))
 	col.add_child(detail)
 
 func _section_label(t: String) -> Label:
@@ -389,6 +392,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		toggled = true
 	if toggled:
 		_set_open(not _open)
+		Sfx.play("ui_pause" if _open else "ui_unpause")
 		get_viewport().set_input_as_handled()
 
 func _set_open(v: bool) -> void:
@@ -405,6 +409,7 @@ func _on_bag_slot_pressed(index: int) -> void:
 		return
 	var items: Array = inv.get_bag_items()
 	if index < 0 or index >= items.size():
+		Sfx.play("ui_denied")
 		return
 	inv.quick_equip(items[index])
 	# 信号会触发刷新; 这里无需手动刷.
