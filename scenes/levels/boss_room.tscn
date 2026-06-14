@@ -1,12 +1,13 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://cot33phpnbigf"]
 
-[ext_resource type="Script" path="res://scripts/levels/boss_room.gd" id="1"]
+[ext_resource type="Script" uid="uid://cf7mi7ocllqlu" path="res://scripts/levels/boss_room.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://dveiew4ygy570" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01.fbx" id="2_oufd4"]
 
 [sub_resource type="NavigationMesh" id="nav"]
-agent_radius = 0.4
-agent_height = 1.8
 vertices = PackedVector3Array(-10, 0.05, -18, 10, 0.05, -18, 18, 0.05, -10, 18, 0.05, 10, 10, 0.05, 18, -10, 0.05, 18, -18, 0.05, 10, -18, 0.05, -10)
 polygons = [PackedInt32Array(0, 1, 2, 3, 4, 5, 6, 7)]
+agent_height = 1.8
+agent_radius = 0.4
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0, 0, 0, 1)
@@ -28,20 +29,23 @@ ssao_enabled = true
 glow_enabled = true
 glow_intensity = 0.5
 
-[node name="BossRoom" type="Node3D"]
+[node name="BossRoom" type="Node3D" unique_id=1824286911]
 script = ExtResource("1")
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1502488026]
 navigation_mesh = SubResource("nav")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=813112376]
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 8, 0)
 light_color = Color(1, 0.8, 0.7, 1)
 light_energy = 0.4
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1044393367]
 environment = SubResource("env")
 
-[node name="BossSpawn" type="Marker3D" parent="."]
+[node name="BossSpawn" type="Marker3D" parent="." unique_id=1224032826]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+
+[node name="SM_Env_Wall_01" parent="." unique_id=1053158943 instance=ExtResource("2_oufd4")]
+transform = Transform3D(136.79504, 0, 0, 0, 60.495483, 0, 0, 0, 100, -2.4337206, -0.2601373, 17.811237)

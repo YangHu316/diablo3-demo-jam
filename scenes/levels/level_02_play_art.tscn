@@ -61,6 +61,7 @@
 [ext_resource type="PackedScene" uid="uid://brb56gy4il7yf" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Curved_01_DoubleSided.fbx" id="59_xomiv"]
 [ext_resource type="PackedScene" uid="uid://d11ema4xyi80w" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Curved_Corner_01.fbx" id="60_h0ret"]
 [ext_resource type="PackedScene" uid="uid://5gso2kl60nns" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Large_01_DoubleSided.fbx" id="61_16uhi"]
+[ext_resource type="PackedScene" uid="uid://dveiew4ygy570" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01.fbx" id="62_xomiv"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -3180,7 +3181,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.876965, 7.599592e-07, 80.7
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.823177, 7.599592e-07, -64.41304)
 
 [node name="EliteGroup_Dog2" parent="." unique_id=959355123 instance=ExtResource("17_2rkws")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5986364, 7.599592e-07, 79.31029)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6177022, 0.117586896, 79.23785)
 
 [node name="Group_Dog_x9" parent="." unique_id=1574174866 instance=ExtResource("11_rmmqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.346756, 7.599592e-07, 81.84159)
@@ -3200,10 +3201,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.01652, 1.1803426, 99.99138
 [node name="SettlementPanel" parent="." unique_id=618811148 instance=ExtResource("19")]
 
 [node name="Tower_Damage" parent="." unique_id=877338579 instance=ExtResource("23_nsb4i")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -124.54602, -1.937151e-07, -6.0479126)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.89637, -1.937151e-07, 12.808855)
 
 [node name="Tower_Speed" parent="." unique_id=96545456 instance=ExtResource("24_p5cgg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130.00809, -1.937151e-07, -6.0312433)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.516163, -1.937151e-07, 80.59248)
 
 [node name="SM_Env_Entrance_Crypt_02" parent="." unique_id=886197259 instance=ExtResource("25_makso")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.996506, -1.937151e-07, -17.31354)
@@ -3320,7 +3321,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -66.03508, 0.24444318, 
 transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0, 1.4074788, -24.184267, 7.599592e-07, 29.581598)
 
 [node name="SM_Env_Cave_Background_01_DoubleSided2" parent="." unique_id=1737213110 instance=ExtResource("34_hl14s")]
-transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -27.73771, 3.7309484, 42.72584)
+transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -29.4723, 3.7309484, 42.72584)
 
 [node name="SM_Prop_Candle_03" parent="." unique_id=393461788 instance=ExtResource("47_h0ret")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.3022, 2.8312206e-07, 53.190956)
@@ -3411,3 +3412,12 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 108.649826, 0, 75.53013
 
 [node name="SM_Env_Door_Large_Frame_04" parent="." unique_id=2137271297 instance=ExtResource("50_ni4gb")]
 transform = Transform3D(139.72156, 0, 0, 0, 124.67749, 0, 0, 0, 113.87358, 82.7868, -1.937151e-07, 46.424866)
+
+[node name="SM_Env_Wall_01" parent="." unique_id=1053158943 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 47.63794, 0.0933049, 72.576035)
+
+[node name="SM_Env_Wall_02" parent="." unique_id=1165349499 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 52.50115, 0.09330395, 72.70693)
+
+[node name="SM_Env_Wall_03" parent="." unique_id=1544311778 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 57.50115, 0.09330395, 72.70693)
