@@ -161,6 +161,11 @@ func _physics_process(delta: float) -> void:
 func _tick_idle(_delta: float) -> void:
 	velocity = Vector3.ZERO
 	move_and_slide()
+	# V3.13:每个 IDLE tick 都重试 acquire player,绕开 _ready 竞态
+	# (skeleton_guard 报告"原地踏步直到被打才追" = call_deferred 跑时玩家还没加 group → _player 永远 null
+	#  → _tick_idle 第一行 if _player==null:return 永远早退 → 不会进入 CHASE,只能等 take_damage 强切)
+	if _player == null or not is_instance_valid(_player):
+		_acquire_player()
 	if _player == null:
 		return
 	# V3.0 仇恨重构:玩家进入 aggro_range 才转 CHASE(原 detection_range,12m)
