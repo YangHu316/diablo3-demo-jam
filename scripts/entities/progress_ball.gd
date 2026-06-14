@@ -69,11 +69,11 @@ func _spawn_float_text(_player: Node) -> void:
 	label.fixed_size = true
 	label.pixel_size = 0.0035
 	# 字体/描边与暴击伤害飘字对齐 (damage_number_pool: outline_size=8 /
-	# OUTLINE_COLOR=(0.05,0.02,0,1) / 默认 Label3D 字体). 字号 24, 颜色改紫 (与 HUD 进度条紫一致).
+	# OUTLINE_COLOR=(0.05,0.02,0,1) / 默认 Label3D 字体). 字号 12, 颜色改紫 (与 HUD 进度条紫一致).
 	label.modulate = Color(0.55, 0.32, 0.95)        # 进度紫
 	label.outline_modulate = Color(0.05, 0.02, 0.0, 1.0)
-	label.outline_size = 8
-	label.font_size = 24
+	label.outline_size = 6
+	label.font_size = 12
 	scene_root.add_child(label)
 	label.global_position = global_position + Vector3(0.0, 1.3, 0.0)
 	# 上飘 + 淡出 tween (~0.9s) 后自销.
