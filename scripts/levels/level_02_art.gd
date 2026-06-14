@@ -100,9 +100,9 @@ func _setup_d3_atmosphere() -> void:
 # ── 墙上批量火把(运行时)──────────────────────────────────────────────
 # 沿墙按间距均匀布壁挂火把(背靠墙、朝最近地砖即室内方向),每个配暖色火光。
 const TORCH_FBX := "res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Torch_Ornate_02.fbx"
-const TORCH_MIN_SPACING := 22.0   # 火把最小间距(世界单位,5=一格)
+const TORCH_MIN_SPACING := 12.5   # 火把最小间距(世界单位,5=一格)。22→12.5 火把数约翻倍(~96)
 const TORCH_HEIGHT := 2.7         # 离地高度(墙高约5)
-const TORCH_MAX := 110            # 火光数量上限(性能保护)
+const TORCH_MAX := 200            # 火光数量上限(性能保护)
 
 func _place_wall_torches() -> void:
 	var walls: Node = get_node_or_null("Walls")
