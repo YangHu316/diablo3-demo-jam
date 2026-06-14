@@ -66,6 +66,16 @@ func _ready() -> void:
 func _on_stats_changed(_total_stats: Dictionary) -> void:
 	pass
 
+# V3.10:统一通过 EntityRegistry autoload 拿 enemies 列表(避免 get_nodes_in_group 全树遍历)
+# 用 get_node_or_null 而不是直接引用 EntityRegistry 标识符,绕开 GDScript 解析器对
+# 新加 autoload 的延迟识别(parser error: Identifier "EntityRegistry" not declared)。
+func _get_enemies() -> Array:
+	var reg: Node = get_node_or_null("/root/EntityRegistry")
+	if reg != null and "enemies" in reg:
+		return reg.enemies
+	# 兜底:autoload 不在(老场景或测试)→ 退回 group 查
+	return get_tree().get_nodes_in_group("enemies")
+
 # sd 期望是 SkillData 资源
 func _on_skill_activated(slot_index: int, sd: Resource) -> void:
 	if sd == null:
@@ -151,7 +161,7 @@ func _emit_channel_tick(sd: Resource) -> void:
 	var center: Vector3 = _player.global_position
 	var radius: float = float(sd.channel_radius)
 	# 命中:范围内每个敌人一次伤害(独立暴击卷点)
-	var enemies: Array = EntityRegistry.enemies
+	var enemies: Array = _get_enemies()
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):
 			continue
@@ -476,7 +486,7 @@ func _execute_melee(sd: Resource) -> void:
 	var hit: Dictionary = DC.compute(sd)
 	var dmg: int = int(hit.get("damage", 0))
 	var is_crit: bool = bool(hit.get("is_crit", false))
-	var enemies: Array = EntityRegistry.enemies
+	var enemies: Array = _get_enemies()
 	var hit_count: int = 0
 	for e in enemies:
 		if not is_instance_valid(e) or not (e is Node3D):
