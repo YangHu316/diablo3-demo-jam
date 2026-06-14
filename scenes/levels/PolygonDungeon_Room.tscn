@@ -194,24 +194,6 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 5.050079, 0, 33.137955)
 [node name="SM_Env_Tiles_21" parent="." unique_id=927510706 instance=ExtResource("10_ngglf")]
 transform = Transform3D(-1.1292067, 0, -99.99362, 0, 100, 0, 99.99362, 0, -1.1292067, 10.076796, 0, 38.167294)
 
-[node name="SM_Env_Tiles_22" parent="." unique_id=1040832708 instance=ExtResource("10_ngglf")]
-transform = Transform3D(-0.85170865, 0, 99.99637, 0, 100, 0, -99.99637, 0, -0.85170865, -0.08886182, 0, 46.93325)
-
-[node name="Torch_4" parent="SM_Env_Tiles_22" unique_id=1095770544 instance=ExtResource("6_4jivl")]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 5.318203, 2.7, 41.6272)
-
-[node name="SM_Env_Tiles_21" parent="SM_Env_Tiles_22" unique_id=1722978129 instance=ExtResource("10_ngglf")]
-transform = Transform3D(-1.1292067, 0, -99.99362, 0, 100, 0, 99.99362, 0, -1.1292067, 9.73321, 0, 37.166588)
-
-[node name="SM_Env_Tiles_22" parent="SM_Env_Tiles_22" unique_id=1659700485 instance=ExtResource("10_ngglf")]
-transform = Transform3D(-0.85170865, 0, 99.99637, 0, 100, 0, -99.99637, 0, -0.85170865, -0.08886182, 0, 46.93325)
-
-[node name="SM_Env_Tiles_23" parent="SM_Env_Tiles_22" unique_id=164067029 instance=ExtResource("10_ngglf")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -0.00017595291, 0, 37.008286)
-
-[node name="SM_Env_Tiles_24" parent="SM_Env_Tiles_22" unique_id=456594384 instance=ExtResource("10_ngglf")]
-transform = Transform3D(-99.99787, 0, -0.6527529, 0, 100, 0, 0.6527529, 0, -99.99787, 9.627292, 0, 46.926105)
-
 [node name="SM_Env_Tiles_23" parent="." unique_id=748259879 instance=ExtResource("10_ngglf")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.050981, 0, 38.138115)
 
