@@ -127,7 +127,6 @@ func _tick_input_and_movement(delta: float) -> void:
 	# 3) LMB 按下/按住 — 重新决策:点中敌人 = 攻击目标;点中地面 = 移动目标
 	if lmb_held:
 		_resolve_lmb_click()
-
 	# 4) 攻击目标(从 LMB 点敌设置)— 走进射程,到了就停下让 SkillSlotManager 开火
 	if is_instance_valid(_attack_target):
 		var ep: Vector3 = (_attack_target as Node3D).global_position
@@ -157,15 +156,55 @@ func _tick_input_and_movement(delta: float) -> void:
 
 # 把鼠标光标投到地面平面,如果命中敌人(physics raycast)则设为攻击目标。
 func _resolve_lmb_click() -> void:
+	# 仅在"刚按下"那一帧 spawn 终点指引环(避免按住每帧 spam)
+	var just_clicked: bool = Input.is_action_just_pressed("attack_primary")
 	var enemy: Node3D = _pick_enemy_under_cursor()
 	if enemy != null:
 		_attack_target = enemy
 		_has_move_target = false
+		if just_clicked:
+			_spawn_click_indicator(enemy.global_position, true)
 		return
 	var p: Vector3 = _get_mouse_ground_point()
 	_move_target = p
 	_has_move_target = true
 	_attack_target = null
+	if just_clicked:
+		_spawn_click_indicator(p, false)
+
+# D3 经典点地反馈:在落点 spawn 一个 0.4s 圆环,扩散 + 淡出。
+# is_enemy=true → 红圈(锁敌);false → 白圈(走点)
+func _spawn_click_indicator(world_pos: Vector3, is_enemy: bool) -> void:
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	if is_enemy:
+		mat.albedo_color = Color(1.0, 0.35, 0.30, 0.9)
+		mat.emission = Color(1.0, 0.30, 0.20, 1.0)
+	else:
+		mat.albedo_color = Color(0.95, 0.95, 1.0, 0.85)
+		mat.emission = Color(0.85, 0.90, 1.0, 1.0)
+	mat.emission_enabled = true
+	mat.emission_energy_multiplier = 3.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.55
+	torus.outer_radius = 0.70
+	torus.ring_segments = 32
+	torus.material = mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.mesh = torus
+	scene_root.add_child(mi)
+	mi.global_position = world_pos + Vector3(0, 0.05, 0)
+	mi.scale = Vector3.ONE * 0.5
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3.ONE * 1.4, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(mat, "albedo_color:a", 0.0, 0.4)
+	tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.4)
+	tw.chain().tween_callback(Callable(mi, "queue_free"))
 
 # 物理 raycast(layer mask = 敌人层 2)从相机射,命中的就是该敌人 collider 的根。
 func _pick_enemy_under_cursor() -> Node3D:

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"cult_summoner"
+enemy_name = "黑暗教团召唤者"
+archetype = 4
+max_health = 150
+attack_damage = 18
+move_speed = 6.0
+detection_range = 16.0
+lose_aggro_range = 22.0
+attack_range = 12.0
+attack_windup = 1.0
+attack_recovery = 0.5
+attack_hit_window = 0.1
+albedo_color = Color(0.45, 0.20, 0.55, 1)

@@ -28,6 +28,9 @@ var _shader: Shader = null
 var _flash_materials: Dictionary = {}
 # MeshInstance3D.instance_id -> Tween,中断旧 tween 避免叠加
 var _flash_tweens: Dictionary = {}
+# MeshInstance3D.instance_id -> 原始 surface_override_material(0)(冰冻恢复时还原)。
+# null 表示原本就没设 override(走 mesh 自身材质)。
+var _original_overrides: Dictionary = {}
 
 func _ready() -> void:
 	_shader = load(SHADER_PATH)
@@ -187,22 +190,60 @@ func _ensure_flash_material(mesh: MeshInstance3D) -> ShaderMaterial:
 	mat.set_shader_parameter("metallic", metal)
 	mat.set_shader_parameter("flash_intensity", 0.0)
 	mat.set_shader_parameter("freeze_intensity", 0.0)
+	# 记录覆盖前的原 override(可能是 null,即"走 mesh 自身材质 / Synty 纹理")
+	# 冰冻结束时还原 → 不会出现"丢失贴图变纯色"的问题。
+	if not _original_overrides.has(key):
+		_original_overrides[key] = mesh.get_surface_override_material(0)
 	mesh.set_surface_override_material(0, mat)
 	_flash_materials[key] = mat
 	return mat
 
 # ── 冰冻染色(供敌人 apply_freeze 调用)──────────────
 # frozen=true 时把目标 mesh 染成冰蓝;false 时清除。
+# V3.0 修:之前只走 _find_mesh 取第一个(常见是不可见的 BodyMesh) → 视觉无效。
+# 现改为收集 target 下所有"可见"MeshInstance3D 全部染色,适配 Synty 多 mesh 角色。
 func set_freeze(target: Node, frozen: bool) -> void:
 	if not is_instance_valid(target):
 		return
-	var mesh: MeshInstance3D = _find_mesh(target)
-	if mesh == null:
+	var meshes: Array = []
+	_collect_visible_meshes(target, meshes)
+	for m in meshes:
+		var mesh: MeshInstance3D = m as MeshInstance3D
+		if mesh == null:
+			continue
+		if frozen:
+			# 冻:确保有 shader override + 染冰蓝
+			var mat: ShaderMaterial = _ensure_flash_material(mesh)
+			if mat == null:
+				continue
+			mat.set_shader_parameter("freeze_intensity", 1.0)
+		else:
+			# 解冻:还原原始 override(常为 null = 走自身材质/Synty 纹理)
+			var key: int = mesh.get_instance_id()
+			if _original_overrides.has(key):
+				mesh.set_surface_override_material(0, _original_overrides[key])
+				_original_overrides.erase(key)
+			else:
+				# 兜底:没记录就当无原 override
+				mesh.set_surface_override_material(0, null)
+			# 失效缓存,避免下次 flash 用到错误的 mesh 引用
+			_flash_materials.erase(key)
+			if _flash_tweens.has(key):
+				var tw = _flash_tweens[key]
+				if tw is Tween and is_instance_valid(tw):
+					tw.kill()
+				_flash_tweens.erase(key)
+
+# 递归收集 node 下所有 visible 的 MeshInstance3D(对 Synty 角色 rig 有 ~10 个 mesh 友好)
+func _collect_visible_meshes(node: Node, out: Array) -> void:
+	if not is_instance_valid(node):
 		return
-	var mat: ShaderMaterial = _ensure_flash_material(mesh)
-	if mat == null:
-		return
-	mat.set_shader_parameter("freeze_intensity", 1.0 if frozen else 0.0)
+	if node is MeshInstance3D:
+		var mi: MeshInstance3D = node
+		if mi.visible and mi.is_visible_in_tree():
+			out.append(mi)
+	for c in node.get_children():
+		_collect_visible_meshes(c, out)
 
 # ── 屏震 ─────────────────────────────────────────────
 func _trigger_screen_shake() -> void:
