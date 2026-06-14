@@ -9,7 +9,9 @@ setlocal
 set "PROJECT_DIR=%~dp0"
 set "GODOT="
 
-if exist "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
+REM 优先用本机已知路径(WXWork 缓存里的 Godot)
+if exist "C:\Users\vicyanghu\Documents\WXWork\1688854984748820\Cache\File\2026-06\Godot_v4.6.3-stable_win64.exe\Godot_v4.6.3-stable_win64.exe" set "GODOT=C:\Users\vicyanghu\Documents\WXWork\1688854984748820\Cache\File\2026-06\Godot_v4.6.3-stable_win64.exe\Godot_v4.6.3-stable_win64.exe"
+if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64_console.exe"
 if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6.3-stable_win64.exe"
 if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6-stable_win64_console.exe"
 if not defined GODOT if exist "%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe" set "GODOT=%PROJECT_DIR%..\Godot_v4.6-stable_win64.exe"
