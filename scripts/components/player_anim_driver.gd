@@ -109,11 +109,11 @@ func _inject_ual_library() -> void:
 func _process(delta: float) -> void:
 	if _ap == null or _player == null or not is_instance_valid(_player):
 		return
-	# DEATH/DODGE/CHANNEL 全部由信号锁住,不让 _process 覆盖
-	if _state == State.DEATH or _state == State.DODGE or _state == State.CHANNEL:
+	# DEATH/CHANNEL 全部由信号锁住,不让 _process 覆盖
+	if _state == State.DEATH or _state == State.CHANNEL:
 		return
-	# ATTACK / HIT 一次性 lock
-	if _state == State.ATTACK or _state == State.HIT:
+	# DODGE / ATTACK / HIT 一次性 lock(动画播完才回 IDLE)
+	if _state == State.DODGE or _state == State.ATTACK or _state == State.HIT:
 		_oneshot_lock_until -= delta
 		if _oneshot_lock_until > 0.0:
 			return
@@ -133,11 +133,16 @@ func _process(delta: float) -> void:
 # ── 信号处理 ──────────────────────────────────────────────
 func _on_dodge_started(_dir: Vector3, _duration: float) -> void:
 	_state = State.DODGE
-	_play(_resolve(dodge_anim))
+	var full: String = _resolve(dodge_anim)
+	_play(full)
+	# V3.10:dodge 持续 0.4s 但 Roll 动画 ~1s,_on_dodge_ended 早于动画完成会被切断。
+	# 用 _oneshot_lock 让 Roll 播完(85% 长度后允许 idle/move 接管)。
+	_oneshot_lock_until = _anim_length(full) * 0.85
 
 func _on_dodge_ended() -> void:
-	_state = State.IDLE
-	_play(_resolve(idle_anim))
+	# V3.10:不立刻切 idle,让 Roll 动画自然播完(_oneshot_lock_until 控制)
+	# 状态保持 DODGE,_process 看到 _oneshot_lock_until 到期会切回 IDLE/MOVE
+	pass
 
 func _on_player_died() -> void:
 	_state = State.DEATH

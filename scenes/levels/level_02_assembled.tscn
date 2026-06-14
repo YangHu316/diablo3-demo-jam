@@ -12,14 +12,8 @@ ambient_light_source = 2
 ambient_light_color = Color(0.34, 0.36, 0.48, 1)
 ambient_light_energy = 0.45
 tonemap_mode = 2
-glow_enabled = true
-glow_intensity = 0.9
-glow_strength = 1.1
-glow_bloom = 0.25
-fog_enabled = true
-fog_light_color = Color(0.06, 0.06, 0.1, 1)
-fog_density = 0.005
-fog_sky_affect = 0.0
+glow_enabled = false
+fog_enabled = false
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_o827s"]
 size = Vector3(5, 0.4, 5)
