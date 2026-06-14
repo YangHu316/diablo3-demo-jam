@@ -182,20 +182,21 @@ func _on_took_damage(_amount: int, _source) -> void:
 	_oneshot_lock_until = _anim_length(full) * 0.85   # 提前 15% 解锁,衔接更顺
 
 # 一次性技能触发 → ATTACK 短动画(只对射击类槽生效;翻滚不进这里因为槽 type=MOVEMENT)
-func _on_skill_activated(_slot: int, sd: Resource) -> void:
+func _on_skill_activated(slot: int, sd: Resource) -> void:
 	if sd == null or _state == State.DEATH or _state == State.CHANNEL or _state == State.DODGE:
 		return
 	# 0 = PROJECTILE,3 = MELEE — 只这两类播 attack
 	var t: int = int(sd.skill_type)
 	if t != 0 and t != 3:
 		return
-	# V3.9:玩家移动中不放抬手扣扳机动画 — 真正攻击时玩家已停在射程内 (is_moving=false)
-	# 走路途中经过敌人触发的 LMB armed 自动开火,不该把跑步动画打断为射击姿势
-	var moving: bool = false
-	if _player != null and "is_moving" in _player:
-		moving = bool(_player.is_moving)
-	if moving:
-		return
+	# V3.12:LMB(slot 0)走路途中 armed 自动开火不该打断跑步动画 → is_moving=true 时 skip
+	# RMB/Q/E(slot >= 1)有 0.18s cast_freeze 保证站住,无条件放扣扳机动画
+	if slot == 0:
+		var moving: bool = false
+		if _player != null and "is_moving" in _player:
+			moving = bool(_player.is_moving)
+		if moving:
+			return
 	_state = State.ATTACK
 	# V3.11:attack_anim + fallback 链 — 第一个能 resolve 的就用
 	var full: String = _resolve(attack_anim)
