@@ -1,10 +1,19 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://c5kiiuyge53is"]
 
-; 功能塔蓝图 · 加速塔(可手动布置)
-; = tower_trigger.tscn 实例,预设 tower_id=speed_tower(全局移速+35%·见 tower_buffs.csv)。
-; 逻辑全在原 tower_trigger.gd / TowerBuffManager(未改);拖进关卡→移动到位即可。
 [ext_resource type="PackedScene" path="res://scenes/props/tower_trigger.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://c1cwo50r2qvdv" path="res://assets/PolygonDungeon/Models/Environment/Decor/SM_Env_GlowingOrb_01.fbx" id="2"]
+[ext_resource type="Script" uid="uid://c02iwi2m2bo20" path="res://scripts/levels/tower_orb_glow.gd" id="3"]
 
-[node name="Tower_Speed" instance=ExtResource("1")]
+[node name="Tower_Speed" unique_id=96545456 instance=ExtResource("1")]
 tower_id = &"speed_tower"
-ready_color = Color(0.25, 0.6, 1.0, 1)
+ready_color = Color(0.25, 0.6, 1, 1)
+
+[node name="Body" parent="." index="0"]
+visible = false
+
+[node name="Orb" parent="." index="3" unique_id=749169215 instance=ExtResource("2")]
+
+[node name="OrbGlow" type="Node3D" parent="Orb" index="2" unique_id=619331210]
+script = ExtResource("3")
+tower_id = &"speed_tower"
+ready_color = Color(0.25, 0.6, 1, 1)
