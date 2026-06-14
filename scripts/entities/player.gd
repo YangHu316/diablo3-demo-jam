@@ -7,7 +7,7 @@ extends CharacterBody3D
 # - Shift(force_stand): 原地站桩,左键朝光标射不移动。
 # - 空格(force_move): 朝光标走,无视脚下敌人(经典 D3 Force-Move)。
 # - Q(potion): 治疗药水(暂未接 — 留待 P0 后续)。
-# - 翻滚由 SkillExecutor._execute_movement 通过 dodge() API 触发。
+# - 翻滚由 SkillExecutor._execute_movement 通过 dodge() API 触发(W=朝光标前滚)。
 
 signal health_changed(current: int, max_hp: int)
 signal player_died()
@@ -339,16 +339,16 @@ func _on_skill_activated(slot_index: int, _sd: Resource) -> void:
 	# 急停瞬间清掉攻击目标,但保留 _move_target —— freeze 结束后会自动恢复朝点行走
 	_attack_target = null
 
-# 翻滚方向源:V3.0 改为"光标反方向后撤",无 WASD。
+# 翻滚方向源:V3.0 改为"光标方向前滚",无 WASD。
 # 也对外暴露当前面向供 fallback。
 func get_movement_input_direction() -> Vector3:
-	# 光标方向相对玩家的反向(后撤)
+	# 光标方向(玩家 → 光标 的水平单位向量)— 朝光标前滚
 	var aim: Vector3 = _get_mouse_ground_point()
 	var to: Vector3 = aim - global_position
 	to.y = 0.0
 	if to.length() < 0.001:
-		return -get_forward()
-	return -(to.normalized())
+		return get_forward()
+	return to.normalized()
 
 # ── 翻滚 ────────────────────────────────────────────
 func dodge(direction: Vector3, distance: float, duration: float) -> bool:
