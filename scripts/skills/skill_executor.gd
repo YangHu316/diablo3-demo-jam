@@ -6,6 +6,8 @@ extends Node
 const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
 
 const ARROW_SCENE_PATH: String = "res://scenes/projectiles/arrow.tscn"
+# V3.1:E 技能改 AOE(参考王者马可波罗大招):脚下持续燃烧领域 VFX,跟随玩家
+const CHANNEL_AURA_VFX_PATH: String = "res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn"
 
 # SkillType 枚举值(与 skill_data.gd 中 SkillType 保持同步)
 const TYPE_PROJECTILE: int = 0
@@ -27,9 +29,12 @@ var _channeling_slot: int = -1
 var _channel_skill: Resource = null
 var _channel_tick_timer: float = 0.0
 var _channel_focus_acc: float = 0.0  # 累积应扣专注(每帧 += per_sec*delta,够 1 即扣 1)
+var _channel_aura: Node3D = null     # 持续 AOE VFX(脚下火域,跟随玩家)
+var _channel_aura_scene: PackedScene = null
 
 func _ready() -> void:
 	_arrow_scene = load(ARROW_SCENE_PATH)
+	_channel_aura_scene = load(CHANNEL_AURA_VFX_PATH)
 	var p: Node = get_parent()
 	if p is Node3D:
 		_player = p
@@ -83,6 +88,12 @@ func _on_channel_started(slot: int, sd: Resource) -> void:
 	# 通知 player 进引导态(50% 移速,不 freeze)
 	if _player != null and _player.has_method("set_channeling"):
 		_player.set_channeling(true, float(sd.channel_movement_mult))
+	# V3.1 AOE 改造:生成脚下持续火域 VFX(跟随玩家,_process 里更新位置)
+	_spawn_channel_aura(float(sd.channel_radius))
+	# SFX:开始引导(火球咏唱声)
+	var sfx_start: Node = get_node_or_null("/root/Sfx")
+	if sfx_start != null and sfx_start.has_method("play") and _player is Node3D:
+		sfx_start.play("channel_charge", (_player as Node3D).global_position, -2.0, 0.05)
 
 func _on_channel_stopped(slot: int, _sd: Resource) -> void:
 	if _channeling_slot != slot:
@@ -93,6 +104,7 @@ func _on_channel_stopped(slot: int, _sd: Resource) -> void:
 	_channel_focus_acc = 0.0
 	if _player != null and _player.has_method("set_channeling"):
 		_player.set_channeling(false, 1.0)
+	_despawn_channel_aura()
 
 func _process(delta: float) -> void:
 	if _channel_skill == null or _channeling_slot < 0:
@@ -110,13 +122,17 @@ func _process(delta: float) -> void:
 				if _slot_manager != null and _slot_manager.has_method("stop_channel_external"):
 					_slot_manager.stop_channel_external(_channeling_slot)
 				return
-	# 2) tick 命中
+	# 2) AOE VFX 跟随玩家(每帧贴脚下)
+	if _channel_aura != null and is_instance_valid(_channel_aura) and _player != null and is_instance_valid(_player):
+		_channel_aura.global_position = (_player as Node3D).global_position + Vector3(0, 0.05, 0)
+	# 3) tick 命中
 	_channel_tick_timer -= delta
 	if _channel_tick_timer <= 0.0:
 		_channel_tick_timer = float(_channel_skill.channel_tick_interval)
 		_emit_channel_tick(_channel_skill)
 
-# 一轮 tick:在玩家脚下做 360° 范围伤害 + 视觉 N 支箭从中心向外飞
+# V3.1:一轮 tick = 在玩家脚下 360° 火域 AOE 伤害 + 短促脉冲环视觉
+# (废弃了之前每 tick 生成 12 支视觉箭的子弹观感,改为参考王者马可波罗大招的纯 AOE 体验)
 func _emit_channel_tick(sd: Resource) -> void:
 	if _player == null or not is_instance_valid(_player):
 		return
@@ -144,35 +160,74 @@ func _emit_channel_tick(sd: Resource) -> void:
 		if cm != null and cm.has_signal("hit_landed"):
 			var dir: Vector3 = ((e as Node3D).global_position - center).normalized()
 			cm.hit_landed.emit(_player, e, dmg, is_crit, String(sd.element), (e as Node3D).global_position, dir)
-	# 视觉:N 支箭从玩家上方往四周外飞(纯观感,不参与伤害)
-	_spawn_storm_arrows(center, radius, int(sd.channel_projectiles_per_tick))
+	# 视觉:每 tick 来一次"脉冲环"扩散到边界,强化伤害节奏
+	_spawn_channel_pulse(center, radius)
 
-func _spawn_storm_arrows(center: Vector3, radius: float, count: int) -> void:
-	if _arrow_scene == null:
+# V3.1:持续火域 VFX(脚下,跟随玩家)
+func _spawn_channel_aura(radius: float) -> void:
+	_despawn_channel_aura()
+	if _channel_aura_scene == null or _player == null or not (_player is Node3D):
 		return
 	var scene_root: Node = get_tree().current_scene
 	if scene_root == null:
 		return
-	var spawn_pos: Vector3 = center + Vector3(0, 1.4, 0)
-	var n: int = max(4, count)
-	for i in range(n):
-		var angle: float = (float(i) / float(n)) * TAU
-		var dir: Vector3 = Vector3(cos(angle), 0.0, sin(angle))
-		var arrow: Node = _arrow_scene.instantiate()
-		if arrow == null:
-			continue
-		scene_root.add_child(arrow)
-		if arrow is Node3D:
-			(arrow as Node3D).global_position = spawn_pos
-			(arrow as Node3D).look_at(spawn_pos + dir, Vector3.UP)
-		# 视觉箭:不打人(伤害已由上面 enemies 群组直接计算),寿命 = radius/speed
-		if arrow.has_method("set_direction"):
-			arrow.set_direction(dir)
-		# 让箭只飞 radius 距离就消失(arrow.gd 默认有 lifetime 字段)
-		if "lifetime" in arrow:
-			arrow.lifetime = max(0.2, radius / 18.0)
-		if "is_visual_only" in arrow:
-			arrow.is_visual_only = true
+	var aura: Node = _channel_aura_scene.instantiate()
+	if aura == null or not (aura is Node3D):
+		return
+	scene_root.add_child(aura)
+	# vfx_fire_area_01 默认 ~2m 半径,按 channel_radius 等比放大
+	var k: float = max(0.5, radius / 2.0)
+	(aura as Node3D).scale = Vector3(k, k, k)
+	(aura as Node3D).global_position = (_player as Node3D).global_position + Vector3(0, 0.05, 0)
+	_channel_aura = aura as Node3D
+
+func _despawn_channel_aura() -> void:
+	if _channel_aura != null and is_instance_valid(_channel_aura):
+		# 让粒子自然衰减:停发射,1.5s 后销毁
+		_disable_emitters(_channel_aura)
+		var dying: Node = _channel_aura
+		var tw: Tween = dying.create_tween()
+		tw.tween_interval(1.5)
+		tw.tween_callback(Callable(dying, "queue_free"))
+	_channel_aura = null
+
+func _disable_emitters(node: Node) -> void:
+	if node is GPUParticles3D:
+		(node as GPUParticles3D).emitting = false
+	elif node is CPUParticles3D:
+		(node as CPUParticles3D).emitting = false
+	for c in node.get_children():
+		_disable_emitters(c)
+
+# 每 tick 一次:橙红圆环 0.25s 由小到大扩到 radius,强化"伤害命中节拍"
+func _spawn_channel_pulse(center: Vector3, radius: float) -> void:
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(1.0, 0.55, 0.15, 0.85)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.4, 0.1, 1.0)
+	ring_mat.emission_energy_multiplier = 6.0
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = max(0.05, radius - 0.25)
+	torus.outer_radius = radius
+	torus.ring_segments = 56
+	torus.material = ring_mat
+	var mi: MeshInstance3D = MeshInstance3D.new()
+	mi.mesh = torus
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	scene_root.add_child(mi)
+	mi.global_position = center + Vector3(0, 0.05, 0)
+	mi.scale = Vector3.ONE * 0.15
+	# tween 绑在 mi 上(独立于玩家移动)
+	var tw: Tween = mi.create_tween().set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ring_mat, "albedo_color:a", 0.0, 0.3)
+	tw.tween_property(ring_mat, "emission_energy_multiplier", 0.0, 0.3)
+	tw.chain().tween_callback(Callable(mi, "queue_free"))
 
 # ── 射击类 ─────────────────────────────────────────────
 # slot_index == 0(LMB 利箭)用玩家 basis(玩家追打时已 look_at 锁敌人);

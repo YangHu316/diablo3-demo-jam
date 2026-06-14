@@ -1,26 +1,43 @@
 extends Node
 
-# DamageNumberPool: 20 个 Label3D 飘字对象池(Autoload)。
-# 普通伤害:白字 / 暴击:黄字 + 1.6×字号 + 弹跳缩放。
-# 飘 0.8s 同时淡出。命中处生成。
+# DamageNumberPool: D3 风格伤害飘字池(Autoload)
+# V3.1 重做:
+#   - 字号加大、加粗描边(双层 outline 视感),清晰可读
+#   - 抛物线轨迹(随机左右偏 + 重力下落感),不再单纯垂直上飘
+#   - 三档颜色:普通(白)/ 暴击(金)/ 重击 (红橙,暴击且伤害 ≥ 阈值)
+#   - 暴击 SCALE 弹跳 + 轻微旋转抖动,飘字"砸出来"的力量感
 #
 # 用法: DamageNumberPool.show_damage(world_position, damage, is_crit)
 
-const POOL_SIZE: int = 20
-const FLOAT_DISTANCE: float = 1.5         # 上飘距离 (m)
-const FLOAT_DURATION: float = 0.8         # 飘+淡出时长
-const FADE_START_RATIO: float = 0.4       # 飘到 40% 时开始淡出
+const POOL_SIZE: int = 32                  # 提升池容量(E 技能 AOE 一次能出 10+ 数字)
+const FLOAT_DURATION: float = 0.85         # 总时长
+const FADE_START_RATIO: float = 0.55       # 飘到 55% 才开始淡出(读秒更久)
 
-const NORMAL_FONT_SIZE: int = 32
-const CRIT_FONT_SIZE_MULT: float = 1.6
-const CRIT_BOUNCE_SCALE: float = 1.35
-const CRIT_BOUNCE_UP_TIME: float = 0.08
-const CRIT_BOUNCE_DOWN_TIME: float = 0.12
+# 字号
+const NORMAL_FONT_SIZE: int = 56
+const CRIT_FONT_SIZE: int = 88
+const HEAVY_FONT_SIZE: int = 112           # 重击(暴击 + 伤害 ≥ HEAVY_THRESHOLD)
 
+# 重击阈值(单次伤害 >= 此值且暴击 → 升级到红橙重击样式)
+const HEAVY_DAMAGE_THRESHOLD: int = 800
+
+# 颜色
 const NORMAL_COLOR: Color = Color(1.0, 1.0, 1.0, 1.0)
-const CRIT_COLOR: Color = Color(1.0, 0.85, 0.20, 1.0)
+const CRIT_COLOR: Color = Color(1.0, 0.86, 0.20, 1.0)        # 金黄
+const HEAVY_COLOR: Color = Color(1.0, 0.45, 0.15, 1.0)        # 橙红
+const OUTLINE_COLOR: Color = Color(0.05, 0.02, 0.0, 1.0)     # 几乎纯黑棕,衬黄/红更通透
 
-const SPAWN_VERTICAL_OFFSET: float = 0.5  # 在命中点上方 0.5m 起算
+# 轨迹
+const FLOAT_HEIGHT: float = 1.8            # 抛物线峰高(m)
+const HORIZ_JITTER: float = 0.6            # 水平偏移随机范围(±0.6m)
+const SPAWN_VERTICAL_OFFSET: float = 0.5
+
+# 暴击 / 重击 弹跳
+const CRIT_BOUNCE_SCALE: float = 1.45
+const HEAVY_BOUNCE_SCALE: float = 1.7
+const BOUNCE_UP_TIME: float = 0.09
+const BOUNCE_DOWN_TIME: float = 0.14
+const HEAVY_TILT_DEG: float = 6.0          # 重击轻微旋转角
 
 var _pool: Array[Label3D] = []
 var _next_index: int = 0
@@ -28,7 +45,6 @@ var _holder: Node3D = null
 var _setup_done: bool = false
 
 func _ready() -> void:
-	# 等到当前场景就绪后再建池(autoload 自身没法直接 add Label3D 到 3D 场景)
 	call_deferred("_setup_pool")
 
 func _setup_pool() -> void:
@@ -37,7 +53,6 @@ func _setup_pool() -> void:
 	var tree: SceneTree = get_tree()
 	if tree == null:
 		return
-	# 等场景树进入第一帧
 	if tree.current_scene == null:
 		await tree.process_frame
 	var scene_root: Node = tree.current_scene
@@ -55,10 +70,10 @@ func _setup_pool() -> void:
 		lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		lbl.no_depth_test = true
 		lbl.fixed_size = true
-		lbl.pixel_size = 0.005
+		lbl.pixel_size = 0.0035          # 字大了 → pixel_size 缩小,世界看着合适
 		lbl.font_size = NORMAL_FONT_SIZE
-		lbl.outline_size = 8
-		lbl.outline_modulate = Color(0, 0, 0, 1)
+		lbl.outline_size = 18            # 厚描边,远看更清晰
+		lbl.outline_modulate = OUTLINE_COLOR
 		lbl.modulate = Color(1, 1, 1, 0)
 		lbl.visible = false
 		_holder.add_child(lbl)
@@ -67,40 +82,80 @@ func _setup_pool() -> void:
 
 func show_damage(world_position: Vector3, damage: int, is_crit: bool = false) -> void:
 	if not _setup_done:
-		# 池还没建好(可能 hit_landed 早于 deferred setup),延一帧重试
 		call_deferred("show_damage", world_position, damage, is_crit)
 		return
 	if _pool.is_empty():
 		return
-	# 取下一个槽(round-robin),如果还在播也强行覆盖,反正只有 20 个
 	var lbl: Label3D = _pool[_next_index]
 	_next_index = (_next_index + 1) % _pool.size()
 	if not is_instance_valid(lbl):
 		return
 
-	# 重置状态
+	# 档位判定
+	var is_heavy: bool = is_crit and damage >= HEAVY_DAMAGE_THRESHOLD
+	var color: Color
+	var size: int
+	if is_heavy:
+		color = HEAVY_COLOR
+		size = HEAVY_FONT_SIZE
+	elif is_crit:
+		color = CRIT_COLOR
+		size = CRIT_FONT_SIZE
+	else:
+		color = NORMAL_COLOR
+		size = NORMAL_FONT_SIZE
+
+	# 起点 + 终点(抛物线靠 tween_method 模拟,简化为左右偏 + 上飘)
+	var jitter_x: float = randf_range(-HORIZ_JITTER, HORIZ_JITTER)
+	var jitter_z: float = randf_range(-HORIZ_JITTER * 0.5, HORIZ_JITTER * 0.5)
 	var spawn_pos: Vector3 = world_position + Vector3(0, SPAWN_VERTICAL_OFFSET, 0)
+	var end_pos: Vector3 = spawn_pos + Vector3(jitter_x, FLOAT_HEIGHT, jitter_z)
+
 	lbl.global_position = spawn_pos
-	lbl.text = str(int(damage))
+	# 重击文字加 "!" 后缀,数值更显眼
+	if is_heavy:
+		lbl.text = "%d!" % damage
+	else:
+		lbl.text = str(int(damage))
 	lbl.scale = Vector3.ONE
+	lbl.font_size = size
+	lbl.modulate = color
+	lbl.outline_modulate = OUTLINE_COLOR
+	lbl.rotation = Vector3.ZERO
 	lbl.visible = true
 
-	if is_crit:
-		lbl.font_size = int(round(NORMAL_FONT_SIZE * CRIT_FONT_SIZE_MULT))
-		lbl.modulate = CRIT_COLOR
-	else:
-		lbl.font_size = NORMAL_FONT_SIZE
-		lbl.modulate = NORMAL_COLOR
-
-	# 主动画(并行):上飘 + 淡出
+	# 主轨迹:抛物线 = 起点→峰值→落点 用三段
+	var peak_pos: Vector3 = spawn_pos.lerp(end_pos, 0.5) + Vector3(0, FLOAT_HEIGHT * 0.35, 0)
 	var tw: Tween = lbl.create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(lbl, "global_position", spawn_pos + Vector3(0, FLOAT_DISTANCE, 0), FLOAT_DURATION)
-	tw.tween_property(lbl, "modulate:a", 0.0, FLOAT_DURATION * (1.0 - FADE_START_RATIO)).set_delay(FLOAT_DURATION * FADE_START_RATIO)
-	# 暴击附加弹跳缩放
-	if is_crit:
-		tw.tween_property(lbl, "scale", Vector3.ONE * CRIT_BOUNCE_SCALE, CRIT_BOUNCE_UP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.chain().tween_property(lbl, "scale", Vector3.ONE, CRIT_BOUNCE_DOWN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	# 位移:用 method 插值在 spawn → peak → end 之间走二次贝塞尔(简化:两段线性)
+	var seg_a: float = FLOAT_DURATION * 0.5
+	var seg_b: float = FLOAT_DURATION * 0.5
+	tw.tween_property(lbl, "global_position", peak_pos, seg_a).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# 第二段(下落)放到串行子链,使用相同的并行容器
+	var tw2: Tween = lbl.create_tween()
+	tw2.tween_interval(seg_a)
+	tw2.tween_property(lbl, "global_position", end_pos, seg_b).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	# 淡出
+	var fade_delay: float = FLOAT_DURATION * FADE_START_RATIO
+	var fade_dur: float = FLOAT_DURATION - fade_delay
+	tw.tween_property(lbl, "modulate:a", 0.0, fade_dur).set_delay(fade_delay)
+
+	# 弹跳 + 重击旋转
+	if is_heavy:
+		lbl.rotation_degrees = Vector3(0, 0, randf_range(-HEAVY_TILT_DEG, HEAVY_TILT_DEG))
+		tw.tween_property(lbl, "scale", Vector3.ONE * HEAVY_BOUNCE_SCALE, BOUNCE_UP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.chain().tween_property(lbl, "scale", Vector3.ONE, BOUNCE_DOWN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	elif is_crit:
+		tw.tween_property(lbl, "scale", Vector3.ONE * CRIT_BOUNCE_SCALE, BOUNCE_UP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.chain().tween_property(lbl, "scale", Vector3.ONE, BOUNCE_DOWN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	else:
+		# 普通字也来一次轻弹(0→1.1→1),让"出现"瞬间有质量
+		lbl.scale = Vector3.ONE * 0.6
+		tw.tween_property(lbl, "scale", Vector3.ONE * 1.1, 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.chain().tween_property(lbl, "scale", Vector3.ONE, 0.08)
+
 	# 整体动画结束后隐藏
 	tw.chain().tween_callback(Callable(self, "_hide_label").bind(lbl))
 
