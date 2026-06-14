@@ -32,6 +32,11 @@ var _buff_timer: float = 0.0            # 当前 buff 剩余时长
 var _buff_duration: float = 0.0         # 当前 buff 总时长 (供 HUD 算进度)
 var _active_magnitude: float = 0.0      # 当前 buff 加成幅度 (清除时还原用)
 
+# HUD 进度刷新节流: tower_buff_changed 原先每帧发 → 高刷下每帧 set_text 浪费.
+# 累积 >= 阈值才发一次 (倒计时显示 0.1s 粒度足够), 激活/到期一次性信号不受影响.
+const _BUFF_UI_REFRESH_INTERVAL: float = 0.1
+var _buff_ui_accum: float = 0.0
+
 var _cd_map: Dictionary = {}            # tower_id(StringName) -> 剩余 CD 秒
 
 # DataTables 引用 (autoload 时自动取 /root/DataTables; 测试可注入).
@@ -67,6 +72,7 @@ func activate(tower_id: StringName) -> bool:
 	_active_magnitude = float(def.get("magnitude", 0.0))
 	_buff_duration = float(def.get("duration", 0.0))
 	_buff_timer = _buff_duration
+	_buff_ui_accum = 0.0
 	_apply_active_effect()
 	# 该塔进 CD.
 	var cd: float = float(def.get("cooldown", 0.0))
@@ -107,7 +113,11 @@ func _process(delta: float) -> void:
 			tower_buff_changed.emit(cleared_id, &"", 0.0, 0.0)
 			tower_buff_expired.emit(cleared_id, cleared_type)
 		else:
-			tower_buff_changed.emit(_active_id, _active_type, _buff_timer, _buff_duration)
+			# 节流: 累积到刷新间隔才发一次 (高刷下避免每帧 set_text).
+			_buff_ui_accum += delta
+			if _buff_ui_accum >= _BUFF_UI_REFRESH_INTERVAL:
+				_buff_ui_accum = 0.0
+				tower_buff_changed.emit(_active_id, _active_type, _buff_timer, _buff_duration)
 	# 2) 各塔 CD 倒计时.
 	for tid in _cd_map.keys():
 		var cd: float = float(_cd_map[tid])
@@ -155,4 +165,5 @@ func reset() -> void:
 	_buff_timer = 0.0
 	_buff_duration = 0.0
 	_active_magnitude = 0.0
+	_buff_ui_accum = 0.0
 	_cd_map.clear()
