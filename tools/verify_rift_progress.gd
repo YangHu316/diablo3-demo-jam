@@ -1,6 +1,6 @@
 extends SceneTree
 # verify_rift_progress.gd — 校验 P1-2 大秘境进度系统 (RiftManager):
-#   ① 白怪+1 / 蓝名+5 / 黄名+8 权重正确
+#   ① 白怪+1 权重正确; 精英(蓝/黄)击杀本身不直接加权 (改掉进度球, 见 verify_elite_progress_ball)
 #   ② 同一只怪重复发 enemy_killed 只计一次 (防重复)
 #   ③ 守门人(guardian/butcher)不计进度
 #   ④ 时间球 +3.0
@@ -23,16 +23,16 @@ func _init() -> void:
 		n.set_meta("monster_id", mid)
 		return n
 
-	# ① 权重: 白+1 / 蓝+5 / 黄+8 = 14
+	# ① 白怪+1; 精英击杀本身不加权 (蓝/黄各杀1只, progress 仍只 = 白怪那 1)
 	tot += 1
 	rm.reset_rift()
 	rm._on_enemy_killed(mk.call(&"trash"), null, 0, Vector3.ZERO)
 	rm._on_enemy_killed(mk.call(&"elite_blue"), null, 0, Vector3.ZERO)
 	rm._on_enemy_killed(mk.call(&"champion_yellow"), null, 0, Vector3.ZERO)
-	if absf(rm.progress - 14.0) < 0.01:
-		ok += 1; print("OK① 权重 1+5+8=%.0f" % rm.progress)
+	if absf(rm.progress - 1.0) < 0.01 and rm.kill_count == 3:
+		ok += 1; print("OK① 白怪+1 精英击杀不直接加权 (progress=%.0f kills=%d)" % [rm.progress, rm.kill_count])
 	else:
-		printerr("FAIL① 期望14 实得%.1f" % rm.progress)
+		printerr("FAIL① 期望progress=1 kills=3 实得 progress=%.1f kills=%d" % [rm.progress, rm.kill_count])
 
 	# ② 防重复: 同一实例发两次只计一次
 	tot += 1
@@ -68,9 +68,9 @@ func _init() -> void:
 	tot += 1
 	rm.reset_rift()
 	_guardian_fired = 0
-	# 用黄名(8) 喂满 106 -> 14 只 (112>=106)
-	for i in range(14):
-		rm._on_enemy_killed(mk.call(&"champion_yellow"), null, 0, Vector3.ZERO)
+	# 用白怪(1) 喂满 106 -> 106 只
+	for i in range(int(rm.GOAL)):
+		rm._on_enemy_killed(mk.call(&"trash"), null, 0, Vector3.ZERO)
 	if rm.guardian_triggered and _guardian_fired == 1 and rm.progress >= rm.GOAL:
 		ok += 1; print("OK⑤ 满%.0f 触发 guardian_ready (progress=%.0f)" % [rm.GOAL, rm.progress])
 	else:

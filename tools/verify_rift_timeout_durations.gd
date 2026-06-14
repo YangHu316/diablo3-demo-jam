@@ -106,8 +106,8 @@ func _init() -> void:
 	_failed_count = 0
 	rm.reset_rift()
 	age.call(RIFT_TIME_LIMIT + 5.0)            # 已超时
-	for i in range(14):                        # 14*8=112 >= goal(106) → 中途触发守门人
-		rm._on_enemy_killed(mk.call(&"champion_yellow"), null, 0, Vector3.ZERO)
+	for i in range(int(rm.GOAL)):              # 白怪 ×106 = goal → 触发守门人
+		rm._on_enemy_killed(mk.call(&"trash"), null, 0, Vector3.ZERO)
 	if not rm.guardian_triggered:
 		printerr("FAIL⑦ 填满后 guardian_triggered 应为 true")
 	elif rm.get_time_remaining() >= 0.001:
