@@ -93,12 +93,12 @@ func _build_visual() -> void:
 	plate.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	plate.no_depth_test = true
 	plate.fixed_size = true
-	plate.pixel_size = 0.0032
+	plate.pixel_size = 0.0020
 	plate.modulate = Color(1.0, 0.9, 0.55)
-	plate.outline_size = 6
+	plate.outline_size = 4
 	plate.outline_modulate = Color(0, 0, 0, 0.9)
 	plate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	plate.position = Vector3(0, 4.0, 0)
+	plate.position = Vector3(0, 5.2, 0)
 	add_child(plate)
 
 	# 点击提示(独立小字 Label3D, 比名牌小一档不抢戏).
@@ -108,12 +108,12 @@ func _build_visual() -> void:
 	hint.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	hint.no_depth_test = true
 	hint.fixed_size = true
-	hint.pixel_size = 0.0018          # 名牌 0.0032 → 提示 0.0018,小一档
+	hint.pixel_size = 0.0016          # 名牌 0.0020 → 提示 0.0016, 与名牌字号对齐(接近一档)
 	hint.modulate = Color(0.85, 0.78, 0.50)
-	hint.outline_size = 4
+	hint.outline_size = 3
 	hint.outline_modulate = Color(0, 0, 0, 0.85)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.position = Vector3(0, 3.55, 0)
+	hint.position = Vector3(0, 3.2, 0)
 	add_child(hint)
 
 # 递归找 AnimationPlayer (Synty 模型层级里 AnimationPlayer 是直接子节点, 但保险起见递归).
