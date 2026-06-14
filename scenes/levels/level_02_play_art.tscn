@@ -3099,6 +3099,7 @@ transform = Transform3D(-4.37114e-06, 0, 100, 0, 100, 0, -100, 0, -4.37114e-06, 
 transform = Transform3D(178.63861, 0, 0, 0, 170.85362, 0, 0, 0, 156.49342, -52.614197, -1.1473894e-06, -2.7262115)
 
 [node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0027885437, 1.9073486e-06, 0.019859314)
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)
@@ -3192,13 +3193,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.346756, 7.599592e-07, 81.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.328682, 7.599592e-07, 56.786777)
 
 [node name="Group_Bloated_x8" parent="." unique_id=98342184 instance=ExtResource("18_pg437")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.651726, 7.599592e-07, 114.765594)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80.561844, 7.599592e-07, 110.68601)
 
 [node name="Group_Bloated_x9" parent="." unique_id=763400725 instance=ExtResource("18_pg437")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.2554)
 
 [node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.01652, 1.1803426, 99.99138)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.53546, 1.2094101, 100.072334)
 
 [node name="SettlementPanel" parent="." unique_id=618811148 instance=ExtResource("19")]
 
