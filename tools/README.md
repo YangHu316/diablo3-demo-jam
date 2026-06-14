@@ -41,9 +41,10 @@
 | `verify_settlement.gd` | 结算面板 | 5/5 | RiftManager 有 run_cleared/计数累加、守门人死触发结算不喂进度、面板解析、boss 掉落14件 |
 | `verify_speedrun.gd` | 速通 override | 8/8 | 默认 goal106 零污染、启用后 goal15/守门人HP4000、启用=0 忽略、缺字段回落、喂15白怪触发 guardian |
 | `verify_tower_buff.gd` | 功能塔状态机/乘区 | 6/6 | CSV 加载伤害/加速塔(+30%/+35%)、激活注入乘区1.30、互斥替换、CD内拒激活、到期清除、CD后重激活 |
-| `verify_rift_progress.gd` | 大秘境进度 | 6/6 | 白+1/蓝+5/黄+8 权重、同怪防重、守门人不计、时间球+3、满 GOAL 触发 guardian 并锁定 |
+| `verify_rift_progress.gd` | 大秘境进度 | 6/6 | 白怪+1·精英击杀不直接加权(§7.18)、同怪防重、守门人不计、时间球+3、满 GOAL 触发 guardian 并锁定 |
 | `verify_rift_fail.gd` | 大秘境超时失败(语义) | 6/6 | 超时未满发 rift_failed 恰一次、_process 只触发一次、满进度不发、失败后冻结、reset 可重触发、未超时不发 |
 | `verify_rift_timeout_durations.gd` | 大秘境超时(计时边界) | 9/9 | 剩余<=0 判负/子秒余量不误判/回拨钳上界/溢出钳0/守门人与失败先后两序/reset 回满 |
+| `verify_elite_progress_ball.gd` | 精英进度球(§7.18) | 8/8 | 蓝球数1/黄球数2/每球%=0.05/非精英=0、add_progress_ball(0.05)≈5.3、蓝1球≈5.3/黄2球≈10.6、精英击杀不加权(progress0·kill2) |
 
 ## 集成校验 · integration(`.tscn`,autoload 全活)
 

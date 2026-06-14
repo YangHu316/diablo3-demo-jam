@@ -26,6 +26,10 @@ const TOWER_BUFFS_PATH: String = "res://数值表/tower_buffs.csv"
 # 功能塔布点表 (手动布置: 每行一座塔 tower_id+坐标+朝向, 关卡由 TowerSpawner 读表实例化).
 const TOWER_LAYOUT_PATH: String = "res://数值表/tower_layout.csv"
 
+# 精英怪配置表 (elites.csv): 进度球数/每球进度%. 击杀精英掉 N 个进度球, 拾取按%加进度条.
+# LootManager 据「进度球数」生成球, progress_ball 据「每球进度%」调 RiftManager.add_progress_ball.
+const ELITES_PATH: String = "res://数值表/elites.csv"
+
 var _affixes: Array[AffixDef] = []
 var _affix_by_id: Dictionary = {}            # StringName -> AffixDef
 var _affixes_by_slot: Dictionary = {}        # slot StringName -> Array[AffixDef]
@@ -56,6 +60,10 @@ var _player_loadout: Dictionary = {}
 var _tower_buffs: Dictionary = {}
 var _tower_layout: Array = []                # [{tower_id, pos:Vector3, rot_y_deg, note}, ...]
 
+# 精英怪进度球配置 (elites.csv): 精英id -> { ball_count:int, per_ball_pct:float }.
+# per_ball_pct 为小数 (5% -> 0.05). 击杀精英掉 ball_count 个球, 每球拾取加 per_ball_pct 进度.
+var _elites: Dictionary = {}
+
 var is_loaded: bool = false
 
 func _ready() -> void:
@@ -71,6 +79,7 @@ func _load_all() -> void:
 	_load_player_loadout()
 	_load_tower_buffs()
 	_load_tower_layout()
+	_load_elites()
 	xp_curve = _load_res(XP_CURVE_PATH) as XPCurve
 	tier_table = _load_res(TIER_TABLE_PATH) as TierTable
 	is_loaded = true
@@ -257,12 +266,42 @@ func _load_tower_layout() -> void:
 		})
 	f.close()
 
-# ---------------------------------------------------------------------------
-# Query API (对外稳定接口)
-# ---------------------------------------------------------------------------
+# 精英怪配置表. 每行 精英id,...,进度球数,每球进度%,... -> _elites[精英id]={ball_count,per_ball_pct}.
+# 跳「约束」说明行. 「每球进度%」形如 "5%" -> 解析为 0.05 (小数).
+func _load_elites() -> void:
+	_elites.clear()
+	if not FileAccess.file_exists(ELITES_PATH):
+		push_warning("DataTables: missing %s" % ELITES_PATH)
+		return
+	var f := FileAccess.open(ELITES_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var headers: PackedStringArray = f.get_csv_line()
+	while not f.eof_reached():
+		var cols: PackedStringArray = f.get_csv_line()
+		if cols.size() < 2 or String(cols[0]).strip_edges() == "":
+			continue
+		var row: Dictionary = {}
+		for i in headers.size():
+			row[String(headers[i]).strip_edges()] = String(cols[i]).strip_edges() if i < cols.size() else ""
+		var eid: String = String(row.get("精英id", ""))
+		if eid == "" or eid == "约束":   # 跳说明/约束行
+			continue
+		_elites[eid] = {
+			"ball_count": int(row.get("进度球数", "0")),
+			"per_ball_pct": _parse_pct(String(row.get("每球进度%", "0"))),
+		}
+	f.close()
 
-func get_all_affixes() -> Array[AffixDef]:
-	return _affixes
+# "5%" -> 0.05 / "5" -> 0.05 (>1 视为百分数). 容错空串/非法.
+func _parse_pct(raw: String) -> float:
+	var s: String = raw.strip_edges().rstrip("%").strip_edges()
+	if s == "":
+		return 0.0
+	var v: float = float(s)
+	return v / 100.0 if v > 1.0 else v
+
+
 
 func get_affix(id: StringName) -> AffixDef:
 	return _affix_by_id.get(id, null)
@@ -372,6 +411,24 @@ func get_all_tower_buff_ids() -> Array:
 # 功能塔布点: 返回 [{tower_id:String, pos:Vector3, rot_y_deg:float, note:String}, ...].
 func get_tower_layout() -> Array:
 	return _tower_layout
+
+# ---- 精英怪进度球 (elites.csv) ----
+# 该精英死亡掉落的进度球数 (未配置=0, 即非精英不掉球).
+func get_elite_ball_count(id) -> int:
+	var cfg: Dictionary = _elites.get(String(id), {})
+	return int(cfg.get("ball_count", 0))
+
+# 该精英每个进度球拾取时加的进度比例 (小数, 5% -> 0.05; 未配置=0).
+func get_elite_per_ball_pct(id) -> float:
+	var cfg: Dictionary = _elites.get(String(id), {})
+	return float(cfg.get("per_ball_pct", 0.0))
+
+# 完整配置 { ball_count, per_ball_pct }; 未配置返回空字典.
+func get_elite_config(id) -> Dictionary:
+	return _elites.get(String(id), {})
+
+func get_all_elite_ids() -> Array:
+	return _elites.keys()
 
 # 把 "45%" / "+400%" / "约50%" 之类含符号字符串抽成纯数值 (float). 解析失败回退 fallback.
 func _loadout_num(key: String, fallback: float) -> float:

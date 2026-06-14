@@ -9,13 +9,17 @@ extends Node
 # 精英组击杀: 战斗① 杀完一组精英调 LootManager.notify_elite_group_killed() 喂软保底.
 
 const LOOT_SCENE_PATH: String = "res://scenes/loot/loot_drop.tscn"
+const PROGRESS_BALL_SCENE_PATH: String = "res://scenes/loot/progress_ball.tscn"
 
 var drop_system: DropSystem = null
 var _loot_scene: PackedScene = null
+var _ball_scene: PackedScene = null
 var _gen: ItemGenerator = null
 
 func _ready() -> void:
 	_loot_scene = load(LOOT_SCENE_PATH)
+	if ResourceLoader.exists(PROGRESS_BALL_SCENE_PATH):
+		_ball_scene = load(PROGRESS_BALL_SCENE_PATH)
 	_setup_drop_system()
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null and cm.has_signal("enemy_killed"):
@@ -34,6 +38,13 @@ func _process(delta: float) -> void:
 		drop_system.tick(delta)
 
 func _on_enemy_killed(enemy, _killer, _overkill: int, _dir: Vector3) -> void:
+	var origin: Vector3 = Vector3.ZERO
+	if enemy != null and is_instance_valid(enemy) and enemy is Node3D:
+		origin = (enemy as Node3D).global_position
+
+	# 精英: 据 elites.csv「进度球数」在死亡位置掉进度球 (与装备掉落并行).
+	_maybe_spawn_progress_balls(enemy, origin)
+
 	if drop_system == null:
 		return
 	var source: int = DropSystem.Source.TRASH
@@ -48,10 +59,33 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir: Vector3) -> void:
 	if items.is_empty():
 		return
 
-	var origin: Vector3 = Vector3.ZERO
-	if enemy != null and is_instance_valid(enemy) and enemy is Node3D:
-		origin = (enemy as Node3D).global_position
 	_spawn_loot(items, origin)
+
+# 精英进度球: 查怪物 monster_id -> DataTables.get_elite_ball_count. >0 则散开生成 N 个球.
+# 每球 setup(每球进度%); 球进范围自动吸取调 RiftManager.add_progress_ball.
+func _maybe_spawn_progress_balls(enemy, origin: Vector3) -> void:
+	if _ball_scene == null or enemy == null or not is_instance_valid(enemy):
+		return
+	if not enemy.has_meta("monster_id"):
+		return
+	var dt: Node = get_node_or_null("/root/DataTables")
+	if dt == null or not dt.has_method("get_elite_ball_count"):
+		return
+	var mid: String = String(enemy.get_meta("monster_id"))
+	var count: int = dt.get_elite_ball_count(mid)
+	if count <= 0:
+		return
+	var pct: float = dt.get_elite_per_ball_pct(mid)
+	# 多球散开, 半径随数量微调.
+	var radius: float = 0.0 if count == 1 else clampf(0.6 + float(count) * 0.2, 0.6, 2.0)
+	for i in range(count):
+		var ball := _ball_scene.instantiate()
+		_attach_to_world(ball)
+		var angle: float = TAU * float(i) / float(max(count, 1))
+		var pos: Vector3 = origin + Vector3(cos(angle) * radius, 0.0, sin(angle) * radius)
+		if ball is Node3D:
+			(ball as Node3D).global_position = pos
+		ball.setup(pct)
 
 # 多件掉落在落点周围散开. 守门人爆装(14件)用更大半径, 满地光柱观感.
 func _spawn_loot(items: Array[ItemInstance], origin: Vector3) -> void:

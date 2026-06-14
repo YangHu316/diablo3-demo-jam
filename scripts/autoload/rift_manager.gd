@@ -2,9 +2,10 @@ extends Node
 
 # RiftManager (Autoload) — V3.0 单局大秘境进度系统.
 #
-# 玩法: 击杀小怪/精英累计"进度权重", 满 GOAL 触发守门人 (切 boss_room_play.tscn).
-#   权重 (沿用 §6.2 / 大秘境配置 §3.1): 白怪 +1.0 / 蓝名 +5.0 / 黄名 +8.0 / 时间球 +3.0.
-#   守门人 (guardian/butcher) 不计权重 —— 其死亡 = 单局通关, 不喂进度.
+# 玩法: 击杀小怪累计"进度权重", 满 GOAL 触发守门人 (切 boss_room_play.tscn).
+#   权重: 白怪 +1.0 / 时间球 +3.0. 守门人 (guardian/butcher) 不计权重 —— 其死亡 = 单局通关.
+#   精英 (蓝名/黄名) 击杀本身不直接加权, 改为掉"进度球", 玩家拾取后 add_progress_ball()
+#     按 elites.csv「每球进度%」(5% × goal ≈ 5.3/球) 加进度 (取代旧的精英直接权重 +5/+8).
 #
 # 监听: CombatManager.enemy_killed(enemy, killer, overkill, dir)
 #   据 enemy.get_meta("monster_id") 查权重. 每个 enemy 实例只计一次 (防重复).
@@ -36,6 +37,8 @@ var _sr_guardian_hp: int = 0       # >0 时进场覆写守门人 current_health
 var _sr_hooked: bool = false       # node_added 钩子已连标志
 
 # monster_id -> 进度权重. 守门人/屠夫 = 0 (不计).
+# 注: 精英 (elite_blue/champion_yellow) 不在此 —— 精英不靠"击杀直接加权", 改为掉进度球,
+#   玩家拾取后按 elites.csv「每球进度%」经 add_progress_ball() 加进度 (取代精英直接权重).
 const WEIGHTS: Dictionary = {
 	&"trash": 1.0,
 	&"dog": 1.0,
@@ -43,10 +46,14 @@ const WEIGHTS: Dictionary = {
 	&"bloated": 1.0,
 	&"summoner": 1.0,
 	&"skeleton_guard": 1.0,
-	&"elite_blue": 5.0,
-	&"champion_yellow": 8.0,
 	&"guardian": 0.0,
 	&"butcher": 0.0,
+}
+# 击杀"不直接喂进度"的怪 (仅计 kill_count). 精英靠进度球加进度, 故击杀本身不加权;
+# 不放进 WEIGHTS 是因为 _on_enemy_killed 对未知 id 默认按白怪 +1 兜底 —— 精英需显式排除.
+const NO_KILL_PROGRESS: Dictionary = {
+	&"elite_blue": true,
+	&"champion_yellow": true,
 }
 const TIME_BALL_WEIGHT: float = 3.0
 
@@ -110,6 +117,9 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if mid == &"butcher" or mid == &"guardian":
 		run_cleared.emit(get_clear_time(), kill_count)
 		return
+	# 精英: 击杀本身不加权 (靠掉落的进度球加进度). 仅计 kill_count (上面已 +1).
+	if NO_KILL_PROGRESS.has(mid):
+		return
 	var w: float = float(WEIGHTS.get(mid, 1.0))   # 未知 id 当白怪 (兜底, 不漏喂进度)
 	if w <= 0.0:
 		return   # 兜底: 其它零权重 id 不计
@@ -118,6 +128,13 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 # 时间球拾取 +3.0 (供拾取实体调用).
 func add_time_ball() -> void:
 	_add_progress(TIME_BALL_WEIGHT)
+
+# 精英进度球拾取: 按"每球进度%"(小数, 5%->0.05) 换算成权重加进度.
+# 口径: pct × goal (5% × 106 ≈ 5.3). 供 progress_ball 实体进范围自动吸取时调用.
+func add_progress_ball(pct: float) -> void:
+	if pct <= 0.0:
+		return
+	_add_progress(pct * goal)
 
 func _add_progress(amount: float) -> void:
 	if guardian_triggered or run_failed:

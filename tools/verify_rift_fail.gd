@@ -41,7 +41,7 @@ func _init() -> void:
 	tot += 1
 	rm.reset_rift()
 	_failed_count = 0
-	rm._on_enemy_killed(mk.call(&"elite_blue"), null, 0, Vector3.ZERO)  # 进度=5, 远未满106
+	rm._on_enemy_killed(mk.call(&"trash"), null, 0, Vector3.ZERO)  # 进度=1, 远未满106
 	age.call(rm.RIFT_TIME_LIMIT + 1.0)   # 超时 1s
 	rm._process(0.0)
 	if _failed_count == 1 and rm.run_failed and absf(float(_last_payload[1]) - rm.goal) < 0.01:
@@ -86,8 +86,8 @@ func _init() -> void:
 	tot += 1
 	rm.reset_rift()
 	_failed_count = 0
-	for i in range(14):
-		rm._on_enemy_killed(mk.call(&"champion_yellow"), null, 0, Vector3.ZERO)  # 喂满 → guardian_triggered
+	for i in range(int(rm.GOAL)):
+		rm._on_enemy_killed(mk.call(&"trash"), null, 0, Vector3.ZERO)  # 白怪×106 喂满 → guardian_triggered
 	age.call(rm.RIFT_TIME_LIMIT + 5.0)
 	rm._process(0.0)
 	if rm.guardian_triggered and _failed_count == 0 and not rm.run_failed:
