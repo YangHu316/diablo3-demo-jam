@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/tower_trigger.gd" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="body_mat"]
+albedo_color = Color(1, 0.25, 0.25, 1)
+emission_enabled = true
+emission = Color(1, 0.25, 0.25, 1)
+emission_energy_multiplier = 0.8
+
+[sub_resource type="CylinderMesh" id="body_mesh"]
+material = SubResource("body_mat")
+top_radius = 0.35
+bottom_radius = 0.5
+height = 2.2
+
+[sub_resource type="CylinderShape3D" id="trigger_shape"]
+radius = 2.2
+height = 2.5
+
+[node name="TowerTrigger" type="Area3D"]
+collision_layer = 16
+collision_mask = 1
+monitoring = true
+monitorable = false
+script = ExtResource("1")
+tower_id = &"damage_tower"
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("body_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+shape = SubResource("trigger_shape")
+
+[node name="Nameplate" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+billboard = 1
+no_depth_test = true
+fixed_size = true
+pixel_size = 0.003
+text = ""
+outline_size = 6

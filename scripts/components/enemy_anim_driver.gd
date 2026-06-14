@@ -19,16 +19,19 @@ extends Node
 # UAL 动画库配置:选择 "ual1"/"ual2" 或留空使用角色自带动画
 @export var anim_library: String = ""
 
+# 行走动画播放倍速:走动画太慢会脚滑,×2 与移动速度对齐(只作用于移动状态)
+@export var move_anim_speed: float = 2.0
+
 # 死亡状态值:enemy_base.State.DEATH=4, butcher.State.DEATH=5
 @export var death_state: int = 4
 
 # UAL 状态→动画映射(覆盖上面的默认动画名)
 # 键 = enemy_base.State 枚举值(int), 值 = UAL 动画名(不含库前缀)
-@export var ual_idle_anim: String = "Idle_Loop"
-@export var ual_move_anim: String = "Walk_Loop"
+@export var ual_idle_anim: String = "Idle"
+@export var ual_move_anim: String = "Walk"
 @export var ual_attack_anim: String = "Sword_Attack"
 @export var ual_death_anim: String = "Death01"
-@export var ual_loop_anims: PackedStringArray = ["Idle_Loop", "Walk_Loop", "Jog_Fwd_Loop"]
+@export var ual_loop_anims: PackedStringArray = ["Idle", "Walk", "Jog_Fwd"]
 
 var _ap: AnimationPlayer = null
 
@@ -69,16 +72,16 @@ func _inject_ual_library() -> void:
 			_ap.get_animation(full_name).loop_mode = Animation.LOOP_LINEAR
 
 func _on_state_changed(_old_state: int, new_state: int) -> void:
-	if new_state == 0:                    # IDLE
-		_play(_get_anim_for_state(0))
-	elif new_state == 1:                  # CHASE / MOVE
-		_play(_get_anim_for_state(1))
+	var canon: int = 0
+	if new_state == 1:                    # CHASE / MOVE
+		canon = 1
 	elif new_state == 2:                  # ATTACK
-		_play(_get_anim_for_state(2))
+		canon = 2
 	elif new_state == death_state:        # DEATH
-		_play(_get_anim_for_state(4))
-	else:
-		_play(_get_anim_for_state(0))    # STAGGER/CHARGE/ROAR/SWEEP → idle
+		canon = 4
+	# STAGGER/CHARGE/ROAR/SWEEP → idle(canon 保持 0)
+	var speed: float = move_anim_speed if canon == 1 else 1.0
+	_play(_get_anim_for_state(canon), speed)
 
 func _get_anim_for_state(state: int) -> String:
 	if anim_library != "":
@@ -99,11 +102,11 @@ func _get_anim_for_state(state: int) -> String:
 		4: return death_anim
 		_: return idle_anim
 
-func _play(anim: String) -> void:
+func _play(anim: String, speed: float = 1.0) -> void:
 	if _ap == null:
 		return
 	if not _ap.has_animation(anim):
 		return
 	if _ap.current_animation == anim:
 		return
-	_ap.play(anim)
+	_ap.play(anim, -1, speed)

@@ -24,9 +24,10 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 [node name="SM_Arrow_01" parent="ModelPivot" instance=ExtResource("2")]
 
 ; V3.0:BinbunVFX 拖尾粒子(挂在 Arrow 根节点,不受 ModelPivot 180° 翻转影响)
-; 飞行方向 = -basis.z(Godot forward),VFX 默认朝 -Z 喷射 → 直接对齐
+; 飞行方向 = -basis.z(Godot forward)。VFX 默认沿 +Y 立柱发射 → 绕 X 转 -90°
+; 让立柱倒下沿 -Z 飞行方向(scale 0.6)
 [node name="TrailVFX" parent="." instance=ExtResource("3")]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0, 0)
+transform = Transform3D(0.6, 0, 0, 0, 0, -0.6, 0, 0.6, 0, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)

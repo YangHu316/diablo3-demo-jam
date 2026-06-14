@@ -33,6 +33,7 @@ LootManager="*res://scripts/autoload/loot_manager.gd"
 AnimLib="*res://scripts/autoload/anim_lib.gd"
 RiftManager="*res://scripts/autoload/rift_manager.gd"
 Sfx="*res://scripts/autoload/sfx_manager.gd"
+TowerBuffManager="*res://scripts/autoload/tower_buff_manager.gd"
 
 [display]
 

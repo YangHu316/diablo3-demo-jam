@@ -23,6 +23,9 @@ static var crit_rate: float = LOCKED_CRIT_RATE
 static var crit_damage: float = LOCKED_CRIT_DAMAGE
 static var elemental_bonus: float = LOCKED_ELEMENTAL_BONUS
 
+# 功能塔·伤害塔全局乘区 (TowerBuffManager 写: 激活=1+加成, 清除=1.0). 套公式末端, 零侵入锁死面板.
+static var tower_dmg_mult: float = 1.0
+
 # V3.0:取消装备聚合驱动。skill_executor 不再调用此函数;留空实现避免老代码误调报错。
 static func refresh_from_stats(_total_stats: Dictionary) -> void:
 	# no-op:面板锁死,装备词缀不再改战斗数值。
@@ -42,6 +45,7 @@ static func compute(sd) -> Dictionary:
 	if is_crit:
 		base *= crit_damage
 	base *= (1.0 + elemental_bonus)
+	base *= tower_dmg_mult
 	return {
 		"damage": int(round(base)),
 		"is_crit": is_crit,

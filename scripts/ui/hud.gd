@@ -32,6 +32,9 @@ var _xp_bar: ProgressBar = null
 var _rift_label: Label = null
 var _rift_bar: ProgressBar = null
 var _buff_box: HBoxContainer = null
+var _tower_buff_panel: Panel = null
+var _tower_buff_fill: ColorRect = null
+var _tower_buff_label: Label = null
 var _slot_panels: Array = []
 var _slot_cd_overlays: Array = []
 var _slot_cd_labels: Array = []
@@ -346,6 +349,11 @@ func _connect_signals() -> void:
 	var rm: Node = get_node_or_null("/root/RiftManager")
 	if rm != null and rm.has_signal("progress_changed"):
 		rm.progress_changed.connect(_on_rift_progress)
+	var tbm: Node = get_node_or_null("/root/TowerBuffManager")
+	if tbm != null and tbm.has_signal("tower_buff_changed"):
+		tbm.tower_buff_changed.connect(_on_tower_buff_changed)
+		tbm.tower_buff_activated.connect(_on_tower_buff_activated)
+		tbm.tower_buff_expired.connect(_on_tower_buff_expired)
 	call_deferred("_acquire_player")
 
 func _acquire_player() -> void:
@@ -414,6 +422,113 @@ func _on_rift_progress(value: float, goal: float) -> void:
 	var pct: int = int(clampf(value / maxf(goal, 1.0), 0.0, 1.0) * 100.0)
 	if _rift_label != null:
 		_rift_label.text = "守门人降临!" if value >= goal else "大秘境进度  %d%%" % pct
+
+# 功能塔 buff 显示(TopLeft _buff_box). 互斥 = 最多一个图标:激活/刷新更新, 清除移除.
+# tower_id 空 或 remaining<=0 = 清除.
+func _on_tower_buff_changed(tower_id: StringName, buff_type: StringName, remaining: float, duration: float) -> void:
+	if _buff_box == null:
+		return
+	if String(tower_id) == "" or remaining <= 0.0:
+		_remove_tower_buff_icon()
+		return
+	if _tower_buff_panel == null:
+		_build_tower_buff_icon()
+	var col: Color = Color(1.0, 0.3, 0.3) if String(buff_type) == "damage" else Color(0.3, 0.6, 1.0)
+	_tower_buff_panel.modulate = col
+	if _tower_buff_label != null:
+		var tag: String = "伤害" if String(buff_type) == "damage" else "加速"
+		_tower_buff_label.text = "%s %.0f" % [tag, ceil(remaining)]
+	if _tower_buff_fill != null and duration > 0.0:
+		# 竖向消减:宽度按剩余比例.
+		var ratio: float = clampf(remaining / duration, 0.0, 1.0)
+		_tower_buff_fill.custom_minimum_size = Vector2(44.0 * ratio, 6.0)
+		_tower_buff_fill.size.x = 44.0 * ratio
+
+func _build_tower_buff_icon() -> void:
+	_tower_buff_panel = Panel.new()
+	_tower_buff_panel.custom_minimum_size = Vector2(52, 30)
+	_tower_buff_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_buff_box.add_child(_tower_buff_panel)
+	var vb: VBoxContainer = VBoxContainer.new()
+	vb.position = Vector2(4, 2)
+	vb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tower_buff_panel.add_child(vb)
+	_tower_buff_label = Label.new()
+	_tower_buff_label.add_theme_font_size_override("font_size", 12)
+	_tower_buff_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(_tower_buff_label)
+	_tower_buff_fill = ColorRect.new()
+	_tower_buff_fill.color = Color(1, 1, 1, 0.9)
+	_tower_buff_fill.custom_minimum_size = Vector2(44, 6)
+	_tower_buff_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(_tower_buff_fill)
+
+func _remove_tower_buff_icon() -> void:
+	if _tower_buff_panel != null:
+		_tower_buff_panel.queue_free()
+		_tower_buff_panel = null
+		_tower_buff_fill = null
+		_tower_buff_label = null
+
+# 功能塔激活瞬间反馈:屏幕中央大字横幅 + 屏幕边缘染色闪一下(伤害红/加速蓝).
+# 让玩家在割草中也能立刻"感到强化生效", 不靠盯左上角小图标.
+func _on_tower_buff_activated(_tower_id: StringName, buff_type: StringName, duration: float) -> void:
+	var is_dmg: bool = String(buff_type) == "damage"
+	var col: Color = Color(1.0, 0.3, 0.3) if is_dmg else Color(0.3, 0.65, 1.0)
+	var title: String = "伤害强化 +30%" if is_dmg else "极速 +35%"
+	_show_buff_banner(title, col, duration)
+	_flash_screen_edge(col)
+	# 音效:用 charge 类音表达"强化生效"(2D, 非定位).
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("channel_charge")
+
+# 中央横幅:大字上浮淡出(沿用 boss_killed_flash 的 Tween 风格).
+func _show_buff_banner(text: String, col: Color, duration: float) -> void:
+	var root: Control = get_node_or_null("Root")
+	if root == null:
+		return
+	var lbl: Label = Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 44)
+	lbl.add_theme_color_override("font_color", col)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	lbl.add_theme_constant_override("outline_size", 6)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.anchor_left = 0.5
+	lbl.anchor_right = 0.5
+	lbl.anchor_top = 0.32
+	lbl.offset_left = -360
+	lbl.offset_right = 360
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(lbl)
+	var tw: Tween = create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "offset_top", lbl.offset_top - 36.0, 0.9)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.9).set_delay(0.5)
+	tw.chain().tween_callback(Callable(lbl, "queue_free"))
+
+# 屏幕边缘染色:全屏渐变(中央透明、四周着色)快速闪一下, 表达"全局 buff".
+func _flash_screen_edge(col: Color) -> void:
+	var root: Control = get_node_or_null("Root")
+	if root == null:
+		return
+	var rect: ColorRect = ColorRect.new()
+	rect.color = Color(col.r, col.g, col.b, 0.0)
+	rect.anchor_right = 1.0
+	rect.anchor_bottom = 1.0
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(rect)
+	var tw: Tween = create_tween()
+	tw.tween_property(rect, "color:a", 0.28, 0.12)
+	tw.tween_property(rect, "color:a", 0.0, 0.5)
+	tw.tween_callback(Callable(rect, "queue_free"))
+
+# buff 自然到期:小提示淡出(可选, 轻量).
+func _on_tower_buff_expired(_tower_id: StringName, buff_type: StringName) -> void:
+	var col: Color = Color(0.8, 0.8, 0.8)
+	var tag: String = "伤害强化" if String(buff_type) == "damage" else "极速"
+	_show_buff_banner("%s 结束" % tag, col, 0.0)
 
 func _on_focus_changed(cur: float, max_focus: float) -> void:
 	if _focus_fill == null:
