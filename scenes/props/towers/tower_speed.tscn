@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+; 功能塔蓝图 · 加速塔(可手动布置)
+; = tower_trigger.tscn 实例,预设 tower_id=speed_tower(全局移速+35%·见 tower_buffs.csv)。
+; 逻辑全在原 tower_trigger.gd / TowerBuffManager(未改);拖进关卡→移动到位即可。
+[ext_resource type="PackedScene" path="res://scenes/props/tower_trigger.tscn" id="1"]
+
+[node name="Tower_Speed" instance=ExtResource("1")]
+tower_id = &"speed_tower"
+ready_color = Color(0.25, 0.6, 1.0, 1)
