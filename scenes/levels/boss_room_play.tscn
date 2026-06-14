@@ -16,11 +16,11 @@
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0, 22, 28)
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0, 14, 18)
 current = true
-fov = 62.0
+fov = 55.0
 script = ExtResource("3")
-height = 24.0
+height = 14.0
 
 [node name="ScreenShake" type="Node" parent="Camera3D"]
 script = ExtResource("4")
