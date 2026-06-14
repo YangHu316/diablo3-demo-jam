@@ -42,13 +42,25 @@ var _target: Node3D = null
 var _attack_timer: float = 0.0
 var _nav_timer: float = 0.0
 var _heal_timer: float = HEAL_INTERVAL    # 出生后 10s 才放第一次
+var _spawned_at_player: bool = false      # 出生瞬移到 player 旁(防关卡缩放/传送把随从甩在中段)
 
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D if has_node("NavigationAgent3D") else null
 
 func _ready() -> void:
 	add_to_group("allies")
 	add_to_group("templar")
-	call_deferred("_acquire_player")
+	_spawn_init()
+
+# 等 2 帧确保关卡 _place_player(deferred) 已把 player 传送到缩放后的入口,
+# 然后再把随从贴过去。否则首帧 player 还在未缩放 tscn 位置 (-83, 0, -7),
+# 关卡用 SCALE=1.5,templar 会落在地图中段刷怪点附近。
+func _spawn_init() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_acquire_player()
+	if _player != null and is_instance_valid(_player):
+		global_position = _player.global_position + Vector3(2.0, 0.0, 0.0)
+		_spawned_at_player = true
 
 func _acquire_player() -> void:
 	var arr: Array = get_tree().get_nodes_in_group("player")
