@@ -24,10 +24,11 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 [node name="SM_Arrow_01" parent="ModelPivot" instance=ExtResource("2")]
 
 ; V3.0:BinbunVFX 拖尾粒子(挂在 Arrow 根节点,不受 ModelPivot 180° 翻转影响)
-; 飞行方向 = -basis.z(Godot forward)。VFX 默认沿 +Y 立柱发射 → 绕 X 转 -90°
-; 让立柱倒下沿 -Z 飞行方向(scale 0.6)
+; 内部分析:VFX 用 +X 作飞行轴,trail 在 -X 方向拖在身后(Head/Trail/Core 都在 -X 摆位)。
+; 箭飞行 = -Z(Godot forward)。所以绕 Y 转 +90°:把 VFX 的 +X 对到世界 -Z;
+; 同时 -X(拖尾延伸方向)对到 +Z(箭后方),拖尾正好在箭尾后铺开。scale 0.6
 [node name="TrailVFX" parent="." instance=ExtResource("3")]
-transform = Transform3D(0.6, 0, 0, 0, 0, -0.6, 0, 0.6, 0, 0, 0, 0)
+transform = Transform3D(0, 0, 0.6, 0, 0.6, 0, -0.6, 0, 0, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
