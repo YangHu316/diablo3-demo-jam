@@ -88,6 +88,10 @@ func _do_explode_aoe() -> void:
 	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
 	if cjm != null and cjm.has_method("_trigger_screen_shake"):
 		cjm._trigger_screen_shake()
+	# SFX 爆炸
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("explode", center, 0.0, 0.05)
 
 func _spawn_explosion_ring(center: Vector3) -> void:
 	var scene_root: Node = get_tree().current_scene
