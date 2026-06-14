@@ -19,14 +19,13 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_dog.tscn" id="17_2rkws"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_bloated_x5.tscn" id="18_pg437"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="19"]
-[ext_resource type="Script" path="res://scripts/levels/level_02_art.gd" id="20_art"]
+[ext_resource type="PackedScene" path="res://scenes/levels/level_02_art.tscn" id="20_art"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
 [node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
 
-[node name="LevelArt" type="Node3D" parent="."]
-script = ExtResource("20_art")
+[node name="LevelArt" parent="." instance=ExtResource("20_art")]
 
 [node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
 
