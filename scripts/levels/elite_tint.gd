@@ -13,8 +13,24 @@ extends Node3D
 		tint_color = v
 		_apply()
 
+# 精英 id(elites.csv): 决定击杀掉几个进度球 (elite_blue=1, champion_yellow=2).
+# 场景里精英是「直接摆的实例」, 不走 spawn_trigger, 所以 monster_id meta 没人挂 ->
+# LootManager._maybe_spawn_progress_balls 因 has_meta 失败而不掉球. 这里运行期补挂.
+# 空串 = 不挂(纯染色, 不掉进度球).
+@export var monster_id: StringName = &""
+
 func _ready() -> void:
 	_apply()
+	if not Engine.is_editor_hint():
+		_tag_parent_elite()
+
+# 给父节点(精英 enemy_base)挂 monster_id meta, 使 LootManager 识别为精英并掉进度球.
+func _tag_parent_elite() -> void:
+	if monster_id == &"":
+		return
+	var parent: Node = get_parent()
+	if parent != null:
+		parent.set_meta("monster_id", monster_id)
 
 func _apply() -> void:
 	var parent: Node = get_parent()

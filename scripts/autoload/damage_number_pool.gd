@@ -83,14 +83,30 @@ func _setup_pool() -> void:
 	_setup_done = true
 
 func show_damage(world_position: Vector3, damage: int, is_crit: bool = false) -> void:
+	# V3.13:场景切换(level_02 → boss_room)会 free 掉老 current_scene 下的 _holder + 32 labels,
+	# 但 _setup_done 一直 true,后续 show_damage 取到 freed label 静默返回 → boss 房看不到飘字。
+	# 修法:每次检查 holder 是否还有效;无效就重置 _setup_done 让池重建。
+	if _setup_done and (_holder == null or not is_instance_valid(_holder) or not _holder.is_inside_tree()):
+		_setup_done = false
+		_pool.clear()
+		_holder = null
+		_next_index = 0
 	if not _setup_done:
 		call_deferred("show_damage", world_position, damage, is_crit)
+		call_deferred("_setup_pool")
 		return
 	if _pool.is_empty():
 		return
 	var lbl: Label3D = _pool[_next_index]
 	_next_index = (_next_index + 1) % _pool.size()
 	if not is_instance_valid(lbl):
+		# label 被场景切换连坐 free 但 holder 没事(罕见)→ 兜底重建
+		_setup_done = false
+		_pool.clear()
+		_holder = null
+		_next_index = 0
+		call_deferred("show_damage", world_position, damage, is_crit)
+		call_deferred("_setup_pool")
 		return
 
 	# 档位判定

@@ -39,3 +39,4 @@ data = ExtResource("3")
 [node name="EliteTint" type="Node3D" parent="Elite"]
 script = ExtResource("4")
 tint_color = Color(1, 0.82, 0, 1)
+monster_id = &"champion_yellow"
