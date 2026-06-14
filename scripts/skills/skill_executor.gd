@@ -37,8 +37,6 @@ var _orbit_arrow_scene: PackedScene = null
 var _orbit_trail_scene: PackedScene = null
 # V3.6:E AOE 边界指引环(细圆环,持续显示直到松手)
 var _channel_boundary: MeshInstance3D = null
-# V3.6:E AOE 边界指引环(细圆环,持续显示直到松手)
-var _channel_boundary: MeshInstance3D = null
 
 func _ready() -> void:
 	_arrow_scene = load(ARROW_SCENE_PATH)
@@ -101,8 +99,6 @@ func _on_channel_started(slot: int, sd: Resource) -> void:
 	_spawn_orbit_arrows(float(sd.channel_radius))
 	# V3.6:AOE 边界细环指引(持续显示)
 	_spawn_channel_boundary(float(sd.channel_radius))
-	# V3.6:AOE 边界细环指引(持续显示)
-	_spawn_channel_boundary(float(sd.channel_radius))
 	# SFX:开始引导(咏唱声)
 	var sfx_start: Node = get_node_or_null("/root/Sfx")
 	if sfx_start != null and sfx_start.has_method("play") and _player is Node3D:
@@ -138,9 +134,6 @@ func _process(delta: float) -> void:
 				return
 	# 2) 公转箭跟随玩家 + 旋转
 	_update_orbit_arrows(delta)
-	# 2.5) 边界环跟随玩家
-	if _channel_boundary != null and is_instance_valid(_channel_boundary) and _player != null and is_instance_valid(_player):
-		_channel_boundary.global_position = (_player as Node3D).global_position + Vector3(0, 0.02, 0)
 	# 2.5) 边界环跟随玩家
 	if _channel_boundary != null and is_instance_valid(_channel_boundary) and _player != null and is_instance_valid(_player):
 		_channel_boundary.global_position = (_player as Node3D).global_position + Vector3(0, 0.02, 0)
