@@ -25,7 +25,26 @@ var equipped: Dictionary = {}                     # EquipSlots.Slot -> ItemInsta
 var _progression: Node = null
 
 func _ready() -> void:
-	pass
+	equip_default_loadout()
+
+# 开局默认装备: 取配置表 (boss_drop_list.csv) 的 14 件固定 build, 按槽位装上.
+# 同槽多件 (肩部=传奇猎风披膊 + 套装肩铠): 首件 (配置表中传奇在前) 装上, 重复件入背包.
+# 仅在装备槽全空时执行 (避免存档/重入时覆盖).
+func equip_default_loadout() -> void:
+	if not equipped.is_empty():
+		return
+	var dt: Node = get_node_or_null("/root/DataTables")
+	if dt == null or not dt.has_method("get_boss_drop_items"):
+		return
+	var items: Array = dt.get_boss_drop_items()
+	for item in items:
+		if item == null:
+			continue
+		var slot: int = int(item.slot)
+		if get_equipped(slot) == null:
+			equip(slot, item)
+		else:
+			add_item(item)   # 同槽已占 (如套装肩铠) -> 进背包
 
 # 任务3: 拾取入包. 满包返回 false (不丢弃, 物品留在地面).
 func add_item(item: ItemInstance) -> bool:

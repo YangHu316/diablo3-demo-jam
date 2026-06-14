@@ -6,7 +6,7 @@ extends CanvasLayer
 #     - Inventory: get_bag_items / quick_equip / get_equipped / unequip + item_* 信号
 #     - DataTables.get_fixed_panel_stats() (面板属性, 单一事实源)
 #     - ProgressionManager.level (角色等级, 只读)
-#   开关: toggle_inventory 动作 (默认 B; 缺省兜底 KEY_B)。
+#   开关: toggle_inventory 动作 (默认 I; 缺省兜底 KEY_I)。
 #
 # 占位说明: 立绘/职业徽章/铁砧/物品图标都是带 D3 金框的占位格,
 #   美术替换时把对应 PNG 塞进 TextureRect / 给 Button 设 icon 即可, 不动数据逻辑。
@@ -38,6 +38,24 @@ const SLOT_COL_R: Array = [
 	EquipSlots.Slot.BOOTS, EquipSlots.Slot.RING_1,
 ]
 const SLOT_ROW_B: Array = [EquipSlots.Slot.RING_2, EquipSlots.Slot.BOW, EquipSlots.Slot.QUIVER]
+
+# 槽位 -> 装备图标 PNG (娜塔亚素材当视觉皮肤; 数据走配置表, 与 ItemInstance 解耦).
+# 装备槽/背包格按 item.slot 查这里取图标, 不给 ItemInstance 加字段。
+const SLOT_ICON: Dictionary = {
+	EquipSlots.Slot.HEAD: "res://assets/ui/items/head.png",
+	EquipSlots.Slot.SHOULDER: "res://assets/ui/items/shoulder.png",
+	EquipSlots.Slot.CHEST: "res://assets/ui/items/chest.png",
+	EquipSlots.Slot.WRIST: "res://assets/ui/items/wrist.png",
+	EquipSlots.Slot.GLOVES: "res://assets/ui/items/gloves.png",
+	EquipSlots.Slot.WAIST: "res://assets/ui/items/waist.png",
+	EquipSlots.Slot.LEGS: "res://assets/ui/items/legs.png",
+	EquipSlots.Slot.BOOTS: "res://assets/ui/items/boots.png",
+	EquipSlots.Slot.AMULET: "res://assets/ui/items/amulet.png",
+	EquipSlots.Slot.RING_1: "res://assets/ui/items/ring1.png",
+	EquipSlots.Slot.RING_2: "res://assets/ui/items/ring2.png",
+	EquipSlots.Slot.BOW: "res://assets/ui/items/bow.png",
+	EquipSlots.Slot.QUIVER: "res://assets/ui/items/quiver.png",
+}
 
 # ── D3 配色 ───────────────────────────────────────────────────
 const GOLD := Color(0.72, 0.56, 0.26)
@@ -75,10 +93,23 @@ const AFFIX_NAMES: Dictionary = {
 	AffixDef.StatKind.MOVE_SPEED: "移动速度",
 }
 
+# ── 节点引用 (来自 inventory_panel.tscn; 架构对齐 hud.tscn: 视觉在 tscn, 脚本只数据绑定) ──
+@onready var _bg: TextureRect = $Root/Bg
+@onready var _stats_box: VBoxContainer = $Root/Bg/Stats
+@onready var _close_btn: Button = $Root/Bg/CloseBtn
+
 func _ready() -> void:
 	layer = 110   # 盖在 HUD(100) 之上
 	add_to_group("inventory_panel")
-	_build_ui()
+	_root = $Root
+	_bag_grid = $Root/Bg/BagGrid
+	_tooltip = $Root/Tooltip
+	_tip_box = $Root/Tooltip/TipBox
+	_level_label = $Root/Bg/Stats/LevelLabel
+	_collect_slots()
+	_collect_stat_labels()
+	_build_bag_cells()
+	_close_btn.pressed.connect(func(): Sfx.play("ui_decline"); _set_open(false))
 	_connect_signals()
 	_set_open(false)
 	_refresh_all()
@@ -96,335 +127,38 @@ func _sbox(fill: Color, border: int, bcol: Color, radius: int, pad: int = 8) -> 
 	s.content_margin_bottom = pad
 	return s
 
-func _slot_style(hot: bool = false) -> StyleBoxFlat:
-	return _sbox(SLOT_FILL, 2, GOLD if hot else GOLD_DIM, 2, 2)
+# ── 收集 tscn 节点引用 (替代旧的代码生成; 视觉布局在 inventory_panel.tscn) ──────
+# 装备槽: $Root/Bg/Slots 下的 Slot<枚举名> Button, 按 EquipSlots.Slot 名匹配填 _slot_buttons.
+func _collect_slots() -> void:
+	var slots_node: Node = $Root/Bg/Slots
+	for slot_id in EquipSlots.Slot.values():
+		var key: String = EquipSlots.Slot.keys()[slot_id]
+		var btn: Button = slots_node.get_node_or_null("Slot%s" % key)
+		if btn == null:
+			continue
+		btn.pressed.connect(_on_equip_slot_pressed.bind(slot_id))
+		_slot_buttons[slot_id] = btn
 
-# 一个带 D3 金框 + 居中占位字的占位格 (美术把 PNG 放进返回的 TextureRect).
-func _placeholder(w: float, h: float, caption: String) -> Panel:
-	var p := Panel.new()
-	p.custom_minimum_size = Vector2(w, h)
-	p.add_theme_stylebox_override("panel", _sbox(SLOT_FILL, 2, GOLD_DIM, 3, 0))
-	var tex := TextureRect.new()
-	tex.name = "Art"
-	tex.set_anchors_preset(Control.PRESET_FULL_RECT)
-	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	p.add_child(tex)
-	var cap := Label.new()
-	cap.text = caption
-	cap.set_anchors_preset(Control.PRESET_FULL_RECT)
-	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cap.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	cap.add_theme_color_override("font_color", MUTED)
-	cap.add_theme_font_size_override("font_size", 12)
-	cap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	p.add_child(cap)
-	return p
-
-# ── UI 构建 ───────────────────────────────────────────────────
-func _build_ui() -> void:
-	_root = Control.new()
-	_root.name = "Root"
-	_root.anchor_right = 1.0
-	_root.anchor_bottom = 1.0
-	add_child(_root)
-
-	# 半透明遮罩.
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.6)
-	dim.anchor_right = 1.0
-	dim.anchor_bottom = 1.0
-	dim.mouse_filter = Control.MOUSE_FILTER_STOP
-	_root.add_child(dim)
-
-	# 居中主面板.
-	var panel := PanelContainer.new()
-	panel.anchor_left = 0.5
-	panel.anchor_top = 0.5
-	panel.anchor_right = 0.5
-	panel.anchor_bottom = 0.5
-	panel.offset_left = -480
-	panel.offset_top = -314
-	panel.offset_right = 480
-	panel.offset_bottom = 314
-	panel.add_theme_stylebox_override("panel", _sbox(PANEL_FILL, 3, GOLD, 4, 12))
-	_root.add_child(panel)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 4)
-	panel.add_child(vbox)
-
-	_build_header(vbox)
-	vbox.add_child(_gold_rule())
-
-	# 中部: 左属性栏 | 纸娃娃.
-	var mid := HBoxContainer.new()
-	mid.add_theme_constant_override("separation", 16)
-	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(mid)
-	_build_stats_column(mid)
-	_build_paperdoll(mid)
-
-	_build_bag(vbox)
-	_build_bottom_bar(vbox)
-	# 关闭键独立浮层,anchor 到 panel 右上角,绝对显眼(放最后保证渲染在最上层)
-	_build_close_button(panel)
-
-	# tooltip 浮层 (最后加, 盖在所有控件之上; 默认隐藏).
-	_build_tooltip()
-
-func _build_header(vbox: VBoxContainer) -> void:
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 12)
-	vbox.add_child(header)
-	# 职业徽章占位 (D3 顶部圆形彩窗).
-	header.add_child(_placeholder(46, 46, "职业"))
-	var title := Label.new()
-	title.text = "物品栏"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.add_theme_color_override("font_color", TITLE)
-	title.add_theme_font_size_override("font_size", 30)
-	header.add_child(title)
-	# 头部占位(对齐徽章宽度,不再放小关闭键 — 真关闭键移到面板右上角独立浮层)
-	var spacer_r := Control.new()
-	spacer_r.custom_minimum_size = Vector2(46, 46)
-	header.add_child(spacer_r)
-
-# V3.13:面板右上角独立浮层关闭键(脱离 header 布局,绝对定位到 panel 右上 corner)。
-# 用户反馈"加一个真的关闭键" — 之前的 X 嵌在 header 里小且被 panel 内部 padding 推走。
-# 这版直接 anchor 到 panel 右上,大尺寸 + 红底 + 白字,绝对显眼可点。
-func _build_close_button(panel: PanelContainer) -> void:
-	var close := Button.new()
-	close.text = "✕"
-	close.custom_minimum_size = Vector2(56, 56)
-	close.add_theme_color_override("font_color", Color(1, 1, 1))
-	close.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.85))
-	close.add_theme_color_override("font_pressed_color", Color(1, 0.8, 0.6))
-	close.add_theme_font_size_override("font_size", 28)
-	# 红底深红描边,hover/press 加亮
-	close.add_theme_stylebox_override("normal", _sbox(Color(0.55, 0.10, 0.08), 3, Color(0.85, 0.30, 0.22), 4, 0))
-	close.add_theme_stylebox_override("hover", _sbox(Color(0.78, 0.18, 0.12), 3, Color(1.0, 0.6, 0.4), 4, 0))
-	close.add_theme_stylebox_override("pressed", _sbox(Color(0.40, 0.06, 0.05), 3, Color(1.0, 0.6, 0.4), 4, 0))
-	# anchor 到 panel 右上角,向左下 8px 内缩一点不顶边
-	close.anchor_left = 1.0
-	close.anchor_top = 0.0
-	close.anchor_right = 1.0
-	close.anchor_bottom = 0.0
-	close.offset_left = -64
-	close.offset_top = 8
-	close.offset_right = -8
-	close.offset_bottom = 64
-	close.pressed.connect(func(): Sfx.play("ui_decline"); _set_open(false))
-	close.mouse_entered.connect(func(): Sfx.play("ui_hover"))
-	panel.add_child(close)
-
-func _gold_rule() -> Panel:
-	var r := Panel.new()
-	r.custom_minimum_size = Vector2(0, 2)
-	var s := StyleBoxFlat.new()
-	s.bg_color = GOLD_DIM
-	r.add_theme_stylebox_override("panel", s)
-	return r
-
-# 左: 角色属性 (绑 DataTables.get_fixed_panel_stats + ProgressionManager.level).
-func _build_stats_column(parent: HBoxContainer) -> void:
-	var frame := PanelContainer.new()
-	frame.custom_minimum_size = Vector2(220, 0)
-	frame.add_theme_stylebox_override("panel", _sbox(SUB_FILL, 2, GOLD_DIM, 3, 12))
-	parent.add_child(frame)
-
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 2)
-	frame.add_child(col)
-
-	_level_label = Label.new()
-	_level_label.text = "等级  1"
-	_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_level_label.add_theme_color_override("font_color", Color(0.55, 0.7, 1.0))
-	_level_label.add_theme_font_size_override("font_size", 18)
-	col.add_child(_level_label)
-
-	col.add_child(_section_label("主属性"))
+# 属性行: $Root/Bg/Stats 下的 Stat<StatKind名> Label, 按枚举名匹配填 _stat_labels.
+func _collect_stat_labels() -> void:
 	for entry in STAT_DISPLAY:
 		var sk: int = entry[0]
-		var lbl := _stat_row("%s" % entry[1])
-		col.add_child(lbl)
-		_stat_labels[sk] = lbl
+		var key: String = AffixDef.StatKind.keys()[sk]
+		var lbl: Label = _stats_box.get_node_or_null("Stat%s" % key)
+		if lbl != null:
+			_stat_labels[sk] = lbl
 
-	col.add_child(_gold_rule())
-	var detail := Button.new()
-	detail.text = "详细信息"
-	detail.add_theme_color_override("font_color", TEXT)
-	detail.add_theme_stylebox_override("normal", _sbox(Color(0.16, 0.05, 0.04), 2, GOLD_DIM, 3, 4))
-	detail.add_theme_stylebox_override("hover", _sbox(Color(0.24, 0.08, 0.06), 2, GOLD, 3, 4))
-	detail.add_theme_stylebox_override("pressed", _sbox(Color(0.16, 0.05, 0.04), 2, GOLD, 3, 4))
-	detail.pressed.connect(func(): Sfx.play("ui_confirm"))
-	detail.mouse_entered.connect(func(): Sfx.play("ui_hover"))
-	col.add_child(detail)
-
-func _section_label(t: String) -> Label:
-	var l := Label.new()
-	l.text = t
-	l.add_theme_color_override("font_color", GOLD)
-	l.add_theme_font_size_override("font_size", 13)
-	return l
-
-func _stat_row(name_txt: String) -> Label:
-	var l := Label.new()
-	l.text = "%s: 0" % name_txt
-	l.add_theme_color_override("font_color", TEXT)
-	l.add_theme_font_size_override("font_size", 12)
-	return l
-
-# 中: 纸娃娃 (立绘占位 + 13 装备槽).
-func _build_paperdoll(parent: HBoxContainer) -> void:
-	var doll := VBoxContainer.new()
-	doll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	doll.add_theme_constant_override("separation", 4)
-	parent.add_child(doll)
-
-	var upper := HBoxContainer.new()
-	upper.alignment = BoxContainer.ALIGNMENT_CENTER
-	upper.add_theme_constant_override("separation", 12)
-	upper.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	doll.add_child(upper)
-
-	upper.add_child(_slot_column(SLOT_COL_L))
-	# 中央角色立绘占位.
-	var portrait := _placeholder(200, 255, "角色立绘\n(PNG 占位)")
-	portrait.name = "Portrait"
-	portrait.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	upper.add_child(portrait)
-	upper.add_child(_slot_column(SLOT_COL_R))
-
-	# 底部武器行 (弓 / 箭袋), 居中.
-	var wrow := HBoxContainer.new()
-	wrow.alignment = BoxContainer.ALIGNMENT_CENTER
-	wrow.add_theme_constant_override("separation", 16)
-	doll.add_child(wrow)
-	for s in SLOT_ROW_B:
-		wrow.add_child(_make_equip_cell(s))
-
-func _slot_column(slots: Array) -> VBoxContainer:
-	var c := VBoxContainer.new()
-	c.alignment = BoxContainer.ALIGNMENT_CENTER
-	c.add_theme_constant_override("separation", 3)
-	for s in slots:
-		c.add_child(_make_equip_cell(s))
-	return c
-
-# 单个装备槽 = 金框方格按钮 (空=显示槽位名占位; 装上=物品名/品质色) + 下方说明.
-func _make_equip_cell(slot_id: int) -> Control:
-	var cell := VBoxContainer.new()
-	cell.add_theme_constant_override("separation", 1)
-	cell.alignment = BoxContainer.ALIGNMENT_CENTER
-	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(40, 40)
-	btn.clip_text = true
-	btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	btn.add_theme_font_size_override("font_size", 8)
-	btn.add_theme_stylebox_override("normal", _slot_style())
-	btn.add_theme_stylebox_override("hover", _slot_style(true))
-	btn.add_theme_stylebox_override("pressed", _slot_style(true))
-	btn.add_theme_stylebox_override("disabled", _slot_style())
-	btn.pressed.connect(_on_equip_slot_pressed.bind(slot_id))
-	btn.mouse_entered.connect(_on_equip_hover.bind(slot_id, btn))
-	btn.mouse_exited.connect(_hide_tooltip)
-	_slot_buttons[slot_id] = btn
-	var cap := Label.new()
-	cap.text = str(EquipSlots.SLOT_DISPLAY.get(slot_id, "?"))
-	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cap.add_theme_color_override("font_color", MUTED)
-	cap.add_theme_font_size_override("font_size", 9)
-	cell.add_child(btn)
-	cell.add_child(cap)
-	return cell
-
-# 下: 背包 40 格.
-func _build_bag(vbox: VBoxContainer) -> void:
-	var frame := PanelContainer.new()
-	frame.add_theme_stylebox_override("panel", _sbox(SUB_FILL, 2, GOLD_DIM, 3, 10))
-	vbox.add_child(frame)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 6)
-	frame.add_child(box)
-
-	var cap := _section_label("背包")
-	box.add_child(cap)
-
-	_bag_grid = GridContainer.new()
-	_bag_grid.columns = COLS
-	_bag_grid.add_theme_constant_override("h_separation", 3)
-	_bag_grid.add_theme_constant_override("v_separation", 3)
-	box.add_child(_bag_grid)
+# 背包格: 运行时往 tscn 的 BagGrid 建满 40 格 (重复格子代码生成, 布局容器在 tscn).
+func _build_bag_cells() -> void:
 	for i in range(COLS * ROWS):
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(30, 30)
-		b.clip_text = true
-		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		b.add_theme_font_size_override("font_size", 9)
-		b.add_theme_stylebox_override("normal", _slot_style())
-		b.add_theme_stylebox_override("hover", _slot_style(true))
-		b.add_theme_stylebox_override("pressed", _slot_style(true))
-		b.add_theme_stylebox_override("disabled", _slot_style())
+		b.flat = true
+		b.expand_icon = true
+		b.custom_minimum_size = Vector2(28, 28)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(_on_bag_slot_pressed.bind(i))
-		b.mouse_entered.connect(_on_bag_hover.bind(i, b))
-		b.mouse_exited.connect(_hide_tooltip)
 		_bag_grid.add_child(b)
-
-# 底: 资源占位栏 (铁砧/材料/金币/血岩 — 暂无数据源, 美术占位, 系统后接).
-func _build_bottom_bar(vbox: VBoxContainer) -> void:
-	var bar := HBoxContainer.new()
-	bar.add_theme_constant_override("separation", 14)
-	vbox.add_child(bar)
-	bar.add_child(_placeholder(40, 40, "铁砧"))
-	bar.add_child(_resource_chip("材料", "—"))
-	bar.add_child(_resource_chip("金币", "—"))
-	bar.add_child(_resource_chip("血岩", "—"))
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.add_child(spacer)
-	var hint := Label.new()
-	hint.text = "[ B ] 关闭"
-	hint.add_theme_color_override("font_color", MUTED)
-	hint.add_theme_font_size_override("font_size", 14)
-	bar.add_child(hint)
-
-func _resource_chip(name_txt: String, val: String) -> HBoxContainer:
-	var chip := HBoxContainer.new()
-	chip.add_theme_constant_override("separation", 4)
-	var n := Label.new()
-	n.text = name_txt
-	n.add_theme_color_override("font_color", MUTED)
-	n.add_theme_font_size_override("font_size", 13)
-	var v := Label.new()
-	v.text = val
-	v.add_theme_color_override("font_color", TITLE)
-	v.add_theme_font_size_override("font_size", 14)
-	chip.add_child(n)
-	chip.add_child(v)
-	return chip
-
-# ── tooltip 浮层 ──────────────────────────────────────────────
-# 自建富文本 (项目无 RichTextLabel 用例): 标题(品质色) + 品质描边 + 词缀行 + 传说橙效果 / 套装绿行.
-func _build_tooltip() -> void:
-	_tooltip = PanelContainer.new()
-	_tooltip.name = "Tooltip"
-	_tooltip.z_index = 50                 # 盖在面板内容之上
-	_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE   # 不挡 hover 事件
-	_tooltip.custom_minimum_size = Vector2(220, 0)
-	# 描边色按品质动态改 (在 _show 里设); 这里给个底样式.
-	_tip_border = _sbox(Color(0.06, 0.05, 0.04, 0.98), 2, GOLD, 4, 10)
-	_tooltip.add_theme_stylebox_override("panel", _tip_border)
-	_tip_box = VBoxContainer.new()
-	_tip_box.add_theme_constant_override("separation", 2)
-	_tip_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_tooltip.add_child(_tip_box)
-	_tooltip.visible = false
-	_root.add_child(_tooltip)
 
 func _tip_label(txt: String, col: Color, sz: int, center: bool = false) -> Label:
 	var l := Label.new()
@@ -583,7 +317,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if InputMap.has_action("toggle_inventory"):
 		if event.is_action_pressed("toggle_inventory"):
 			toggled = true
-	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_B:
+	elif event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_I:
 		toggled = true
 	if toggled:
 		_set_open(not _open)
@@ -649,13 +383,19 @@ func _refresh_bag() -> void:
 		if b == null:
 			continue
 		if i < items.size() and items[i] != null:
+			# 背包物品 -> 按 item.slot 查 SLOT_ICON 显图标 (装备类); 无图标则退回文字名.
 			var it: ItemInstance = items[i]
-			b.text = it.display_name
-			b.disabled = false
-			b.add_theme_color_override("font_color", ItemInstance.QUALITY_COLORS.get(it.quality, Color.WHITE))
+			var icon_path: String = String(SLOT_ICON.get(it.slot, ""))
+			if icon_path != "":
+				b.icon = load(icon_path) as Texture2D
+				b.text = ""
+			else:
+				b.icon = null
+				b.text = it.display_name
+				b.add_theme_color_override("font_color", ItemInstance.QUALITY_COLORS.get(it.quality, Color.WHITE))
 		else:
 			b.text = ""
-			b.disabled = true
+			b.icon = null
 			b.remove_theme_color_override("font_color")
 
 func _refresh_equip() -> void:
@@ -666,10 +406,15 @@ func _refresh_equip() -> void:
 		var it = inv.get_equipped(s)
 		var btn: Button = _slot_buttons[s]
 		if it != null:
-			btn.text = it.display_name
-			btn.add_theme_color_override("font_color", ItemInstance.QUALITY_COLORS.get(it.quality, Color.WHITE))
-		else:
+			# 装上 -> 显示该槽位的装备图标 (皮肤); 文字名清空 (改由 hover tooltip 展示).
 			btn.text = ""
+			var icon_path: String = String(SLOT_ICON.get(s, ""))
+			btn.icon = (load(icon_path) as Texture2D) if icon_path != "" else null
+			btn.remove_theme_color_override("font_color")
+		else:
+			# 空槽 -> 无图标无文字.
+			btn.text = ""
+			btn.icon = null
 			btn.remove_theme_color_override("font_color")
 
 func _refresh_stats(st: Dictionary) -> void:
