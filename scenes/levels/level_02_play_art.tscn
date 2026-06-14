@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://c8y50mpfcnt7l" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://bumx10usyvdnn" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bt1lfep4m86pk" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="8"]
@@ -22,8 +22,12 @@
 [ext_resource type="PackedScene" uid="uid://dn5780ttsf0xx" path="res://assets/PolygonDungeon/Models/Environment/Floors/SM_Env_Tiles_01.fbx" id="20_af"]
 [ext_resource type="Script" uid="uid://bc35ius8tfuqi" path="res://scripts/levels/level_02_art.gd" id="20_as"]
 [ext_resource type="PackedScene" uid="uid://t5s2fte2du28" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01_DoubleSided.fbx" id="20_aw"]
+[ext_resource type="PackedScene" uid="uid://v4gyyijpxkix" path="res://assets/PolygonDungeon/Models/Environment/Doors/SM_Env_Door_Large_Frame_02.fbx" id="23_4osnp"]
 [ext_resource type="PackedScene" uid="uid://dmo8mv0g5x7eq" path="res://scenes/props/towers/tower_damage.tscn" id="23_nsb4i"]
 [ext_resource type="PackedScene" uid="uid://c5kiiuyge53is" path="res://scenes/props/towers/tower_speed.tscn" id="24_p5cgg"]
+[ext_resource type="PackedScene" uid="uid://b3niub5xcc3n8" path="res://assets/PolygonDungeon/Models/Environment/Doors/SM_Env_Entrance_Crypt_02.fbx" id="25_makso"]
+[ext_resource type="PackedScene" uid="uid://bo140s7jpq06q" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Statue_01.fbx" id="27_qvwxn"]
+[ext_resource type="PackedScene" uid="uid://di4odn68cr5hi" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Pillar_Square_Round_01.fbx" id="28_fi0ln"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -2006,6 +2010,9 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 57.500008, 0.02324, 67.
 [node name="Floor_13_14" parent="LevelArt/Floors" unique_id=1201995725 instance=ExtResource("20_af")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 62.500008, 0.02324, 67.5)
 
+[node name="SM_Env_Door_Large_Frame_02" parent="LevelArt/Floors" unique_id=1228993562 instance=ExtResource("23_4osnp")]
+transform = Transform3D(-0.13216028, 0, -199.27512, 0, 199.27516, 0, 199.27512, 0, -0.13216028, 15.748257, 7.599592e-07, 30.363235)
+
 [node name="Walls" type="Node3D" parent="LevelArt" unique_id=421520470]
 
 [node name="Wall_N_0" parent="LevelArt/Walls" unique_id=1709385151 instance=ExtResource("20_aw")]
@@ -3052,6 +3059,9 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -47.5, 0, -42.5)
 [node name="Wall_W_347" parent="LevelArt/Walls" unique_id=1913279077 instance=ExtResource("20_aw")]
 transform = Transform3D(-4.37114e-06, 0, 100, 0, 100, 0, -100, 0, -4.37114e-06, 47.5, 0, 72.5)
 
+[node name="SM_Env_Door_Large_Frame_02" parent="LevelArt/Walls" unique_id=221035905 instance=ExtResource("23_4osnp")]
+transform = Transform3D(156.49342, 0, 0, 0, 156.49342, 0, 0, 0, 156.49342, -52.748447, -1.1473894e-06, -2.7262115)
+
 [node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
@@ -3086,7 +3096,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.03876, -1.937151e-07, 55.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2229, 7.599592e-07, 17.830088)
 
 [node name="EliteGroup_Zombie" parent="." unique_id=2094737365 instance=ExtResource("12_rqg3x")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.8029, 7.599592e-07, 51.203316)
+transform = Transform3D(1.0004272, 0, 0, 0, 1.0004272, 0, 0, 0, 1.0004272, -72.8029, 7.599592e-07, 51.203316)
 
 [node name="Group_Dog_x6" parent="." unique_id=1467244980 instance=ExtResource("11_rmmqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.599335, 7.599592e-07, 6.1186047)
@@ -3152,7 +3162,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.651726, 7.599592e-07, 114.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.2554)
 
 [node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.98991, 1.1803445, 99.99161)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89.01652, 1.1803426, 99.99138)
 
 [node name="SettlementPanel" parent="." unique_id=618811148 instance=ExtResource("19")]
 
@@ -3161,3 +3171,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -124.54602, -1.937151e-07, -6
 
 [node name="Tower_Speed" parent="." unique_id=96545456 instance=ExtResource("24_p5cgg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -130.00809, -1.937151e-07, -6.0312433)
+
+[node name="SM_Env_Entrance_Crypt_02" parent="." unique_id=886197259 instance=ExtResource("25_makso")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.996506, -1.937151e-07, -17.31354)
+
+[node name="SM_Env_Door_Large_Frame_02" parent="." unique_id=1697263177 instance=ExtResource("23_4osnp")]
+transform = Transform3D(-2.3100643, 0, -163.79718, 0, 163.81346, 0, 163.79718, 0, -2.3100643, -112.66683, -1.937151e-07, -2.4457726)
+
+[node name="SM_Env_Statue_01" parent="." unique_id=555913922 instance=ExtResource("27_qvwxn")]
+transform = Transform3D(155.52402, 0, 0, 0, 168.3982, 0, 0, 0, 135.20071, 101.01217, 7.599592e-07, 100.72798)
+
+[node name="SM_Env_Pillar_Square_Round_01" parent="." unique_id=990671965 instance=ExtResource("28_fi0ln")]
+transform = Transform3D(163.49619, 0, 0, 0, 100, 0, 0, 0, 161.40952, 100.92882, -1.937151e-07, 100.192696)
