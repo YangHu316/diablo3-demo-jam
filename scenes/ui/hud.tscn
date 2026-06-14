@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_abbni"]
 [ext_resource type="Texture2D" path="res://assets/ui/skills/2DUI_Skills_DemonHunter.png" id="2_2fdox"]
+[ext_resource type="Texture2D" path="res://assets/ui/hp_orb.png" id="3_hporb"]
+[ext_resource type="Texture2D" path="res://assets/ui/mp_orb.png" id="4_mporb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_enl5e"]
 bg_color = Color(0.04, 0.04, 0.05, 0.95)
@@ -230,74 +232,123 @@ text = "2:00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LifeOrb" type="Panel" parent="Root" unique_id=1044223349]
-clip_contents = true
+[node name="LifeOrb" type="Control" parent="Root" unique_id=1044223349]
 layout_mode = 0
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -118.0
-offset_right = 116.0
-offset_bottom = -22.0
+offset_left = 10.0
+offset_top = -178.0
+offset_right = 170.0
+offset_bottom = -18.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_xl2ol")
 
-[node name="Fill" type="ColorRect" parent="Root/LifeOrb" unique_id=1612258210]
+[node name="OrbBg" type="ColorRect" parent="Root/LifeOrb"]
 layout_mode = 0
-anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.64, 0.1, 0.07, 1)
+color = Color(0.04, 0.01, 0.01, 1.0)
 
-[node name="LifeLabel" type="Label" parent="Root" unique_id=2077294045]
+[node name="OrbClip" type="Control" parent="Root/LifeOrb"]
 layout_mode = 0
-anchor_top = 1.0
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -46.0
-offset_right = 116.0
-offset_bottom = -28.0
+clip_contents = true
+mouse_filter = 2
+
+[node name="OrbFill" type="TextureRect" parent="Root/LifeOrb/OrbClip"]
+layout_mode = 0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_hporb")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OrbFrame" type="TextureRect" parent="Root/LifeOrb"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_hporb")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 1, 1, 0.18)
+
+[node name="LifeLabel" type="Label" parent="Root/LifeOrb" unique_id=2077294045]
+layout_mode = 0
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -22.0
+offset_bottom = 0.0
 theme_override_colors/font_color = Color(1, 0.92, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
 text = "生命"
 horizontal_alignment = 1
 
-[node name="FocusOrb" type="Panel" parent="Root" unique_id=1824173133]
+[node name="FocusOrb" type="Control" parent="Root" unique_id=1824173133]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -170.0
+offset_top = -178.0
+offset_right = -10.0
+offset_bottom = -18.0
+mouse_filter = 2
+
+[node name="OrbBg" type="ColorRect" parent="Root/FocusOrb"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.01, 0.01, 0.06, 1.0)
+
+[node name="OrbClip" type="Control" parent="Root/FocusOrb"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
 clip_contents = true
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -116.0
-offset_top = -118.0
-offset_right = -20.0
-offset_bottom = -22.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_rsrq4")
 
-[node name="Fill" type="ColorRect" parent="Root/FocusOrb" unique_id=744718169]
+[node name="OrbFill" type="TextureRect" parent="Root/FocusOrb/OrbClip"]
 layout_mode = 0
+anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.16, 0.3, 0.55, 1)
+texture = ExtResource("4_mporb")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="FocusLabel" type="Label" parent="Root" unique_id=1827488907]
+[node name="OrbFrame" type="TextureRect" parent="Root/FocusOrb"]
 layout_mode = 0
-anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("4_mporb")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 1, 1, 0.18)
+
+[node name="FocusLabel" type="Label" parent="Root/FocusOrb" unique_id=1827488907]
+layout_mode = 0
+anchor_left = 0.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -128.0
-offset_top = -46.0
-offset_right = -8.0
-offset_bottom = -28.0
+offset_top = -22.0
+offset_bottom = 0.0
 theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
 text = "专注 1500/1500"
 horizontal_alignment = 1
 

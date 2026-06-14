@@ -20,10 +20,10 @@ var _slot_mgr: Node = null
 @onready var _rift_bar: ProgressBar = $Root/RiftBox/RiftBar
 @onready var _time_orb_fill: ColorRect = $Root/TimeOrb/Fill
 @onready var _time_orb_label: Label = $Root/TimeOrb/TimeLabel
-@onready var _hp_fill: ColorRect = $Root/LifeOrb/Fill
-@onready var _hp_label: Label = $Root/LifeLabel
-@onready var _focus_fill: ColorRect = $Root/FocusOrb/Fill
-@onready var _focus_label: Label = $Root/FocusLabel
+@onready var _hp_fill: Control = $Root/LifeOrb/OrbClip
+@onready var _hp_label: Label = $Root/LifeOrb/LifeLabel
+@onready var _focus_fill: Control = $Root/FocusOrb/OrbClip
+@onready var _focus_label: Label = $Root/FocusOrb/FocusLabel
 @onready var _xp_bar: ProgressBar = $Root/XpBox/XpBar
 @onready var _xp_label: Label = $Root/XpBox/XpLabel
 @onready var _death_overlay: ColorRect = $Root/DeathOverlay
@@ -40,6 +40,8 @@ var _slot_panels: Array = []
 var _slot_cd_overlays: Array = []
 var _slot_cd_labels: Array = []
 var _is_dead: bool = false
+var _hp_tween: Tween = null
+var _focus_tween: Tween = null
 
 # F3 调试 FPS 面板(代码创建,非美术素材;合并自远端 perf 提交)
 var _debug_label: Label = null
@@ -312,17 +314,25 @@ func _on_focus_changed(cur: float, max_focus: float) -> void:
 	if _focus_fill == null:
 		return
 	var ratio: float = clampf(cur / maxf(max_focus, 1.0), 0.0, 1.0)
-	_focus_fill.anchor_top = 1.0 - ratio
-	_focus_fill.offset_top = 0.0
-	_focus_label.text = "专注 %d/%d" % [int(cur), int(max_focus)]
+	var target_anchor: float = 1.0 - ratio
+	if _focus_tween != null and _focus_tween.is_valid():
+		_focus_tween.kill()
+	_focus_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_focus_tween.tween_property(_focus_fill, "anchor_top", target_anchor, 0.3)
+	if _focus_label != null:
+		_focus_label.text = "专注 %d/%d" % [int(cur), int(max_focus)]
 
 func _on_health_changed(cur: int, mx: int) -> void:
 	if _hp_fill == null:
 		return
 	var ratio: float = clampf(float(cur) / float(max(mx, 1)), 0.0, 1.0)
-	_hp_fill.anchor_top = 1.0 - ratio
-	_hp_fill.offset_top = 0.0
-	_hp_label.text = "生命 %d" % cur
+	var target_anchor: float = 1.0 - ratio
+	if _hp_tween != null and _hp_tween.is_valid():
+		_hp_tween.kill()
+	_hp_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	_hp_tween.tween_property(_hp_fill, "anchor_top", target_anchor, 0.3)
+	if _hp_label != null:
+		_hp_label.text = "生命 %d" % cur
 
 func _on_cooldown_changed(slot_index: int, remaining: float, total: float) -> void:
 	if slot_index < 0 or slot_index >= _slot_cd_overlays.size():
