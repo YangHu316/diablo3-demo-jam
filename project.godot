@@ -37,10 +37,10 @@ TowerBuffManager="*res://scripts/autoload/tower_buff_manager.gd"
 
 [display]
 
-window/size/viewport_width=2560
-window/size/viewport_height=1440
-window/size/window_width_override=2560
-window/size/window_height_override=1440
+window/size/viewport_width=3840
+window/size/viewport_height=2160
+window/size/window_width_override=3840
+window/size/window_height_override=2160
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
