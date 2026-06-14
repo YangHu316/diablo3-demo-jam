@@ -21,10 +21,10 @@ const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 # 功能塔·加速塔全局乘区 (TowerBuffManager 写: 激活=1+加成, 清除=1.0).
 var speed_buff_mult: float = 1.0
 
-# V3.0 锁死玩家面板:HP 8000(策划案 player_loadout.csv 爽快割草版)
-@export var max_health: int = 8000
+# V3.0 锁死玩家面板:HP 6000(策划案 player_loadout.csv·2026-06-14 微调)
+@export var max_health: int = 6000
 
-var current_health: int = 8000
+var current_health: int = 6000
 var is_moving: bool = false
 var is_invulnerable: bool = false
 var is_frozen: bool = false
@@ -453,7 +453,7 @@ func _end_dodge() -> void:
 
 # ── 受伤 / 死亡 ─────────────────────────────────────
 # V3.0 锁死护甲减伤 70%(player_loadout.csv 爽快割草版)
-const ARMOR_DAMAGE_REDUCTION: float = 0.70
+const ARMOR_DAMAGE_REDUCTION: float = 0.40
 
 func take_damage(amount: int, source = null) -> void:
 	if is_dead or is_invulnerable or amount <= 0:

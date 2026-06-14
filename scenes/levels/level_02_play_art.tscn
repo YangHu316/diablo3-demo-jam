@@ -28,6 +28,7 @@
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
 [node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
+build_decorations = false
 
 [node name="LevelArt" type="Node3D" parent="." unique_id=783541521]
 script = ExtResource("20_as")
