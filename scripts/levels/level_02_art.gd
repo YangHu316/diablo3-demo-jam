@@ -175,9 +175,9 @@ func _make_d3_env() -> Environment:
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color(0.22, 0.24, 0.32)
 	e.ambient_light_energy = 0.45
-	# 色调映射:ACES 电影感。曝光统一控制全场亮度(在所有灯/火把/环境光之上)。基线1.05→+20%(1.26)→再+50%=1.89。
+	# 色调映射:ACES 电影感。曝光统一控制全场亮度(在所有灯/火把/环境光之上)。基线1.05→1.26→1.89→再+50%=2.84。
 	e.tonemap_mode = Environment.TONE_MAPPER_ACES
-	e.tonemap_exposure = 1.89
+	e.tonemap_exposure = 2.84
 	e.tonemap_white = 6.0
 	# 雾:冷暗指数高度雾 + 空气透视
 	e.fog_enabled = true
