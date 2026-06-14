@@ -97,8 +97,8 @@ func _on_channel_started(slot: int, sd: Resource) -> void:
 		_player.set_channeling(true, float(sd.channel_movement_mult))
 	# V3.2:生成 5~6 支绕身公转的箭(纯视觉,伤害还是 _emit_channel_tick 的 AOE)
 	_spawn_orbit_arrows(float(sd.channel_radius))
-	# V3.6:AOE 边界细环指引(持续显示)
-	_spawn_channel_boundary(float(sd.channel_radius))
+	# V3.9:用户反馈圈圈不需要,删掉边界环
+	# _spawn_channel_boundary(float(sd.channel_radius))
 	# SFX:开始引导(咏唱声)
 	var sfx_start: Node = get_node_or_null("/root/Sfx")
 	if sfx_start != null and sfx_start.has_method("play") and _player is Node3D:
@@ -189,7 +189,7 @@ func _spawn_orbit_arrows(channel_radius: float) -> void:
 	# channel_radius=6 → r ∈ [3.0, 5.5],最远箭已经接近 AOE 边界,绕得开。
 	var r_min: float = max(2.0, channel_radius * 0.5)
 	var r_max: float = max(r_min + 1.0, channel_radius * 0.95)
-	var n: int = 6
+	var n: int = 12   # V3.9:6 → 12,围成更密的"魔法弧光"
 	for i in range(n):
 		# 用一个 pivot Node3D 作为绕主角的支点(每帧设到玩家位置),
 		# 子节点是箭模型,绕 Y 转 angle 后向前推 radius → 公转
