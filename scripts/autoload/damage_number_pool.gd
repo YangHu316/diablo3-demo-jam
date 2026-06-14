@@ -72,9 +72,11 @@ func _setup_pool() -> void:
 		# V3.5 根因修复:之前 fixed_size=true 让 label 固定屏幕大小,pixel_size 放大成半屏
 		# 改成 fixed_size=false → 像普通 3D 物体那样随距离缩放,pixel_size 才是"世界单位/像素"。
 		lbl.fixed_size = false
-		lbl.pixel_size = 0.003
+		# V3.13c:font_size 是次要杠杆,世界尺寸 = font_size × pixel_size。
+		# 0.003 → 0.006 直接把所有飘字放大一倍,普通/暴击/重击同步翻倍。
+		lbl.pixel_size = 0.006
 		lbl.font_size = NORMAL_FONT_SIZE
-		lbl.outline_size = 6              # 描边收薄
+		lbl.outline_size = 8              # 字大了描边也加粗
 		lbl.outline_modulate = OUTLINE_COLOR
 		lbl.modulate = Color(1, 1, 1, 0)
 		lbl.visible = false
