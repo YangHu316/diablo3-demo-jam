@@ -1,0 +1,41 @@
+[gd_scene load_steps=6 format=3]
+
+; 精英敌人集团蓝图 · 精英疯狗群(1 黄色精英疯狗 + 9 普通疯狗)
+; 精英 = 普通疯狗 ×1.5 大小 + 黄色异色(纯视觉,数值同普通 graveyard_dog)。
+; 视觉占位用 enemy_zombie(同普通疯狗组);可由美术换狗模型。
+[ext_resource type="Script" path="res://scripts/components/spawn_trigger.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_zombie.tscn" id="2"]
+[ext_resource type="Resource" path="res://scripts/entities/data/graveyard_dog.tres" id="3"]
+[ext_resource type="Script" path="res://scripts/levels/elite_tint.gd" id="4"]
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 4.5
+
+[node name="EliteGroup_Dog" type="Node3D"]
+
+[node name="Normals" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1")
+enemy_scene = ExtResource("2")
+enemy_data = ExtResource("3")
+count = 9
+formation = "cluster"
+spawn_radius = 4.5
+spawn_at_self = true
+one_shot = true
+target_player = false
+monster_id = "trash"
+drop_source = "trash"
+preplaced = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Normals"]
+shape = SubResource("shape")
+
+[node name="Elite" parent="." instance=ExtResource("2")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 3, 0, 0)
+data = ExtResource("3")
+
+[node name="EliteTint" type="Node3D" parent="Elite"]
+script = ExtResource("4")
+tint_color = Color(1, 0.82, 0, 1)

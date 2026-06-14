@@ -1,22 +1,45 @@
 [gd_scene format=3 uid="uid://bmhm0kap00m5i"]
 
 [ext_resource type="PackedScene" path="res://scenes/levels/level_02_depths.tscn" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://c8y50mpfcnt7l" path="res://scenes/player/player.tscn" id="2"]
 [ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="3"]
 [ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="6"]
+<<<<<<< Updated upstream
 [ext_resource type="PackedScene" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" path="res://scripts/levels/tower_spawner.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settlement_panel.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="10"]
+=======
+[ext_resource type="PackedScene" uid="uid://bt1lfep4m86pk" path="res://scenes/companions/templar.tscn" id="7"]
+[ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_zombie_x10.tscn" id="9_7kxde"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_dog_x5.tscn" id="11_rmmqy"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_zombie.tscn" id="12_rqg3x"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_skeleton_guard.tscn" id="13_tlxbo"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_summoner_x3.tscn" id="14_ewwkk"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_skeleton_guard_x5.tscn" id="15_l56i7"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_archer.tscn" id="16_uwex3"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_dog.tscn" id="17_2rkws"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_bloated_x5.tscn" id="18_pg437"]
+>>>>>>> Stashed changes
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
 [node name="Level02Depths" parent="." unique_id=490339226 instance=ExtResource("1")]
 
+<<<<<<< Updated upstream
+[node name="Level02Encounters" parent="." instance=ExtResource("10")]
+=======
+[node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
+>>>>>>> Stashed changes
+
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)
 
-[node name="Templar" parent="." instance=ExtResource("7")]
+[node name="Templar" parent="." unique_id=2000748285 instance=ExtResource("7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81, 0, -7)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=708971309]
@@ -32,5 +55,87 @@ script = ExtResource("4")
 
 [node name="InventoryPanel" parent="." unique_id=1503968696 instance=ExtResource("6")]
 
-[node name="TowerSpawner" type="Node3D" parent="."]
+[node name="TowerSpawner" type="Node3D" parent="." unique_id=1857851527]
 script = ExtResource("8")
+
+<<<<<<< Updated upstream
+[node name="SettlementPanel" parent="." instance=ExtResource("9")]
+=======
+[node name="Group_Zombie_x10" parent="." unique_id=586773416 instance=ExtResource("9_7kxde")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.79977, -1.937151e-07, -3.0630455)
+
+[node name="Group_Zombie_x11" parent="." unique_id=1183187689 instance=ExtResource("9_7kxde")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.03876, -1.937151e-07, 55.436813)
+
+[node name="Group_Dog_x5" parent="." unique_id=1937043361 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2229, 7.599592e-07, 17.830088)
+
+[node name="EliteGroup_Zombie" parent="." unique_id=2094737365 instance=ExtResource("12_rqg3x")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.8029, 7.599592e-07, 51.203316)
+
+[node name="Group_Dog_x6" parent="." unique_id=1467244980 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.599335, 7.599592e-07, 6.1186047)
+
+[node name="Group_Dog_x7" parent="." unique_id=1247685860 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.51008, 7.599592e-07, 39.37099)
+
+[node name="Group_Zombie_x12" parent="." unique_id=1395945035 instance=ExtResource("9_7kxde")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.018833, 7.599592e-07, -23.078289)
+
+[node name="EliteGroup_SkeletonGuard" parent="." unique_id=138393122 instance=ExtResource("13_tlxbo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.986954, 1.1803445, -57.14684)
+
+[node name="Group_Dog_x8" parent="." unique_id=1862062614 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.86521, 7.599592e-07, -70.93914)
+
+[node name="EliteGroup_SkeletonGuard2" parent="." unique_id=207396896 instance=ExtResource("13_tlxbo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.68863, 1.1803445, -111.79422)
+
+[node name="Group_Summoner_x3" parent="." unique_id=196169633 instance=ExtResource("14_ewwkk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -111.60408, 7.599592e-07, 52.32769)
+
+[node name="Group_SkeletonGuard_x5" parent="." unique_id=1023864736 instance=ExtResource("15_l56i7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99.79835, 7.599592e-07, 51.74289)
+
+[node name="EliteGroup_Archer" parent="." unique_id=1521806312 instance=ExtResource("16_uwex3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.3203, -1.1473894e-06, 34.81043)
+
+[node name="EliteGroup_Dog" parent="." unique_id=8498271 instance=ExtResource("17_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79.81142, 7.599592e-07, 18.059443)
+
+[node name="Group_SkeletonGuard_x6" parent="." unique_id=1106190382 instance=ExtResource("15_l56i7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 114.95541, 7.599592e-07, 116.235535)
+
+[node name="Group_Summoner_x4" parent="." unique_id=269308837 instance=ExtResource("14_ewwkk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 98.664246, 2.6673079e-06, 115.783226)
+
+[node name="Group_Zombie_x13" parent="." unique_id=903653361 instance=ExtResource("9_7kxde")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 118.797356, 7.599592e-07, 84.214226)
+
+[node name="Group_Bloated_x5" parent="." unique_id=2077213478 instance=ExtResource("18_pg437")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.068966, 7.599592e-07, 81.21834)
+
+[node name="Group_Bloated_x6" parent="." unique_id=1178943827 instance=ExtResource("18_pg437")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.876965, 7.599592e-07, 80.71678)
+
+[node name="Group_Bloated_x7" parent="." unique_id=307498065 instance=ExtResource("18_pg437")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.823177, 7.599592e-07, -64.41304)
+
+[node name="EliteGroup_Dog2" parent="." unique_id=959355123 instance=ExtResource("17_2rkws")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5986364, 7.599592e-07, 79.31029)
+
+[node name="Group_Dog_x9" parent="." unique_id=1574174866 instance=ExtResource("11_rmmqy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.346756, 7.599592e-07, 81.84159)
+
+[node name="Group_SkeletonGuard_x7" parent="." unique_id=1267331422 instance=ExtResource("15_l56i7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.328682, 7.599592e-07, 56.786777)
+
+[node name="Group_Bloated_x8" parent="." unique_id=98342184 instance=ExtResource("18_pg437")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.651726, 7.599592e-07, 114.765594)
+
+[node name="Group_Bloated_x9" parent="." unique_id=763400725 instance=ExtResource("18_pg437")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.2554)
+
+[node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.98991, 1.1803445, 99.99161)
+>>>>>>> Stashed changes

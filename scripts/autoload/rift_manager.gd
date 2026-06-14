@@ -15,11 +15,13 @@ signal progress_changed(value: float, goal: float)
 signal guardian_ready()
 # 守门人 (=屠夫) 死亡 = 单局通关. 携本局用时(秒) 与 击杀总数.
 signal run_cleared(clear_time_sec: float, kill_count: int)
+# 倒计时归零且进度未满 (未触发守门人) = 任务失败. 携超时时的进度/目标/击杀数.
+signal rift_failed(progress: float, goal: float, kill_count: int)
 
 const GOAL: float = 106.0                       # 总权重目标默认值 (~6min 填满). 外部 rm.GOAL 读此常量.
 const BOSS_SCENE: String = "res://scenes/levels/boss_room_play.tscn"
 
-# 大秘境时限 (秒). 仅供 HUD"时间球"倒计时展示 —— 当前不挂失败/结算逻辑 (展示用).
+# 大秘境时限 (秒). 倒计时归零且进度未满 → 任务失败 (rift_failed). HUD 时间球读此作满刻度.
 const RIFT_TIME_LIMIT: float = 120.0
 
 # 运行期有效目标 (默认=GOAL). 速通模式 (--speedrun) 时被 speedrun_test.csv 覆写为 15.
@@ -50,6 +52,8 @@ const TIME_BALL_WEIGHT: float = 3.0
 
 var progress: float = 0.0
 var guardian_triggered: bool = false
+# 超时失败已触发标志 (防 _process 重复发 rift_failed; 触发后冻结判定).
+var run_failed: bool = false
 
 # 本局计时起点 (ms) 与 击杀总数 (供结算面板).
 var run_start_ms: int = 0
@@ -69,10 +73,25 @@ func _ready() -> void:
 func reset_rift() -> void:
 	progress = 0.0
 	guardian_triggered = false
+	run_failed = false
 	_counted.clear()
 	run_start_ms = Time.get_ticks_msec()
 	kill_count = 0
 	progress_changed.emit(progress, goal)
+
+# 每帧检测超时: 倒计时归零 且 进度未满 (未触发守门人) → 任务失败.
+# 守门人已触发 (通关路径) 或已失败 → 不再判定. 玩家死亡走 HUD 死亡演出, 与此独立.
+func _process(_delta: float) -> void:
+	if guardian_triggered or run_failed:
+		return
+	if get_time_remaining() <= 0.0:
+		_trigger_fail()
+
+func _trigger_fail() -> void:
+	if run_failed or guardian_triggered:
+		return
+	run_failed = true
+	rift_failed.emit(progress, goal, kill_count)
 
 func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if enemy == null:
@@ -101,7 +120,7 @@ func add_time_ball() -> void:
 	_add_progress(TIME_BALL_WEIGHT)
 
 func _add_progress(amount: float) -> void:
-	if guardian_triggered:
+	if guardian_triggered or run_failed:
 		return
 	progress = minf(progress + amount, goal)
 	progress_changed.emit(progress, goal)

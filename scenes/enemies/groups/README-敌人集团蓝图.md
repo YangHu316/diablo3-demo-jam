@@ -36,4 +36,19 @@
 - `level_02_depths.gd` 的 `_build_encounters()` 调用**已注释停用**(脚本刷怪退役);`ENCOUNTERS`/`ENCOUNTER_ENEMY`/`ENCOUNTER_DATA` 常量保留仅供参考。需临时回退:取消该行注释。
 - **战斗①**:① 召唤者(召唤缓行走尸)、骸骨卫士(正面 120° 减伤盾墙)的**特殊 AI** 暂未接 → 当前走 `enemy_base` 基础追击 + 对应 `.tres` 数值;接好后蓝图无需改(行为在敌人脚本里)。② 若 ~83 只预生成怪性能吃紧:减组数 / 调 `count` / 或给远点的组用旧 `one_shot` 触发(把 `preplaced` 关掉、留触发圈)。
 - **美术**:疯狗 / 召唤者视觉为占位,可换 `enemy_scene` 成狗 / 法师模型。
-- 精英(蓝名/黄名)不在此 6 组内:精英是「普通怪放大 + 辉光 + 进度球」,见 `数值表/elites.csv` 与大秘境配置 §二·B,单独摆放。
+- 精英(蓝名/黄名)不在此 6 组内:见下方「精英集团蓝图」与 `数值表/elites.csv`。
+
+## 精英集团蓝图(`scenes/enemies/groups/elite/`)
+
+> 精英 = **对应普通怪 ×1.5 大小 + 异色**(纯视觉:`scripts/levels/elite_tint.gd` 叠异色 overlay + 实例根 1.5× 缩放)。**数值默认同普通怪**(精英实例的 `data` = 普通同款 .tres)。
+
+| 蓝图 | 组成 | 精英色 |
+|---|---|---|
+| `elite_group_zombie.tscn` | 1 精英走尸 + 9 普通走尸 | 🔴 红 |
+| `elite_group_dog.tscn` | 1 精英疯狗 + 9 普通疯狗 | 🟡 黄 |
+| `elite_group_archer.tscn` | 1 精英骷髅射手 + 9 普通射手 | 🟢 绿 |
+| `elite_group_skeleton_guard.tscn` | 1 精英骸骨卫士 + 5 普通卫士 | 🔴 红 |
+
+- 结构:`Normals`(spawn_trigger 刷 9/5 普通,**运行时**出)+ `Elite`(直接摆的实例,根 1.5× 缩放,挂 `EliteTint` 子节点染色)。**精英在编辑器里就可见**(@tool 染色 + 缩放);普通仍运行时出。
+- 改精英色:选 `Elite/EliteTint` → Inspector 改 `tint_color`。改普通数量:选 `Normals` → 改 `count`。摆放同普通蓝图(拖进 `level_02_encounters.tscn`)。
+- ⚠ 这套是「**视觉精英**」(放大+染色,数值同普通);与 `数值表/elites.csv` 的「**数值精英**」(蓝名 1800/黄名 3600 + 进度球)是两套。要二合一:把 `Elite` 节点的 `data` 换成 `scripts/entities/data/elite_blue.tres`/`champion_yellow.tres`。
