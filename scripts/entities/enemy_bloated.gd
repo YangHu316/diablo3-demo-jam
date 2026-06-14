@@ -111,7 +111,9 @@ func _spawn_explosion_ring(center: Vector3) -> void:
 	scene_root.add_child(mi)
 	mi.global_position = center + Vector3(0, 0.05, 0)
 	mi.scale = Vector3.ONE * 0.2
-	var tw: Tween = create_tween().set_parallel(true)
+	# 关键:tween 必须挂在 ring(mi)上,不能挂在 self(self 引爆后立即 queue_free,
+	# 挂在 self 上的 tween 会被一起 kill,queue_free 回调不会跑 → 圈圈留在场景永不消失)
+	var tw: Tween = mi.create_tween().set_parallel(true)
 	tw.tween_property(mi, "scale", Vector3.ONE * 1.0, 0.35).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(mat, "albedo_color:a", 0.0, 0.45)
 	tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.45)
