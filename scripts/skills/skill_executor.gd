@@ -35,18 +35,12 @@ func _ready() -> void:
 	else:
 		push_error("SkillExecutor: SkillSlotManager not found at %s" % slot_manager_path)
 
-	# 接系统组装备聚合:换装/升级 → Inventory.stats_changed → 重算伤害面板。
-	# (战斗进展 §5.1 "唯一未联通" close:weapon_avg / dexterity / crit_rate / crit_dmg)
-	var inv: Node = get_node_or_null("/root/Inventory")
-	if inv != null and inv.has_signal("stats_changed"):
-		inv.stats_changed.connect(_on_stats_changed)
-		# 拉一次初值(可能装备/升级已先于本节点就绪)。
-		if inv.has_method("get_total_stats"):
-			DamageCalculator.refresh_from_stats(inv.get_total_stats())
+	# V3.0:面板锁死,不再接系统组装备聚合(Inventory.stats_changed)。
+	# DamageCalculator 直接使用 player_loadout.csv 锁死值,装备只换观感不改战斗数值。
 
-# 系统组 Inventory.stats_changed(total_stats) → 整体重算伤害面板属性。
-func _on_stats_changed(total_stats: Dictionary) -> void:
-	DamageCalculator.refresh_from_stats(total_stats)
+# 兼容老接口:如有外部直接调用,保留空实现(V3.0 面板已锁死)。
+func _on_stats_changed(_total_stats: Dictionary) -> void:
+	pass
 
 # sd 期望是 SkillData 资源
 func _on_skill_activated(slot_index: int, sd: Resource) -> void:
@@ -55,7 +49,7 @@ func _on_skill_activated(slot_index: int, sd: Resource) -> void:
 	var stype: int = int(sd.skill_type)
 	match stype:
 		TYPE_PROJECTILE:
-			_execute_projectile(sd)
+			_execute_projectile(sd, slot_index)
 		TYPE_MOVEMENT:
 			_execute_movement(sd)
 		TYPE_SUMMON:
@@ -66,10 +60,16 @@ func _on_skill_activated(slot_index: int, sd: Resource) -> void:
 			push_warning("SkillExecutor: unhandled skill_type %s for %s" % [stype, sd.skill_id])
 
 # ── 射击类 ─────────────────────────────────────────────
-func _execute_projectile(sd: Resource) -> void:
+# slot_index == 0(LMB 利箭)用玩家 basis(玩家追打时已 look_at 锁敌人);
+# slot_index >= 1(RMB/Q/E)用光标方向(D3 经典:朝光标施法)。
+func _execute_projectile(sd: Resource, slot_index: int = -1) -> void:
 	if _arrow_scene == null or _player == null:
 		return
-	var fwd: Vector3 = -_player.global_transform.basis.z
+	var fwd: Vector3
+	if slot_index >= 1 and _player.has_method("get_aim_direction"):
+		fwd = _player.get_aim_direction()
+	else:
+		fwd = -_player.global_transform.basis.z
 	fwd.y = 0.0
 	if fwd.length() < 0.001:
 		return

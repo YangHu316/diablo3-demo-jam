@@ -48,6 +48,13 @@ const UNLOCK_ID_TO_SKILL: Dictionary = {
 
 var _cooldowns: PackedFloat32Array = PackedFloat32Array()
 
+# V3.0 LMB 门控:player.gd 决定何时让 LMB 槽 0 开火(点地走时不开火)。
+# 默认 false,由 player.gd 每帧根据"是否锁定敌人在射程内/Shift 站桩"重新评估并 set_lmb_attack_armed(b)。
+var _lmb_attack_armed: bool = false
+
+func set_lmb_attack_armed(b: bool) -> void:
+	_lmb_attack_armed = b
+
 func _ready() -> void:
 	_cooldowns.resize(SLOT_COUNT)
 	for i in range(SLOT_COUNT):
@@ -130,6 +137,9 @@ func _poll_inputs() -> void:
 			pressed = Input.is_action_pressed(action)
 		else:
 			pressed = Input.is_action_just_pressed(action)
+		# V3.0:槽 0(LMB 利箭)只在 player 把它"装填"上才开火 — 否则点地走不开枪。
+		if i == 0 and not _lmb_attack_armed:
+			pressed = false
 		if pressed:
 			_try_activate(i)
 

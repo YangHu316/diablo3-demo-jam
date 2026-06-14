@@ -10,7 +10,7 @@ extends CanvasLayer
 # 监听:ProgressionManager.{xp_gained,level_up}, FocusResource.focus_changed,
 #       Player.health_changed, SkillSlotManager.cooldown_changed
 
-const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "1", "2", "3"]
+const SKILL_KEY_LABELS: Array = ["LMB", "RMB", "Q", "W", "E"]
 
 var _player: Node = null
 var _slot_mgr: Node = null
