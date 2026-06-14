@@ -42,6 +42,7 @@ var _target: Node3D = null
 var _attack_timer: float = 0.0
 var _nav_timer: float = 0.0
 var _heal_timer: float = HEAL_INTERVAL    # 出生后 10s 才放第一次
+var _spawned_at_player: bool = false      # 出生瞬移到 player 旁(防关卡缩放/传送把随从甩在中段)
 
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D if has_node("NavigationAgent3D") else null
 
@@ -54,6 +55,10 @@ func _acquire_player() -> void:
 	var arr: Array = get_tree().get_nodes_in_group("player")
 	if arr.size() > 0:
 		_player = arr[0] as Node3D
+		# 首次拿到 player 引用时,贴到 player 旁边出生(避免关卡缩放/传送把随从甩在中途)
+		if not _spawned_at_player and _player != null:
+			_spawned_at_player = true
+			global_position = _player.global_position + Vector3(2.0, 0.0, 0.0)
 
 func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
