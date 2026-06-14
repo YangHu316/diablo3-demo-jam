@@ -12,9 +12,12 @@ const ATTACK_RANGE: float = 1.8
 const ATTACK_INTERVAL: float = 1.5
 const NAV_REPATH_INTERVAL: float = 0.3
 const ENEMY_DEATH_STATE: int = 4  # enemy_base.State.DEATH
+const DamageCalculator = preload("res://scripts/skills/damage_calculator.gd")
+# 随从伤害倍率:女武神 = 玩家武器均伤 × 2(策划随从口径)。
+const DAMAGE_MULT: float = 2.0
 
 @export var lifetime: float = 20.0
-# 武器均伤×2 = 15×2 = 30(占位,后续接装备表后从 player 属性算)
+# 跟随玩家武器伤:weapon_avg × 2。未接装备时 DamageCalculator 回退基底 15 → 30,与原占位一致。
 @export var attack_damage: int = 30
 
 var _target: Node3D = null
@@ -102,8 +105,9 @@ func _do_strike() -> void:
 		return
 	if global_position.distance_to(_target.global_position) > ATTACK_RANGE * 1.25:
 		return
+	var dmg: int = _current_damage()
 	if _target.has_method("take_damage"):
-		_target.take_damage(attack_damage, self)
+		_target.take_damage(dmg, self)
 	# 通过 CombatManager 让 juice 系统接管闪白/飘字/僵直
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null:
@@ -114,7 +118,14 @@ func _do_strike() -> void:
 			hit_dir = hit_dir.normalized()
 		else:
 			hit_dir = -global_transform.basis.z
-		cm.hit_landed.emit(self, _target, attack_damage, false, "physical", hit_pos, hit_dir)
+		cm.hit_landed.emit(self, _target, dmg, false, "physical", hit_pos, hit_dir)
+
+# 实时跟随玩家武器均伤 × 倍率(装备/升级即时反映)。
+func _current_damage() -> int:
+	var wa: float = DamageCalculator.weapon_avg
+	if wa <= 0.0:
+		return attack_damage
+	return int(round(wa * DAMAGE_MULT))
 
 func _find_nearest_enemy() -> Node3D:
 	var enemies: Array = get_tree().get_nodes_in_group("enemies")

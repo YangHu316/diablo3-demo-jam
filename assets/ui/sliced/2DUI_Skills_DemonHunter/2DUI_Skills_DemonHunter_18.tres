@@ -1,7 +1,0 @@
-[gd_resource type="AtlasTexture" format=3]
-
-[ext_resource type="Texture2D" path="res://assets/ui/skills/2DUI_Skills_DemonHunter.png" id="1_fgh6p"]
-
-[resource]
-atlas = ExtResource("1_fgh6p")
-region = Rect2(256, 256, 128, 128)

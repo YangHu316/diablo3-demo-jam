@@ -19,6 +19,21 @@ extends Node3D
 const SCALE: float = 1.5   # 统一缩放:房间/走廊放大,避免局促;临界路径随之拉长
 const ENEMY := preload("res://scenes/enemies/enemy_zombie.tscn")
 const CORPSE := preload("res://scripts/entities/data/walking_corpse.tres")
+
+# 各遭遇点的敌人种类(对应 ENCOUNTERS 顺序;混入 Synty 敌人做视觉多样化,数值仍用 CORPSE)
+const ENCOUNTER_ENEMY := [
+	preload("res://scenes/enemies/enemy_skeleton_slave_01.tscn"),    # 西廊·首遇
+	preload("res://scenes/enemies/enemy_goblin_male.tscn"),          # 枢纽
+	preload("res://scenes/enemies/enemy_skeleton_soldier_01.tscn"),  # 枢纽→东 过渡
+	preload("res://scenes/enemies/enemy_goblin_warrior_male.tscn"),  # 东廊
+	preload("res://scenes/enemies/enemy_skeleton_soldier_02.tscn"),  # 齿轮室
+	preload("res://scenes/enemies/enemy_goblin_warrior_female.tscn"),# 右环·南
+	preload("res://scenes/enemies/enemy_zombie.tscn"),               # 南长廊(走尸)
+	preload("res://scenes/enemies/enemy_ghost_01.tscn"),             # 北廊伏击(幽灵)
+	preload("res://scenes/enemies/enemy_hero_knight_male.tscn"),     # 北门守卫
+	preload("res://scenes/enemies/enemy_goblin_warchief.tscn"),      # Boss 入口廊
+	preload("res://scenes/enemies/enemy_skeleton_knight.tscn"),      # Boss 厅尸潮(高潮)
+]
 const SPAWN_TRIGGER := preload("res://scripts/components/spawn_trigger.gd")
 const LEVEL_EXIT := preload("res://scripts/components/level_exit.gd")
 
@@ -324,14 +339,15 @@ func _cylinder(pos: Vector3, radius: float, h: float, mat: StandardMaterial3D) -
 
 # ---- 遭遇 ----
 func _build_encounters() -> void:
-	for e in ENCOUNTERS:
+	for i in ENCOUNTERS.size():
+		var e = ENCOUNTERS[i]
 		var area := Area3D.new()
 		area.set_script(SPAWN_TRIGGER)
 		area.collision_layer = 0
 		area.collision_mask = 1
 		area.monitoring = true
 		area.position = _at(e[0], e[1], 0.5)
-		area.set("enemy_scene", ENEMY)
+		area.set("enemy_scene", ENCOUNTER_ENEMY[i] if i < ENCOUNTER_ENEMY.size() else ENEMY)
 		area.set("enemy_data", CORPSE)
 		area.set("count", int(e[2]))
 		area.set("formation", String(e[3]))

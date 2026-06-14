@@ -30,11 +30,16 @@ DamageNumberPool="*res://scripts/autoload/damage_number_pool.gd"
 CombatJuiceManager="*res://scripts/autoload/combat_juice_manager.gd"
 SpawnManager="*res://scripts/autoload/spawn_manager.gd"
 LootManager="*res://scripts/autoload/loot_manager.gd"
+AnimLib="*res://scripts/autoload/anim_lib.gd"
 
 [display]
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[filesystem]
+
+import/blender/enabled=false
 
 [gui]
 

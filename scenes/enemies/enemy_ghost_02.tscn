@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_base.gd" id="1_d4b1f"]
+[ext_resource type="Resource" path="res://scripts/entities/data/walking_corpse.tres" id="2_6blg5"]
+[ext_resource type="PackedScene" path="res://assets/characters/synty/Character_Ghost_02.tscn" id="3_x6euh"]
+[ext_resource type="Script" path="res://scripts/components/knockback_component.gd" id="4_6dr58"]
+[ext_resource type="Script" path="res://scripts/components/stagger_component.gd" id="5_mwte3"]
+[ext_resource type="Script" path="res://scripts/components/enemy_anim_driver.gd" id="6_4sb8b"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_msgfw"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1v4j6"]
+radius = 0.3
+height = 1.8
+
+[node name="Enemy_Ghost_02" type="CharacterBody3D" unique_id=196696813 groups=["enemies"]]
+collision_layer = 2
+collision_mask = 21
+script = ExtResource("1_d4b1f")
+data = ExtResource("2_6blg5")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="." unique_id=1296879567]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_msgfw")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1802313788]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+
+[node name="Character_Ghost_02" type="Node3D" parent="Visual" unique_id=1807831365 instance=ExtResource("3_x6euh")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2091528965]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1v4j6")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1197862287]
+path_desired_distance = 0.5
+height = 1.8
+radius = 0.4
+
+[node name="KnockbackComponent" type="Node" parent="." unique_id=10041493]
+script = ExtResource("4_6dr58")
+
+[node name="StaggerComponent" type="Node" parent="." unique_id=490004047]
+script = ExtResource("5_mwte3")
+mesh_path = NodePath("../Visual")
+
+[node name="AnimDriver" type="Node" parent="." unique_id=1666756936]
+script = ExtResource("6_4sb8b")
+anim_player_path = NodePath("../Visual/Character_Ghost_02/AnimationPlayer")
+loop_anims = PackedStringArray("Idle", "Walk")
+anim_library = "ual1"
+ual_idle_anim = "Idle"
+ual_move_anim = "Walk"
+ual_loop_anims = PackedStringArray("Idle", "Walk")

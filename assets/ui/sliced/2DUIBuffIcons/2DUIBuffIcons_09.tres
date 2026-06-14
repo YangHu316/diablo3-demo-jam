@@ -1,7 +1,0 @@
-[gd_resource type="AtlasTexture" format=3]
-
-[ext_resource type="Texture2D" path="res://assets/ui/hud/2DUIBuffIcons.png" id="1_0e0xy"]
-
-[resource]
-atlas = ExtResource("1_0e0xy")
-region = Rect2(1152, 0, 128, 128)
