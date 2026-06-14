@@ -62,6 +62,8 @@
 [ext_resource type="PackedScene" uid="uid://d11ema4xyi80w" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Curved_Corner_01.fbx" id="60_h0ret"]
 [ext_resource type="PackedScene" uid="uid://5gso2kl60nns" path="res://assets/PolygonDungeon/Models/Environment/Cave_Rocks/SM_Env_Cave_Large_01_DoubleSided.fbx" id="61_16uhi"]
 [ext_resource type="PackedScene" uid="uid://dveiew4ygy570" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01.fbx" id="62_xomiv"]
+[ext_resource type="PackedScene" uid="uid://20hcaghjsrsn" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candles_04.fbx" id="63_16uhi"]
+[ext_resource type="PackedScene" uid="uid://nie64vn0f2y" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candle_Stand_01.fbx" id="64_wt0e1"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -3130,7 +3132,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.03876, -1.937151e-07, 55.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2229, 7.599592e-07, 17.830088)
 
 [node name="EliteGroup_Zombie" parent="." unique_id=2094737365 instance=ExtResource("12_rqg3x")]
-transform = Transform3D(1.0004272, 0, 0, 0, 1.0004272, 0, 0, 0, 1.0004272, -72.70239, 0.10742454, 51.111534)
+transform = Transform3D(1.0004272, 0, 0, 0, 1.0004272, 0, 0, 0, 1.0004272, -72.51224, 0.22711734, 51.1687)
 
 [node name="Group_Dog_x6" parent="." unique_id=1467244980 instance=ExtResource("11_rmmqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.599335, 7.599592e-07, 6.1186047)
@@ -3321,7 +3323,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -66.03508, 0.24444318, 
 transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0, 1.4074788, -24.184267, 7.599592e-07, 29.581598)
 
 [node name="SM_Env_Cave_Background_01_DoubleSided2" parent="." unique_id=1737213110 instance=ExtResource("34_hl14s")]
-transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -29.4723, 3.7309484, 42.72584)
+transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -30.398073, 3.7309484, 42.72584)
 
 [node name="SM_Prop_Candle_03" parent="." unique_id=393461788 instance=ExtResource("47_h0ret")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -91.3022, 2.8312206e-07, 53.190956)
@@ -3421,3 +3423,27 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 52.50115, 0.09330395, 7
 
 [node name="SM_Env_Wall_03" parent="." unique_id=1544311778 instance=ExtResource("62_xomiv")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 57.50115, 0.09330395, 72.70693)
+
+[node name="SM_Env_Wall_07" parent="." unique_id=1606780847 instance=ExtResource("62_xomiv")]
+transform = Transform3D(0.3027005, 0, 99.96397, 0, 100, 0, -113.355255, 0, 0.26694077, 62.506947, 0.09330395, 72.53811)
+
+[node name="SM_Env_Wall_04" parent="." unique_id=1471647979 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 47.63794, 0.0933049, 66.576035)
+
+[node name="SM_Env_Wall_05" parent="." unique_id=1627971801 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 52.50115, 0.09330395, 66.70693)
+
+[node name="SM_Env_Wall_06" parent="." unique_id=396972647 instance=ExtResource("62_xomiv")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 57.50115, 0.09330395, 66.70693)
+
+[node name="SM_Prop_Candles_04" parent="." unique_id=1678159257 instance=ExtResource("63_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -125.202286, 0.102067955, -16.008427)
+
+[node name="SM_Prop_Candles_05" parent="." unique_id=753864714 instance=ExtResource("63_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -125.490074, 0.0038828922, -15.655735)
+
+[node name="SM_Prop_Candles_06" parent="." unique_id=808918311 instance=ExtResource("63_16uhi")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.778046, 0.0038828922, -15.682208)
+
+[node name="SM_Prop_Candle_Stand_01" parent="." unique_id=1663298609 instance=ExtResource("64_wt0e1")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -125.08627, -1.937151e-07, -15.980002)
