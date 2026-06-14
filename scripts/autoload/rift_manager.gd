@@ -13,6 +13,8 @@ extends Node
 
 signal progress_changed(value: float, goal: float)
 signal guardian_ready()
+# 守门人 (=屠夫) 死亡 = 单局通关. 携本局用时(秒) 与 击杀总数.
+signal run_cleared(clear_time_sec: float, kill_count: int)
 
 const GOAL: float = 106.0                       # 总权重目标 (~6min 填满)
 const BOSS_SCENE: String = "res://scenes/levels/boss_room_play.tscn"
@@ -35,10 +37,15 @@ const TIME_BALL_WEIGHT: float = 3.0
 var progress: float = 0.0
 var guardian_triggered: bool = false
 
+# 本局计时起点 (ms) 与 击杀总数 (供结算面板).
+var run_start_ms: int = 0
+var kill_count: int = 0
+
 # 已计数的 enemy 实例 id (防同一只怪重复加权).
 var _counted: Dictionary = {}
 
 func _ready() -> void:
+	run_start_ms = Time.get_ticks_msec()
 	var cm: Node = get_node_or_null("/root/CombatManager")
 	if cm != null and cm.has_signal("enemy_killed"):
 		cm.enemy_killed.connect(_on_enemy_killed)
@@ -48,6 +55,8 @@ func reset_rift() -> void:
 	progress = 0.0
 	guardian_triggered = false
 	_counted.clear()
+	run_start_ms = Time.get_ticks_msec()
+	kill_count = 0
 	progress_changed.emit(progress, GOAL)
 
 func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
@@ -58,13 +67,18 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if _counted.has(key):
 		return
 	_counted[key] = true
+	kill_count += 1   # 击杀总数 (含小怪/精英/守门人)
 
 	var mid: StringName = &"trash"
 	if enemy.has_meta("monster_id"):
 		mid = StringName(enemy.get_meta("monster_id"))
+	# 守门人 (屠夫) 死亡 = 单局通关: 发结算事件, 不喂进度.
+	if mid == &"butcher" or mid == &"guardian":
+		run_cleared.emit(get_clear_time(), kill_count)
+		return
 	var w: float = float(WEIGHTS.get(mid, 1.0))   # 未知 id 当白怪 (兜底, 不漏喂进度)
 	if w <= 0.0:
-		return   # 守门人不计
+		return   # 兜底: 其它零权重 id 不计
 	_add_progress(w)
 
 # 时间球拾取 +3.0 (供拾取实体调用).
@@ -95,3 +109,10 @@ func _go_boss() -> void:
 		push_warning("RiftManager: missing %s" % BOSS_SCENE)
 		return
 	tree.change_scene_to_file(BOSS_SCENE)
+
+# ── 结算访问器 ────────────────────────────────────────────────
+func get_kill_count() -> int:
+	return kill_count
+
+func get_clear_time() -> float:
+	return float(Time.get_ticks_msec() - run_start_ms) / 1000.0
