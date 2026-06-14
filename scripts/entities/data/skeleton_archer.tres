@@ -1,6 +1,6 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" format=3 uid="uid://bxc3tacen3n8l"]
 
-[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dlp6k1hatm3c8" path="res://scripts/entities/enemy_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
@@ -11,7 +11,6 @@ max_health = 120
 attack_damage = 33
 move_speed = 6.0
 detection_range = 22.0
-aggro_range = 14.0
 lose_aggro_range = 28.0
 attack_range = 18.0
 attack_windup = 0.7
