@@ -12,11 +12,12 @@ extends Node
 @export var anim_library: String = "ual1"
 @export var idle_anim: String = "Idle_Loop"
 @export var move_anim: String = "Jog_Fwd_Loop"
-@export var dodge_anim: String = "Dodge_Fwd"
-@export var attack_anim: String = "Bow_Attack"  # 暂未触发,留 hook
+# UAL1 里翻滚动画名是 Roll(不是 Dodge_Fwd),已查表确认
+@export var dodge_anim: String = "Roll"
+@export var attack_anim: String = "Pistol_Shoot"  # 暂用手枪射击代替 Bow_Attack
 @export var death_anim: String = "Death01"
 # 循环动画(导入的 glTF 默认不循环)
-@export var loop_anims: PackedStringArray = ["Idle_Loop", "Jog_Fwd_Loop", "Walk_Loop"]
+@export var loop_anims: PackedStringArray = ["Idle_Loop", "Jog_Fwd_Loop", "Walk_Loop", "Sprint_Loop"]
 
 enum State { IDLE, MOVE, DODGE, DEATH }
 
