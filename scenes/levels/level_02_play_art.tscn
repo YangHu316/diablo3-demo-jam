@@ -64,6 +64,13 @@
 [ext_resource type="PackedScene" uid="uid://dveiew4ygy570" path="res://assets/PolygonDungeon/Models/Environment/Walls/SM_Env_Wall_01.fbx" id="62_xomiv"]
 [ext_resource type="PackedScene" uid="uid://20hcaghjsrsn" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candles_04.fbx" id="63_16uhi"]
 [ext_resource type="PackedScene" uid="uid://nie64vn0f2y" path="res://assets/PolygonDungeon/Models/Props/Lighting/SM_Prop_Candle_Stand_01.fbx" id="64_wt0e1"]
+[ext_resource type="PackedScene" uid="uid://cq0yjvcrd224n" path="res://assets/PolygonDungeon/Models/Environment/Floors/SM_Env_Tiles_Rune_01.fbx" id="65_4dt2w"]
+[ext_resource type="PackedScene" uid="uid://u4usn8hrctyb" path="res://assets/PolygonDungeon/Models/Environment/Pillars/SM_Env_Statue_03.fbx" id="66_n8q4u"]
+[ext_resource type="PackedScene" uid="uid://6cn8isaateb" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_BonePile_Small_01.fbx" id="67_npo0b"]
+[ext_resource type="PackedScene" uid="uid://csm7cpoimcty8" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Cracked_01.fbx" id="68_y2aku"]
+[ext_resource type="PackedScene" uid="uid://brxvruw2mw2d6" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Cracked_02.fbx" id="69_lmapl"]
+[ext_resource type="PackedScene" uid="uid://dctnp6lefco3h" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Horn_01.fbx" id="70_os1p7"]
+[ext_resource type="PackedScene" uid="uid://cu7y8u7kc658j" path="res://assets/PolygonDungeon/Models/Environment/Bones/SM_Env_Bone_Skull_01.fbx" id="71_vvd72"]
 
 [node name="Level02Play" type="Node3D" unique_id=1539514014]
 
@@ -594,12 +601,6 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.499992, 0.02324, 2.
 [node name="Floor_-11_2" parent="LevelArt/Floors" unique_id=1523925488 instance=ExtResource("20_af")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.499992, 0.02324, 7.5000005)
 
-[node name="Floor_-11_3" parent="LevelArt/Floors" unique_id=1415730873 instance=ExtResource("20_af")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.499992, 0.02324, 12.5)
-
-[node name="Floor_-11_4" parent="LevelArt/Floors" unique_id=940146123 instance=ExtResource("20_af")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.499992, 0.02324, 17.5)
-
 [node name="Floor_-11_5" parent="LevelArt/Floors" unique_id=219799449 instance=ExtResource("20_af")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.499992, 0.02324, 22.5)
 
@@ -722,12 +723,6 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -52.499992, 0.02324, 2.
 
 [node name="Floor_-10_2" parent="LevelArt/Floors" unique_id=1117754043 instance=ExtResource("20_af")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -52.499992, 0.02324, 7.5000005)
-
-[node name="Floor_-10_3" parent="LevelArt/Floors" unique_id=392362629 instance=ExtResource("20_af")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -52.499992, 0.02324, 12.5)
-
-[node name="Floor_-10_4" parent="LevelArt/Floors" unique_id=1644792977 instance=ExtResource("20_af")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -52.499992, 0.02324, 17.5)
 
 [node name="Floor_-10_5" parent="LevelArt/Floors" unique_id=882389069 instance=ExtResource("20_af")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -52.499992, 0.02324, 22.5)
@@ -3199,7 +3194,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80.561844, 7.599592e-07, 110.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.2554)
 
 [node name="EliteGroup_SkeletonGuard3" parent="." unique_id=715795547 instance=ExtResource("13_tlxbo")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88.53546, 1.2094101, 100.072334)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.05626, 1.1840976, 103.56158)
 
 [node name="SettlementPanel" parent="." unique_id=618811148 instance=ExtResource("19")]
 
@@ -3216,28 +3211,28 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.996506, -1.937151e
 transform = Transform3D(-2.3100643, 0, -163.79718, 0, 163.81346, 0, 163.79718, 0, -2.3100643, -112.66683, -1.937151e-07, -2.4457726)
 
 [node name="SM_Env_Statue_01" parent="." unique_id=555913922 instance=ExtResource("27_qvwxn")]
-transform = Transform3D(155.52402, 0, 0, 0, 168.3982, 0, 0, 0, 135.20071, 101.01217, 7.599592e-07, 100.72798)
+transform = Transform3D(-155.4864, 0, -2.9729815, 0, 168.39821, 0, 3.4198785, 0, -135.16801, 101.01217, 7.599592e-07, 100.72798)
 
 [node name="SM_Env_Pillar_Square_Round_01" parent="." unique_id=990671965 instance=ExtResource("28_fi0ln")]
 transform = Transform3D(163.49619, 0, 0, 0, 100, 0, 0, 0, 161.40952, 100.92882, -1.937151e-07, 100.192696)
 
 [node name="SM_Env_Pillar_Round_01" parent="." unique_id=2083564255 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 114.67085, 7.599592e-07, 92.64435)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 120.46086, 1.0031189e-06, 88.41695)
 
 [node name="SM_Env_Pillar_Round_02" parent="." unique_id=126670891 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 85.31882, -1.1473894e-06, 91.88774)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 86.11863, -2.3631878e-06, 87.397995)
 
 [node name="SM_Env_Pillar_Round_03" parent="." unique_id=2010797712 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 86.04688, 7.599592e-07, 105.98881)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 87.12145, 1.0031189e-06, 98.00967)
 
 [node name="SM_Env_Pillar_Round_04" parent="." unique_id=633456480 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 112.27569, 7.599592e-07, 106.89608)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 117.16181, 1.0031189e-06, 99.23152)
 
 [node name="SM_Env_Pillar_Round_05" parent="." unique_id=1408623734 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 86.532074, 7.599592e-07, 115.76826)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 88.80744, 1.0031189e-06, 110.56562)
 
 [node name="SM_Env_Pillar_Round_06" parent="." unique_id=960554474 instance=ExtResource("29_xe41a")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 111.12456, 7.599592e-07, 115.8333)
+transform = Transform3D(137.73785, 0, 0, 0, 176.49142, 0, 0, 0, 134.67337, 116.59397, 1.0031189e-06, 110.65321)
 
 [node name="SM_Env_MineTunnel_Corner_01" parent="." unique_id=907151315 instance=ExtResource("30_xuv7r")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 123.26548, 0.090934485, 117.358215)
@@ -3323,6 +3318,9 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -66.03508, 0.24444318, 
 [node name="SM_Env_Door_Large_Frame_01" parent="." unique_id=86630183 instance=ExtResource("50_ni4gb")]
 transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0, 1.4074788, -24.184267, 7.599592e-07, 29.581598)
 
+[node name="SM_Env_Door_Large_Frame_05" parent="." unique_id=1139257951 instance=ExtResource("50_ni4gb")]
+transform = Transform3D(0.95700604, 0, -350.62225, 0, 151.2878, 0, 238.40332, 0, 1.4074788, -24.184267, 7.599592e-07, 79.5816)
+
 [node name="SM_Env_Cave_Background_01_DoubleSided2" parent="." unique_id=1737213110 instance=ExtResource("34_hl14s")]
 transform = Transform3D(4.2465243, 1.438025, 207.58478, 98.34975, -4.823047, -8.853785, 3.840316, 121.92712, -2.7985227, -30.398073, 3.7309484, 42.72584)
 
@@ -3405,7 +3403,7 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 1.6247559, 7.599592e-07
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 76.941986, -1.937151e-07, 81.91679)
 
 [node name="SM_Env_Cave_Curved_01_DoubleSided" parent="." unique_id=439251700 instance=ExtResource("59_xomiv")]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -72.986786, 0, 32.585136)
+transform = Transform3D(-99.99386, 0, -1.1082574, 0, 100, 0, 1.1082574, 0, -99.99386, -72.986786, 0, 34.10435)
 
 [node name="SM_Env_Cave_Curved_Corner_01" parent="." unique_id=2065045302 instance=ExtResource("60_h0ret")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 95.071106, 0, 66.64114)
@@ -3448,3 +3446,48 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -124.778046, 0.00388289
 
 [node name="SM_Prop_Candle_Stand_01" parent="." unique_id=1663298609 instance=ExtResource("64_wt0e1")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -125.08627, -1.937151e-07, -15.980002)
+
+[node name="SM_Env_Tiles_Rune_01" parent="." unique_id=1337734851 instance=ExtResource("65_4dt2w")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -57.494442, 0.0008007605, 12.310546)
+
+[node name="SM_Env_Tiles_Rune_02" parent="." unique_id=105269760 instance=ExtResource("65_4dt2w")]
+transform = Transform3D(-1.1237519, 0, -99.95421, 0, 100, 0, 103.676926, 0, -1.0834014, -47.461254, 0.0008007605, 12.403876)
+
+[node name="SM_Env_Tiles_Rune_03" parent="." unique_id=212381965 instance=ExtResource("65_4dt2w")]
+transform = Transform3D(2.7906246, 0, 99.789406, 0, 100, 0, -106.71191, 0, 2.6095943, -57.51206, 0.0008007605, 22.456976)
+
+[node name="SM_Env_Tiles_Rune_04" parent="." unique_id=1469969257 instance=ExtResource("65_4dt2w")]
+transform = Transform3D(-99.99749, 0, 0.708601, 0, 100, 0, -0.708601, 0, -99.99749, -47.48861, 0.0008007605, 22.557281)
+
+[node name="SM_Env_Statue_03" parent="." unique_id=55016877 instance=ExtResource("66_n8q4u")]
+transform = Transform3D(-3.224468, 0, -145.92018, 0, 156.66199, 0, 143.52536, 0, -3.2782707, 36.905914, -1.937151e-07, 26.472672)
+
+[node name="SM_Prop_Candle_Chandelier_02" parent="." unique_id=1252735936 instance=ExtResource("49_wt0e1")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 35.458313, 2.2882357, 26.478073)
+
+[node name="SM_Env_BonePile_05" parent="." unique_id=217282661 instance=ExtResource("31_h8vgf")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 37.638123, 0.14331995, 14.126195)
+
+[node name="SM_Env_BonePile_Small_01" parent="." unique_id=1418400387 instance=ExtResource("67_npo0b")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 45.237946, 0.03618692, 41.471767)
+
+[node name="SM_Env_Bone_Cracked_01" parent="." unique_id=2135843879 instance=ExtResource("68_y2aku")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 56.77116, 2.8721735, 22.195745)
+
+[node name="SM_Env_Bone_Cracked_02" parent="." unique_id=296490929 instance=ExtResource("69_lmapl")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 55.6166, 4.2832193, 13.427583)
+
+[node name="SM_Env_Bone_Horn_01" parent="." unique_id=580015684 instance=ExtResource("70_os1p7")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 18.773418, 0.66205436, 41.564743)
+
+[node name="SM_Env_BonePile_06" parent="." unique_id=987545286 instance=ExtResource("31_h8vgf")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -33.740635, 0.14331995, 39.83487)
+
+[node name="SM_Env_BonePile_Small_02" parent="." unique_id=1280661927 instance=ExtResource("67_npo0b")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -48.397774, 0.036187872, 21.847925)
+
+[node name="SM_Env_Bone_Horn_02" parent="." unique_id=963209009 instance=ExtResource("70_os1p7")]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -30.297712, 0.6620553, -0.13403702)
+
+[node name="SM_Env_Bone_Skull_01" parent="." unique_id=1396421842 instance=ExtResource("71_vvd72")]
+transform = Transform3D(33.583015, 0, 0, 0, 33.583015, 0, 0, 0, 33.583015, -52.573112, 1.2705495, 17.425516)
