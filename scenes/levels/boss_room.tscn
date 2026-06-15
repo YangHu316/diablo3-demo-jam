@@ -36,6 +36,7 @@ size = Vector3(7.172, 3.173, 0.43)
 script = ExtResource("1")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1502488026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.044872046, 0, 0.0076293945)
 navigation_mesh = SubResource("nav")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=813112376]
@@ -51,13 +52,13 @@ environment = SubResource("env")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
 
 [node name="SM_Env_Wall_01" parent="." unique_id=1053158943 instance=ExtResource("2_oufd4")]
-transform = Transform3D(136.79504, 0, 0, 0, 60.495483, 0, 0, 0, 100, -2.4337206, -0.2601373, 17.811237)
+transform = Transform3D(136.79504, 0, 0, 0, 60.495483, 0, 0, 0, 100, -3.3330193, -0.2601373, 17.811237)
 
-[node name="WallCollider" type="StaticBody3D" parent="SM_Env_Wall_01"]
-top_level = true
+[node name="WallCollider" type="StaticBody3D" parent="SM_Env_Wall_01" unique_id=1045185569]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 1.27, 17.869)
+top_level = true
 collision_layer = 4
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SM_Env_Wall_01/WallCollider"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SM_Env_Wall_01/WallCollider" unique_id=1936580196]
 shape = SubResource("wall_box")

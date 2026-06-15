@@ -19,6 +19,12 @@ func _ready() -> void:
 	call_deferred("_place_wall_torches")
 	# 墙碰撞:仅运行时(物理用),编辑器不需要。在 _fix_wall_scales 之后排队 → 按修好的 scale-100 量尺寸。
 	call_deferred("_add_wall_collision")
+	# 性能:关掉地板/墙的阴影投射(仅运行时)。配合 _setup_d3_atmosphere 里关 depths 平行光阴影,
+	# 整个阴影 pass 基本消失 —— 1000+ 地板/墙网格不再被重渲染进阴影图。
+	call_deferred("_disable_floor_wall_shadows")
+	# 性能(做法B):仅运行时把 657 地板 / 348 墙塌成 MultiMesh(~1005 draw call → 每种 mesh 1 个),
+	# 隐藏原节点。编辑器里原节点原封不动、每块可单独编辑。排在 _fix_wall_scales 之后 → 按修好的 scale-100 取变换。
+	call_deferred("_build_floor_wall_multimesh")
 
 # 墙尺寸自愈:LevelArt/Walls 下任何 basis 缩放 ~1 的墙(应为 ~100)自动放大 100 倍,保持旋转/原点。
 func _fix_wall_scales() -> void:
@@ -75,6 +81,9 @@ func _setup_d3_atmosphere() -> void:
 		if dl != null:
 			dl.light_energy = 0.35
 			dl.light_color = Color(0.55, 0.62, 0.85)   # 冷蓝顶光做补光
+			# 性能:它是全场唯一开阴影的光(2048 阴影图),却只是低强度冷补光,阴影几乎不可见。
+			# 关掉 → 1000+ 地板/墙 + 火把/道具不再进阴影 pass,draw call 近乎减半。只改运行实例,不动 depths .tscn。
+			dl.shadow_enabled = false
 	# 2) 我们自己的 D3 WorldEnvironment(雾 + 体积雾光柱 + 辉光 + 调色)。INTERNAL → 不入库。
 	if p.get_node_or_null("D3Environment") == null:
 		var we := WorldEnvironment.new()
@@ -207,6 +216,81 @@ func _add_wall_collision() -> void:
 		body.add_child(cs)
 		n += 1
 	print("[level_02_art] 墙碰撞:%d 块(layer=4)" % n)
+
+# ── 关地板/墙阴影投射(运行时)──────────────────────────────────────────
+# 地板/墙是地面与背景,投阴影没有视觉意义,却让 1000+ 网格白白进阴影图。
+# 把 Floors/Walls 下所有 MeshInstance3D 的 cast_shadow 设为 OFF(它们仍正常接收光照,只是不再投影)。
+# 仅运行时:在编辑器里改实例子节点的 cast_shadow 会产生保存覆盖(污染 .tscn),故只运行时设。
+# 注:之后若上 MultiMesh,把替身 MultiMeshInstance3D 的 cast_shadow 设 OFF 即可,本函数同样无害。
+func _disable_floor_wall_shadows() -> void:
+	if Engine.is_editor_hint():
+		return
+	for holder_name in ["Floors", "Walls"]:
+		var holder: Node = get_node_or_null(holder_name)
+		if holder == null:
+			continue
+		for child in holder.get_children():
+			_set_no_shadow(child)
+
+func _set_no_shadow(n: Node) -> void:
+	if n is MeshInstance3D:
+		(n as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for c in n.get_children():
+		_set_no_shadow(c)
+
+# ── 地板/墙合批为 MultiMesh(运行时,做法 B)────────────────────────────
+# 编辑器里 657 地板 / 348 墙的真实节点原封不动(每块可单独选中/移动/替换);
+# 仅运行时:读各节点里 MeshInstance3D 的 mesh + 世界变换,按 mesh 资源分组各建一个 MultiMesh,
+# 用 INTERNAL 的 MultiMeshInstance3D(top_level,直接吃世界变换)渲染,再隐藏原 holder 容器。
+# ~1005 个独立 draw call → 每种 mesh 1 个。INTERNAL 不入库、不污染 .tscn。
+# 材质:dungeon_post_import.gd 已把 DungeonAtlas 烤进 mesh 的 surface,故 MultiMesh 直接正确着色,无需 override。
+func _build_floor_wall_multimesh() -> void:
+	if Engine.is_editor_hint():
+		return
+	if get_node_or_null("MultiMeshBatch") != null:
+		return   # 幂等:已建过则跳过
+	var batch := Node3D.new()
+	batch.name = "MultiMeshBatch"
+	add_child(batch, false, Node.INTERNAL_MODE_BACK)   # INTERNAL → 不入库
+	var total_calls: int = 0
+	var total_inst: int = 0
+	for holder_name in ["Floors", "Walls"]:
+		var holder := get_node_or_null(holder_name) as Node3D
+		if holder == null:
+			continue
+		# 按 mesh 资源分组收集世界变换(同一 mesh 的所有实例进一个 MultiMesh)
+		var groups: Dictionary = {}   # Mesh -> Array[Transform3D]
+		for inst in holder.get_children():
+			_collect_mesh_xforms(inst, groups)
+		for mesh in groups:
+			var xforms: Array = groups[mesh]
+			if xforms.is_empty():
+				continue
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = mesh
+			mm.instance_count = xforms.size()
+			for i in xforms.size():
+				mm.set_instance_transform(i, xforms[i])
+			var mmi := MultiMeshInstance3D.new()
+			mmi.multimesh = mm
+			mmi.top_level = true   # 忽略父变换 → 实例的世界变换直接生效,精确还原
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF   # 配合第2项:地板/墙不投影
+			batch.add_child(mmi)
+			total_calls += 1
+			total_inst += xforms.size()
+		# 隐藏原始可见节点(碰撞/导航/刷怪/火把都不依赖可见性,故安全)
+		holder.visible = false
+	print("[level_02_art] MultiMesh 合批:%d 个实例 → %d 个 draw call(原 ~1005)" % [total_inst, total_calls])
+
+func _collect_mesh_xforms(n: Node, groups: Dictionary) -> void:
+	if n is MeshInstance3D and (n as MeshInstance3D).mesh != null:
+		var mi := n as MeshInstance3D
+		var arr: Array = groups.get(mi.mesh, [])
+		arr.append(mi.global_transform)
+		groups[mi.mesh] = arr
+	for c in n.get_children():
+		_collect_mesh_xforms(c, groups)
 
 func _world_aabb(root: Node3D) -> AABB:
 	var mn := Vector3(INF, INF, INF)

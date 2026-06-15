@@ -3252,6 +3252,9 @@ transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -137.21222, 0.22120595,
 [node name="SM_Env_Cave_Background_01_DoubleSided" parent="." unique_id=1391560656 instance=ExtResource("34_hl14s")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -123.775894, -4.5227623, 40.207546)
 
+[node name="SM_Env_Cave_Background_01_DoubleSided3" parent="." unique_id=1335268914 instance=ExtResource("34_hl14s")]
+transform = Transform3D(-0.054532193, 5.8149e-10, 136.28903, 103.8131, -12.863632, 0.07113406, 8.325255, 160.40514, 0.005704571, -119.42772, 1.1198187, 3.3992472)
+
 [node name="SM_Env_Rock_Flat_01" parent="." unique_id=714065810 instance=ExtResource("35_fs1kc")]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, -69.66093, 7.599592e-07, 64.26987)
 
