@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://bhtvqmetiwpc5" path="res://scenes/ui/inventory_panel.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bt1lfep4m86pk" path="res://scenes/companions/templar.tscn" id="7"]
 [ext_resource type="Script" uid="uid://wmrcrqhpwvtn" path="res://scripts/levels/tower_spawner.gd" id="8"]
-[ext_resource type="PackedScene" path="res://scenes/levels/level_02_encounters.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_zombie_x10.tscn" id="9_7kxde"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/group_dog_x5.tscn" id="11_rmmqy"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/groups/elite/elite_group_zombie.tscn" id="12_rqg3x"]
@@ -3092,9 +3091,6 @@ transform = Transform3D(-4.37114e-06, 0, 100, 0, 100, 0, -100, 0, -4.37114e-06, 
 
 [node name="SM_Env_Door_Large_Frame_02" parent="LevelArt/Walls" unique_id=221035905 instance=ExtResource("23_4osnp")]
 transform = Transform3D(178.63861, 0, 0, 0, 170.85362, 0, 0, 0, 156.49342, -52.614197, -1.1473894e-06, -2.7262115)
-
-[node name="Encounters" parent="." unique_id=1008227519 instance=ExtResource("9")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0027885437, 1.9073486e-06, 0.019859314)
 
 [node name="Player" parent="." unique_id=148850757 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -83.052475, 3.8146973e-06, -7.450393)

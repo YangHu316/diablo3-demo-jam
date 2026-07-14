@@ -23,41 +23,6 @@ const SCALE: float = 1.5   # 统一缩放:房间/走廊放大,避免局促;临�
 # false=跳过这些「立柱/门框/装饰」(美术层 level_02_play_art 用真资产顶替,见其 Level02Depths 实例)。
 # 任何情况都不影响:地面 / 墙 / 栅格导航 / 串灯火把(整体结构与光照)。
 @export var build_decorations: bool = true
-const ENEMY := preload("res://scenes/enemies/enemy_zombie.tscn")
-const CORPSE := preload("res://scripts/entities/data/walking_corpse.tres")
-const ARCHER_DATA := preload("res://scripts/entities/data/skeleton_archer.tres")
-const BLOATED_DATA := preload("res://scripts/entities/data/bloated_corpse.tres")
-
-# 各遭遇点的敌人种类(对应 ENCOUNTERS 顺序;混入 Synty 敌人做视觉多样化,数值仍用 CORPSE)
-# V3.0:1/3/6 换成弓手(远程驻射),5/8 换成肿胀走尸(自爆),其他保留视觉变体走基础近战
-const ENCOUNTER_ENEMY := [
-	preload("res://scenes/enemies/enemy_skeleton_slave_01.tscn"),    # 0 西廊·首遇
-	preload("res://scenes/enemies/enemy_archer.tscn"),               # 1 枢纽 — 骷髅弓手
-	preload("res://scenes/enemies/enemy_skeleton_soldier_01.tscn"),  # 2 枢纽→东 过渡
-	preload("res://scenes/enemies/enemy_archer.tscn"),               # 3 东廊 — 骷髅弓手
-	preload("res://scenes/enemies/enemy_skeleton_soldier_02.tscn"),  # 4 齿轮室
-	preload("res://scenes/enemies/enemy_bloated.tscn"),              # 5 右环·南 — 肿胀自爆
-	preload("res://scenes/enemies/enemy_archer.tscn"),               # 6 北廊纵深 — 骷髅弓手
-	preload("res://scenes/enemies/enemy_hero_knight_male.tscn"),     # 7 北门守卫
-	preload("res://scenes/enemies/enemy_bloated.tscn"),              # 8 南长廊 — 肿胀自爆
-	preload("res://scenes/enemies/enemy_goblin_warchief.tscn"),      # 9 Boss 入口廊
-	preload("res://scenes/enemies/enemy_skeleton_knight.tscn"),      # 10 Boss 厅尸潮(高潮)
-]
-# 数据资源(与 ENCOUNTER_ENEMY 对齐):弓手用 archer 数值,自爆用 bloated 数值,其他走尸数值
-const ENCOUNTER_DATA := [
-	CORPSE,        # 0
-	ARCHER_DATA,   # 1
-	CORPSE,        # 2
-	ARCHER_DATA,   # 3
-	CORPSE,        # 4
-	BLOATED_DATA,  # 5
-	ARCHER_DATA,   # 6
-	CORPSE,        # 7
-	BLOATED_DATA,  # 8
-	CORPSE,        # 9
-	CORPSE,        # 10
-]
-const SPAWN_TRIGGER := preload("res://scripts/components/spawn_trigger.gd")
 const LEVEL_EXIT := preload("res://scripts/components/level_exit.gd")
 
 # 可走矩形 [xmin, xmax, zmin, zmax](相邻矩形需重叠/相接,栅格才连通)
@@ -132,31 +97,6 @@ const OBSTACLES := [
 	[72, 72, 1.5],    # Boss 厅·风筝柱·东北
 ]
 
-# 遭遇 [x, z, count, formation, radius, surround]
-# 注:surround 半径不可超过所在走廊半宽(否则刷进墙) → 仅用于开阔 Boss 厅;
-#     窄廊用 cluster/line。东路主线数量单调爬升,Boss 厅为高潮。
-# V3.0 大秘境:取消等级成长,怪物用固定值(数值表/rift_monsters.csv);数量按进度条权重单调爬升(白怪+1.0/蓝名+5.0/黄名+8.0,总≈100~110,见 大秘境-单局固定数值与关卡配置.md §6.3)。
-# 当前白盒所有原型都 spawn enemy_zombie;战斗① 出齐 6 原型场景后按注释替换 enemy_scene。
-const ENCOUNTERS := [
-	[-60, -2, 8, "cluster", 6, false],   # 西门/西廊 开场(走尸5+疯犬3)
-	[-31, 14, 6, "cluster", 5, false],   # 枢纽(走尸4+弓手2)
-	[-15, 18, 4, "line", 5, false],      # 枢纽→东 过渡
-	[-3, 20, 6, "line", 5, false],       # 东廊(走尸4+弓手2)
-	[22, 18, 4, "cluster", 5, false],    # 齿轮室(走尸3+蓝名1·精英)
-	[44, 38, 7, "cluster", 4, false],    # 右环·南(肿胀2+盾兵2+走尸3·破盾/自爆教学)
-	[-35, -40, 6, "cluster", 5, false],  # 北廊纵深(走尸4+弓手2)
-	[-36, -78, 4, "cluster", 5, false],  # 北门守卫(黄名1+扈从骷髅3·首领点·扈从=敌随从非玩家)
-	[10, 54, 5, "line", 5, false],       # 南长廊 下环(召唤者1+走尸4)
-	[49, 48, 5, "line", 5, false],       # Boss入口廊(蓝名1+走尸4)
-	[67, 67, 12, "surround", 7, true],   # 终前尸潮(12环绕)·进度满→过守门人传送门去Boss房
-	# ── 关卡C 混编追加(逼弓系风筝·配 OBSTACLES 立柱掩体;占位 spawn 走尸,战斗① 按注释绑对应怪种 AI/数据)──
-	[-34, 18, 3, "cluster", 5, false],   # 枢纽·墓园疯犬群(高速冲锋逼翻滚·绕 O1/O2 柱拉开)
-	[-26, 10, 2, "line", 5, false],      # 枢纽·骷髅弓手(远程驻射逼走位·用 O1/O2 柱挡射线)
-	[-3, 22, 2, "cluster", 4, false],    # 东廊·肿胀走尸(自爆逼站位·穿 O3/O4 chicane)
-	[44, 34, 3, "cluster", 4, false],    # 右环·南·墓园疯犬(冲锋·绕 O7/O8 柱)
-	[67, 60, 3, "line", 6, false],       # Boss厅·骷髅弓手(守门人战远程压制·绕 O9~O12 风筝柱)
-]
-
 const PLAYER_SPAWN := Vector3(-83, 0, -7)   # 西门
 
 var nav_region: NavigationRegion3D = null
@@ -181,12 +121,10 @@ func _rebuild() -> void:
 		_build_landmarks()
 		_build_structures()
 		_build_obstacles()
-	# 战斗逻辑:只在运行时建(编辑器里不跑刷怪/出口/落点,避免编辑器误触发)
+	# 战斗逻辑:只在运行时建(编辑器里不跑出口/落点,避免编辑器误触发)
 	if not Engine.is_editor_hint():
-		# V3.0:遭遇改「敌人集团蓝图」手动摆放(scenes/enemies/groups/*.tscn → scenes/levels/level_02_encounters.tscn,
-		# 已由 level_02_play.tscn 实例化)。不再脚本生成固定位置/数量;下方 ENCOUNTERS/ENCOUNTER_ENEMY 常量保留仅供参考。
-		# 需临时回退脚本刷怪:取消下一行注释即可。
-		#_build_encounters()
+		# 敌人生成点:全部为「敌人集团蓝图」(scenes/enemies/groups/*.tscn)直接手摆在
+		# 主场景 level_02_play_art.tscn 中,本脚本不生成。
 		_build_exit()
 		call_deferred("_place_player")
 
@@ -532,33 +470,6 @@ func _build_obstacles() -> void:
 		var z: float = o[1]
 		var r: float = o[2]
 		_pillar(x, z, r, 3.5, mat)
-
-# ---- 遭遇 ----
-func _build_encounters() -> void:
-	for i in ENCOUNTERS.size():
-		var e = ENCOUNTERS[i]
-		var area := Area3D.new()
-		area.set_script(SPAWN_TRIGGER)
-		area.collision_layer = 0
-		area.collision_mask = 1
-		area.monitoring = true
-		area.position = _at(e[0], e[1], 0.5)
-		area.set("enemy_scene", ENCOUNTER_ENEMY[i] if i < ENCOUNTER_ENEMY.size() else ENEMY)
-		area.set("enemy_data", ENCOUNTER_DATA[i] if i < ENCOUNTER_DATA.size() else CORPSE)
-		area.set("count", int(e[2]))
-		area.set("formation", String(e[3]))
-		area.set("spawn_radius", float(e[4]) * SCALE)
-		area.set("spawn_at_self", true)
-		area.set("one_shot", true)
-		area.set("target_player", bool(e[5]))
-		# V3.0:预放置 — level 加载即刷好怪在 IDLE 待机,玩家走近后由 enemy_base 自启 CHASE
-		area.set("preplaced", true)
-		add_child(area)
-		var cs := CollisionShape3D.new()
-		var sh := SphereShape3D.new()
-		sh.radius = 3.5
-		cs.shape = sh
-		area.add_child(cs)
 
 func _build_exit() -> void:
 	# 守门人传送门:设在 Boss 厅深处;V3.0 由 RiftManager 进度满激活后切场景(非地图装饰传送门)
