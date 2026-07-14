@@ -31,3 +31,6 @@ export/
 
 # 个人本地配置覆盖 (Godot override.cfg) — 不推到 origin,只在本机生效
 override.cfg
+
+# AI 关卡管线的俯拍/重叠比对输出 (每次运行重新生成,不入库)
+tools/_capture/

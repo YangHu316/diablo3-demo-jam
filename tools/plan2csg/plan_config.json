@@ -1,0 +1,20 @@
+{
+	"image": "res://关卡/LevelClean.png",
+	"world_width": 160.0,
+	"lum_min": 0.36,
+	"hole_min_thickness_px": 8.0,
+	"sat_max": 0.5,
+	"min_floor_area_px": 3000,
+	"min_hole_area_px": 400,
+	"hole_keep_lum_max": 0.30,
+	"hole_keep_sat_max": 0.35,
+	"chroma_sat_min": 0.35,
+	"chroma_lum_min": 0.15,
+	"fill_holes_at_px": [],
+	"keep_holes_at_px": [],
+	"dp_epsilon_px": 2.5,
+	"entrance_px": [863, 237],
+	"spawn_px": [863, 262],
+	"trace_json": "res://关卡/level_trace.json",
+	"scene_out": "res://scenes/levels/level_03_csg.tscn"
+}
