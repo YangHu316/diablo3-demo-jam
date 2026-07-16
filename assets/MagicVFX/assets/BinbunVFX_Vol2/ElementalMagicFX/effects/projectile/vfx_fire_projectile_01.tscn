@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://c4jq7s82wru52"]
 
-[ext_resource type="Shader" uid="uid://dcd0atk42jpsx" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_core.gdshader" id="1_8kg2j"]
-[ext_resource type="Script" uid="uid://bwyvxyekjghix" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/script/VFXElementalProjectileBB.gd" id="1_vu0ob"]
-[ext_resource type="Shader" uid="uid://kvpd2pe0cx6i" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_tail.gdshader" id="2_323vy"]
-[ext_resource type="Shader" uid="uid://c5etpnne8apgr" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_streaks.gdshader" id="3_vu0ob"]
-[ext_resource type="Shader" uid="uid://pbpcjxgcjbh0" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_particles.gdshader" id="4_0lsa6"]
-[ext_resource type="Script" uid="uid://bwmucxp58uvvt" path="res://assets/BinbunVFX_Vol2/shared/script/VFXOmniLightBB.gd" id="6_vu0ob"]
+[ext_resource type="Shader" uid="uid://dcd0atk42jpsx" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_core.gdshader" id="1_8kg2j"]
+[ext_resource type="Script" uid="uid://bwyvxyekjghix" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/script/VFXElementalProjectileBB.gd" id="1_vu0ob"]
+[ext_resource type="Shader" uid="uid://kvpd2pe0cx6i" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_tail.gdshader" id="2_323vy"]
+[ext_resource type="Shader" uid="uid://c5etpnne8apgr" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_streaks.gdshader" id="3_vu0ob"]
+[ext_resource type="Shader" uid="uid://pbpcjxgcjbh0" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/shader/projectile_particles.gdshader" id="4_0lsa6"]
+[ext_resource type="Script" uid="uid://bwmucxp58uvvt" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/shared/script/VFXOmniLightBB.gd" id="6_vu0ob"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_dophw"]
 seed = 3

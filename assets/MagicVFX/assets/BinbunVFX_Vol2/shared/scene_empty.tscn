@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bdxrtimbf21nq"]
 
-[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_a1vpq"]
-[ext_resource type="Shader" uid="uid://mvwi25cb826n" path="res://assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="1_iguor"]
+[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_a1vpq"]
+[ext_resource type="Shader" uid="uid://mvwi25cb826n" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="1_iguor"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ip3vt"]
 

@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://cu8ddal4j3cya"]
 
-[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_k7yjh"]
-[ext_resource type="Shader" uid="uid://mvwi25cb826n" path="res://assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="2_00t4o"]
-[ext_resource type="PackedScene" uid="uid://c4jq7s82wru52" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/projectile/vfx_fire_projectile_01.tscn" id="3_xmxq5"]
-[ext_resource type="PackedScene" uid="uid://dyyycu6ys3vo3" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn" id="11_g6vrb"]
-[ext_resource type="PackedScene" uid="uid://daq2m77vylo0o" path="res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/cast/vfx_fire_cast_01.tscn" id="19_5wh1c"]
+[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_k7yjh"]
+[ext_resource type="Shader" uid="uid://mvwi25cb826n" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="2_00t4o"]
+[ext_resource type="PackedScene" uid="uid://c4jq7s82wru52" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/projectile/vfx_fire_projectile_01.tscn" id="3_xmxq5"]
+[ext_resource type="PackedScene" uid="uid://dyyycu6ys3vo3" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn" id="11_g6vrb"]
+[ext_resource type="PackedScene" uid="uid://daq2m77vylo0o" path="res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/cast/vfx_fire_cast_01.tscn" id="19_5wh1c"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ip3vt"]
 
