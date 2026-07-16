@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://验证V1-Fable5自主开发/tools/sim_progress.gd" id="1"]
+
+[node name="SimProgress" type="Node"]
+script = ExtResource("1")

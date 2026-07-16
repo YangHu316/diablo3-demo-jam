@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"dh_crypthound"
+enemy_name = "墓穴掠魂"
+archetype = 0
+max_health = 1100
+attack_damage = 45
+move_speed = 7.5
+detection_range = 18.0
+aggro_range = 18.0
+lose_aggro_range = 24.0
+attack_range = 1.8
+attack_windup = 0.45
+attack_recovery = 0.35
+attack_hit_window = 0.15
+albedo_color = Color(0.55, 0.75, 0.9, 1)

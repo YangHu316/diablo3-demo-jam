@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+enemy_id = &"dh_marrow_archer"
+enemy_name = "骸髓弩手"
+archetype = 1
+max_health = 1200
+attack_damage = 70
+move_speed = 5.0
+detection_range = 16.0
+aggro_range = 16.0
+lose_aggro_range = 24.0
+attack_range = 14.0
+attack_windup = 0.6
+attack_recovery = 0.5
+attack_hit_window = 0.2
+albedo_color = Color(0.8, 0.78, 0.65, 1)

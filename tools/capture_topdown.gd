@@ -15,6 +15,7 @@ func _ready() -> void:
 	var tilt := 90.0
 	var focus := Vector2(INF, INF)
 	var fsize := 0.0
+	var no_fill := false
 	for i in args.size():
 		if args[i] == "--scene" and i + 1 < args.size():
 			scene_path = args[i + 1]
@@ -28,6 +29,8 @@ func _ready() -> void:
 			focus = Vector2(float(args[i + 1]), float(args[i + 2]))
 		elif args[i] == "--size" and i + 1 < args.size():
 			fsize = float(args[i + 1])
+		elif args[i] == "--nofill":
+			no_fill = true
 
 	var ps: PackedScene = load(scene_path)
 	if ps == null:
@@ -38,8 +41,8 @@ func _ready() -> void:
 	add_child(lvl)
 	for hn in hide_names:
 		var n := lvl.find_child(hn, true, false)
-		if n is Node3D:
-			(n as Node3D).visible = false
+		if n != null and "visible" in n:
+			n.set("visible", false)
 			print("[capture] 已隐藏 ", hn)
 
 	# 等几何(含 CSG bake / @tool 生成)就绪后按 AABB 求包围盒
@@ -55,13 +58,14 @@ func _ready() -> void:
 	if focus.x != INF and fsize > 0.0:
 		bounds = Rect2(focus.x - fsize * 0.5, focus.y - fsize * 0.5, fsize, fsize)
 
-	# 俯拍补光(垂直向下,读得清)
-	var fill := DirectionalLight3D.new()
-	fill.rotation_degrees = Vector3(-90, 0, 0)
-	fill.light_energy = 1.1
-	fill.light_color = Color(1, 1, 1)
-	fill.shadow_enabled = false
-	add_child(fill)
+	# 俯拍补光(垂直向下,读得清;--nofill 时保留场景真实光照)
+	if not no_fill:
+		var fill := DirectionalLight3D.new()
+		fill.rotation_degrees = Vector3(-90, 0, 0)
+		fill.light_energy = 1.1
+		fill.light_color = Color(1, 1, 1)
+		fill.shadow_enabled = false
+		add_child(fill)
 
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -104,14 +108,17 @@ func _merge_aabb(n: Node) -> AABB:
 	var stack: Array[Node] = [n]
 	while not stack.is_empty():
 		var cur: Node = stack.pop_back()
-		if cur is GeometryInstance3D:
+		if cur is GeometryInstance3D and not (cur.get_parent() is Skeleton3D):
 			var gi := cur as GeometryInstance3D
 			var a: AABB = gi.global_transform * gi.get_aabb()
-			if first:
-				box = a
-				first = false
-			else:
-				box = box.merge(a)
+			# 过滤:蒙皮角色网格(上面已跳过,原始 AABB 巨大)、退化/远离关卡范围的杂散对象
+			var c := a.get_center()
+			if a.size.length() < 400.0 and absf(c.x) < 100.0 and absf(c.z) < 100.0:
+				if first:
+					box = a
+					first = false
+				else:
+					box = box.merge(a)
 		for c in cur.get_children():
 			stack.append(c)
 	return box

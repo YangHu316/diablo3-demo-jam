@@ -34,3 +34,7 @@ override.cfg
 
 # AI 关卡管线的俯拍/重叠比对输出 (每次运行重新生成,不入库)
 tools/_capture/
+
+# 打包产物(220MB exe 超 GitHub 单文件上限)与过程截图草稿
+验证V1-Fable5自主开发/build/
+tools/_capture/

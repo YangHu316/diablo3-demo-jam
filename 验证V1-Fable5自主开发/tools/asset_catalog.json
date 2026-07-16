@@ -1,0 +1,1346 @@
+{
+	"Environment/Bones/SM_Env_BonePile_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.14,
+		"size": [
+			2.51,
+			0.82,
+			2.77
+		]
+	},
+	"Environment/Bones/SM_Env_BonePile_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.14,
+		"size": [
+			2.35,
+			1.06,
+			4.18
+		]
+	},
+	"Environment/Bones/SM_Env_BonePile_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.14,
+		"size": [
+			2.61,
+			0.77,
+			2.4
+		]
+	},
+	"Environment/Bones/SM_Env_BonePile_Small_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.04,
+		"size": [
+			1.04,
+			0.31,
+			1.51
+		]
+	},
+	"Environment/Bones/SM_Env_BonePile_Small_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.02,
+		"size": [
+			1.31,
+			0.3,
+			1.32
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Cracked_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -2.87,
+		"size": [
+			1.08,
+			5.74,
+			1.08
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Rib_01.fbx": {
+		"center_xz": [
+			0.13,
+			1.05
+		],
+		"min_y": -0.66,
+		"size": [
+			2.76,
+			7.67,
+			4.37
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Ribs_01.fbx": {
+		"center_xz": [
+			-0.02,
+			0.28
+		],
+		"min_y": -0.76,
+		"size": [
+			14.75,
+			8.19,
+			6.06
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Rigcage_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.53,
+		"size": [
+			9.57,
+			8.49,
+			14.7
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Skull_01.fbx": {
+		"center_xz": [
+			0.0,
+			2.95
+		],
+		"min_y": -1.27,
+		"size": [
+			9.28,
+			7.59,
+			11.74
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Skull_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.04
+		],
+		"min_y": -3.97,
+		"size": [
+			9.01,
+			7.61,
+			11.74
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Skull_Jaw_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.01
+		],
+		"min_y": -0.63,
+		"size": [
+			4.07,
+			2.65,
+			8.5
+		]
+	},
+	"Environment/Bones/SM_Env_Bone_Spine_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -3.27,
+		"size": [
+			6.55,
+			6.55,
+			26.19
+		]
+	},
+	"Environment/Cave_Rocks/SM_Env_CrackedRock_01.fbx": {
+		"center_xz": [
+			4.86,
+			5.18
+		],
+		"min_y": -0.03,
+		"size": [
+			11.85,
+			0.6,
+			12.55
+		]
+	},
+	"Environment/Cave_Rocks/SM_Env_Rubble_Pebbles_01.fbx": {
+		"center_xz": [
+			0.02,
+			0.04
+		],
+		"min_y": -0.1,
+		"size": [
+			1.09,
+			0.28,
+			1.61
+		]
+	},
+	"Environment/Cave_Rocks/SM_Env_Stalagmite_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.22,
+		"size": [
+			0.72,
+			1.07,
+			0.63
+		]
+	},
+	"Environment/Cave_Rocks/SM_Env_Stalagmite_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.22,
+		"size": [
+			0.58,
+			2.02,
+			0.51
+		]
+	},
+	"Environment/Decor/SM_Env_Gem_Large_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.16,
+		"size": [
+			1.35,
+			1.86,
+			1.29
+		]
+	},
+	"Environment/Decor/SM_Env_Gem_Large_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.14,
+		"size": [
+			1.17,
+			1.17,
+			1.01
+		]
+	},
+	"Environment/Decor/SM_Env_Gem_Spike_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.04,
+		"size": [
+			1.78,
+			2.71,
+			1.36
+		]
+	},
+	"Environment/Decor/SM_Env_Gem_Spike_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.97,
+			1.79,
+			0.93
+		]
+	},
+	"Environment/Decor/SM_Env_Rune_Pillar_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.0,
+			2.38,
+			1.0
+		]
+	},
+	"Environment/Decor/SM_Env_Rune_Rounded_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.0,
+			0.28,
+			1.06
+		]
+	},
+	"Environment/Decor/SM_Env_Rune_Rounded_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.96,
+			0.27,
+			1.09
+		]
+	},
+	"Environment/Decor/SM_Env_Rune_Square_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.0,
+			0.28,
+			1.04
+		]
+	},
+	"Environment/Doors/SM_Env_Door_Frame_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			2.0,
+			2.53,
+			0.68
+		]
+	},
+	"Environment/Doors/SM_Env_Door_Large_Stone_01.fbx": {
+		"center_xz": [
+			1.02,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			2.05,
+			4.52,
+			0.43
+		]
+	},
+	"Environment/Doors/SM_Env_Entrance_Crypt_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			3.89,
+			4.74,
+			5.95
+		]
+	},
+	"Environment/Doors/SM_Env_Entrance_Crypt_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			3.89,
+			4.74,
+			5.95
+		]
+	},
+	"Environment/Floors/SM_Env_Grate_01.fbx": {
+		"center_xz": [
+			0.0,
+			-0.11
+		],
+		"min_y": -0.61,
+		"size": [
+			1.84,
+			1.22,
+			0.85
+		]
+	},
+	"Environment/Floors/SM_Env_Tile_Simple_01.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.0,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_01.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.19,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_02.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.17,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_03.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.1,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_04.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.1,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_05.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": -0.01,
+		"size": [
+			5.0,
+			0.11,
+			5.0
+		]
+	},
+	"Environment/Floors/SM_Env_Tiles_06.fbx": {
+		"center_xz": [
+			2.5,
+			2.5
+		],
+		"min_y": 0.0,
+		"size": [
+			5.0,
+			0.1,
+			5.0
+		]
+	},
+	"Environment/Pillars/SM_Env_Alter_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			3.36,
+			2.74,
+			2.47
+		]
+	},
+	"Environment/Pillars/SM_Env_Obelisk_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.68
+		],
+		"min_y": 0.0,
+		"size": [
+			1.33,
+			3.6,
+			2.91
+		]
+	},
+	"Environment/Pillars/SM_Env_Pillar_Broken_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.62,
+			0.96,
+			0.62
+		]
+	},
+	"Environment/Pillars/SM_Env_Pillar_Broken_02.fbx": {
+		"center_xz": [
+			0.01,
+			0.02
+		],
+		"min_y": 0.0,
+		"size": [
+			0.95,
+			1.68,
+			0.95
+		]
+	},
+	"Environment/Pillars/SM_Env_Pillar_Broken_Pile_01.fbx": {
+		"center_xz": [
+			0.66,
+			-0.37
+		],
+		"min_y": -0.03,
+		"size": [
+			0.7,
+			0.57,
+			1.4
+		]
+	},
+	"Environment/Pillars/SM_Env_Pillar_Broken_Pile_02.fbx": {
+		"center_xz": [
+			0.04,
+			-1.44
+		],
+		"min_y": -0.14,
+		"size": [
+			2.08,
+			1.17,
+			2.73
+		]
+	},
+	"Environment/Pillars/SM_Env_Pillar_Round_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.02,
+			3.93,
+			0.97
+		]
+	},
+	"Environment/Pillars/SM_Env_Statue_01.fbx": {
+		"center_xz": [
+			-0.27,
+			0.69
+		],
+		"min_y": 0.0,
+		"size": [
+			2.65,
+			4.48,
+			3.06
+		]
+	},
+	"Environment/Pillars/SM_Env_Statue_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.54,
+			3.01,
+			1.39
+		]
+	},
+	"Environment/Pillars/SM_Env_Statue_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			2.13,
+			3.32,
+			1.41
+		]
+	},
+	"Environment/Pillars/SM_Env_Statue_04.fbx": {
+		"center_xz": [
+			0.01,
+			0.1
+		],
+		"min_y": -0.01,
+		"size": [
+			1.47,
+			3.01,
+			0.83
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.01,
+			0.15,
+			0.53
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.7,
+			0.15,
+			0.53
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.09,
+			0.15,
+			0.65
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_04.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.01,
+			0.46,
+			0.53
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_05.fbx": {
+		"center_xz": [
+			0.0,
+			-0.02
+		],
+		"min_y": 0.0,
+		"size": [
+			0.25,
+			0.44,
+			0.34
+		]
+	},
+	"Environment/Walls/SM_Env_Brick_Rubble_06.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.01,
+			0.46,
+			0.53
+		]
+	},
+	"Environment/Walls/SM_Env_Stone_Fountain_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.04,
+			1.32,
+			0.63
+		]
+	},
+	"Environment/Walls/SM_Env_Stone_Lantern_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.76,
+			1.91,
+			0.66
+		]
+	},
+	"Environment/Walls/SM_Env_Stone_Vessel_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.44,
+			1.35,
+			1.25
+		]
+	},
+	"Environment/Walls/SM_Env_Wall_01.fbx": {
+		"center_xz": [
+			2.47,
+			0.06
+		],
+		"min_y": -0.09,
+		"size": [
+			5.24,
+			5.24,
+			0.43
+		]
+	},
+	"Environment/Walls/SM_Env_Wall_01_Alt.fbx": {
+		"center_xz": [
+			2.47,
+			0.06
+		],
+		"min_y": -0.14,
+		"size": [
+			5.27,
+			5.3,
+			0.42
+		]
+	},
+	"Environment/Walls/SM_Env_Wall_02.fbx": {
+		"center_xz": [
+			2.47,
+			-0.35
+		],
+		"min_y": -0.04,
+		"size": [
+			5.18,
+			5.16,
+			1.25
+		]
+	},
+	"Props/Containers/SM_Prop_Barrel_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.77,
+			1.03,
+			0.77
+		]
+	},
+	"Props/Containers/SM_Prop_Barrel_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.77,
+			1.08,
+			1.13
+		]
+	},
+	"Props/Containers/SM_Prop_Barrel_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.75,
+			0.96,
+			0.75
+		]
+	},
+	"Props/Containers/SM_Prop_Barrel_Broken_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.77,
+			0.8,
+			0.77
+		]
+	},
+	"Props/Containers/SM_Prop_Barrel_Large_01.fbx": {
+		"center_xz": [
+			0.0,
+			-0.06
+		],
+		"min_y": 0.0,
+		"size": [
+			3.44,
+			3.82,
+			4.66
+		]
+	},
+	"Props/Containers/SM_Prop_Chest_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.85,
+			0.71,
+			0.59
+		]
+	},
+	"Props/Containers/SM_Prop_Chest_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.07,
+			0.9,
+			0.71
+		]
+	},
+	"Props/Containers/SM_Prop_Crate_Ornate_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.01,
+			1.02,
+			1.02
+		]
+	},
+	"Props/Containers/SM_Prop_Crate_Wood_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.1,
+			1.1,
+			1.1
+		]
+	},
+	"Props/Containers/SM_Prop_Crate_Wood_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.07,
+			1.07,
+			1.07
+		]
+	},
+	"Props/Containers/SM_Prop_Crate_Wood_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.1,
+			1.1,
+			1.1
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.64,
+			0.8,
+			0.48
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.53,
+			0.68,
+			0.53
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.53,
+			0.51,
+			0.53
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_05.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.55,
+			0.68,
+			0.54
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_Broken_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.19,
+		"size": [
+			0.54,
+			0.39,
+			0.54
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_Group_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.42,
+			0.96,
+			1.58
+		]
+	},
+	"Props/Containers/SM_Prop_Vase_Shard_01.fbx": {
+		"center_xz": [
+			-0.02,
+			0.02
+		],
+		"min_y": 0.04,
+		"size": [
+			0.41,
+			0.17,
+			0.42
+		]
+	},
+	"Props/Creatures/SM_Prop_Skeleton_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.7,
+			0.35,
+			1.86
+		]
+	},
+	"Props/Creatures/SM_Prop_Skeleton_Knight_Throne_01.fbx": {
+		"center_xz": [
+			-0.01,
+			0.12
+		],
+		"min_y": -0.02,
+		"size": [
+			0.99,
+			1.58,
+			1.02
+		]
+	},
+	"Props/Creatures/SM_Prop_Skeleton_Slave_Lying_01.fbx": {
+		"center_xz": [
+			-0.21,
+			0.14
+		],
+		"min_y": -0.06,
+		"size": [
+			1.3,
+			0.34,
+			2.21
+		]
+	},
+	"Props/Creatures/SM_Prop_Skeleton_Slave_Shackles_01.fbx": {
+		"center_xz": [
+			0.05,
+			0.14
+		],
+		"min_y": -0.04,
+		"size": [
+			0.83,
+			1.76,
+			1.09
+		]
+	},
+	"Props/Furniture/SM_Prop_Bench_01.fbx": {
+		"center_xz": [
+			0.05,
+			0.12
+		],
+		"min_y": 0.0,
+		"size": [
+			2.1,
+			1.03,
+			0.83
+		]
+	},
+	"Props/Furniture/SM_Prop_Bookcase_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.19,
+			1.49,
+			0.91
+		]
+	},
+	"Props/Furniture/SM_Prop_Bookcase_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.19,
+			1.49,
+			0.91
+		]
+	},
+	"Props/Furniture/SM_Prop_Bricks_01.fbx": {
+		"center_xz": [
+			0.01,
+			0.0
+		],
+		"min_y": -0.95,
+		"size": [
+			3.43,
+			2.7,
+			0.34
+		]
+	},
+	"Props/Furniture/SM_Prop_Bricks_02.fbx": {
+		"center_xz": [
+			0.33,
+			0.0
+		],
+		"min_y": -0.59,
+		"size": [
+			1.78,
+			1.95,
+			0.34
+		]
+	},
+	"Props/Furniture/SM_Prop_Coffin_01.fbx": {
+		"center_xz": [
+			0.0,
+			-0.02
+		],
+		"min_y": 0.0,
+		"size": [
+			1.09,
+			0.67,
+			2.38
+		]
+	},
+	"Props/Furniture/SM_Prop_Rug_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			12.94,
+			0.25,
+			2.93
+		]
+	},
+	"Props/Furniture/SM_Prop_Rug_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			5.86,
+			0.2,
+			2.73
+		]
+	},
+	"Props/Furniture/SM_Prop_Rug_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			4.5,
+			0.26,
+			3.02
+		]
+	},
+	"Props/Furniture/SM_Prop_StoneTable_Broken_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			3.07,
+			0.96,
+			1.53
+		]
+	},
+	"Props/Furniture/SM_Prop_Stool_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.63,
+			0.62,
+			0.52
+		]
+	},
+	"Props/Furniture/SM_Prop_Table_Round_Broken_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.5,
+			0.92,
+			1.53
+		]
+	},
+	"Props/Furniture/SM_Prop_Wall_Banner_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -4.21,
+		"size": [
+			2.0,
+			4.29,
+			0.18
+		]
+	},
+	"Props/Furniture/SM_Prop_Wall_Banner_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -4.21,
+		"size": [
+			2.0,
+			4.29,
+			0.18
+		]
+	},
+	"Props/Furniture/SM_Prop_Wall_Banner_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -1.99,
+		"size": [
+			2.0,
+			2.07,
+			0.18
+		]
+	},
+	"Props/Furniture/SM_Prop_Wall_Banner_05.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -7.9,
+		"size": [
+			2.0,
+			7.99,
+			0.18
+		]
+	},
+	"Props/Furniture/SM_Prop_WeaponRack_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			2.11,
+			1.43,
+			0.42
+		]
+	},
+	"Props/Lighting/SM_Prop_Bonfire_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.55,
+			1.04,
+			1.82
+		]
+	},
+	"Props/Lighting/SM_Prop_Brazier_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.01,
+		"size": [
+			1.12,
+			0.65,
+			1.0
+		]
+	},
+	"Props/Lighting/SM_Prop_Candle_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.16,
+			0.45,
+			0.14
+		]
+	},
+	"Props/Lighting/SM_Prop_Candle_Stand_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.7,
+			1.75,
+			0.77
+		]
+	},
+	"Props/Lighting/SM_Prop_Candles_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.23,
+			0.38,
+			0.23
+		]
+	},
+	"Props/Lighting/SM_Prop_Candles_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.32,
+			0.35,
+			0.29
+		]
+	},
+	"Props/Lighting/SM_Prop_Candles_03.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.35,
+			0.32,
+			0.35
+		]
+	},
+	"Props/Lighting/SM_Prop_Cauldron_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.9,
+			0.8,
+			1.06
+		]
+	},
+	"Props/Lighting/SM_Prop_TorchStick_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.09,
+		"size": [
+			0.11,
+			1.34,
+			0.12
+		]
+	},
+	"Props/Lighting/SM_Prop_Torch_Ornate_02.fbx": {
+		"center_xz": [
+			0.0,
+			0.15
+		],
+		"min_y": -0.45,
+		"size": [
+			0.3,
+			0.9,
+			0.68
+		]
+	},
+	"Props/Torture/SM_Prop_Toture_Cage_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			0.96,
+			2.01,
+			0.96
+		]
+	},
+	"Props/Torture/SM_Prop_Toture_IronMaiden_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": 0.0,
+		"size": [
+			1.85,
+			2.78,
+			1.27
+		]
+	},
+	"Props/Torture/SM_Prop_Toture_Stocks_01.fbx": {
+		"center_xz": [
+			0.0,
+			0.0
+		],
+		"min_y": -0.03,
+		"size": [
+			1.72,
+			1.25,
+			1.25
+		]
+	}
+}

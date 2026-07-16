@@ -1,0 +1,254 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://验证V1-Fable5自主开发/scenes/level_03_csg_art.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://c8y50mpfcnt7l" path="res://scenes/player/player.tscn" id="3"]
+[ext_resource type="Script" uid="uid://cnyawpqdhhscv" path="res://scripts/camera/topdown_camera.gd" id="4"]
+[ext_resource type="Script" uid="uid://dxks0wxe1s1ga" path="res://scripts/components/screen_shake.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory_panel.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://验证V1-Fable5自主开发/scenes/spawners/dh_spawner.tscn" id="8"]
+
+[node name="Level03DHPlay" type="Node3D"]
+
+[node name="Level03CSGArt" parent="." instance=ExtResource("1")]
+
+[node name="Player" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.61, 0, -30.14)
+
+[node name="PlayerLight" type="OmniLight3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+light_color = Color(1, 0.85, 0.65, 1)
+light_energy = 1.35
+omni_range = 15.0
+shadow_enabled = false
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 43.61, 12, -18)
+current = true
+fov = 62.0
+script = ExtResource("4")
+
+[node name="ScreenShake" type="Node" parent="Camera3D"]
+script = ExtResource("5")
+
+[node name="HUD" parent="." instance=ExtResource("6")]
+
+[node name="InventoryPanel" parent="." instance=ExtResource("7")]
+
+[node name="Spawners" type="Node3D" parent="."]
+
+[node name="Sp01_R2_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.30, 0, -14.47)
+enemy_type = "rotwalker"
+count = 10
+radius = 5.0
+
+[node name="Sp02_R2_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, -8)
+enemy_type = "crypthound"
+count = 6
+radius = 4.0
+
+[node name="Sp03_R2_Archer" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.09, 0, -13.72)
+enemy_type = "marrow_archer"
+count = 3
+radius = 3.0
+
+[node name="Sp04_R2_Rot2" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.50, 0, -15.00)
+enemy_type = "rotwalker"
+count = 8
+radius = 4.0
+
+[node name="Sp05_R3_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.00, 0, 12.50)
+enemy_type = "rotwalker"
+count = 10
+radius = 4.5
+
+[node name="Sp06_R3_Bloat" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70.22, 0, 13.73)
+enemy_type = "blightbloat"
+count = 3
+radius = 3.0
+
+[node name="Sp07_R4_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, 31)
+enemy_type = "rotwalker"
+count = 8
+radius = 4.5
+
+[node name="Sp08_R4_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66.65, 0, 34.36)
+enemy_type = "crypthound"
+count = 4
+radius = 4.0
+
+[node name="Sp09_R4_Warden" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69, 0, 26)
+enemy_type = "crypt_warden"
+count = 1
+radius = 0.5
+
+[node name="Sp10_RCBand_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.35, 0, 4.35)
+enemy_type = "rotwalker"
+count = 10
+radius = 5.0
+
+[node name="Sp11_RCBand_Archer" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.00, 0, 4.00)
+enemy_type = "marrow_archer"
+count = 4
+radius = 3.0
+
+[node name="Sp12_RCBand_Warden" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.58, 0, -2.79)
+enemy_type = "crypt_warden"
+count = 1
+radius = 0.5
+
+[node name="Sp13_Knob_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.4, 0, -12)
+enemy_type = "crypthound"
+count = 3
+radius = 2.5
+
+[node name="Sp14_RCMid_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.50, 0, 15.00)
+enemy_type = "crypthound"
+count = 7
+radius = 4.0
+
+[node name="Sp15_LobeW_Bloat" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.46, 0, 32.72)
+enemy_type = "blightbloat"
+count = 3
+radius = 2.5
+
+[node name="Sp16_LobeE_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.03, 0, 31.87)
+enemy_type = "rotwalker"
+count = 8
+radius = 3.5
+
+[node name="Sp17_LobeE_Warden" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.79, 0, 30.60)
+enemy_type = "crypt_warden"
+count = 1
+radius = 0.5
+
+[node name="Sp18_C1_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, -4)
+enemy_type = "rotwalker"
+count = 10
+radius = 4.0
+
+[node name="Sp19_C1S_Archer" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, 19)
+enemy_type = "marrow_archer"
+count = 3
+radius = 2.5
+
+[node name="Sp20_CorW_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.22, 0, 8.19)
+enemy_type = "crypthound"
+count = 6
+radius = 2.2
+
+[node name="Sp21_CorE_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.29, 0, 7.99)
+enemy_type = "rotwalker"
+count = 7
+radius = 2.2
+
+[node name="Sp22_L2N_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.04, 0, -19.23)
+enemy_type = "rotwalker"
+count = 10
+radius = 4.0
+
+[node name="Sp23_L2N_Archer" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.29, 0, -19.41)
+enemy_type = "marrow_archer"
+count = 2
+radius = 2.5
+
+[node name="Sp24_L2M_Bloat" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.66, 0, -1.47)
+enemy_type = "blightbloat"
+count = 3
+radius = 3.0
+
+[node name="Sp25_Stem_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.31, 0, -15.18)
+enemy_type = "crypthound"
+count = 3
+radius = 2.0
+
+[node name="Sp26_Maze_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.91, 0, 7.72)
+enemy_type = "rotwalker"
+count = 6
+radius = 2.0
+
+[node name="Sp27_Maze_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.00, 0, 17.00)
+enemy_type = "crypthound"
+count = 2
+radius = 1.5
+
+[node name="Sp28_Bottom_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37, 0, 29)
+enemy_type = "rotwalker"
+count = 12
+radius = 5.0
+
+[node name="Sp29_Bottom_Colossus" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37, 0, 32)
+enemy_type = "crystal_colossus"
+count = 1
+radius = 0.5
+
+[node name="Sp30_RedNub_Warden" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.00, 0, 38.00)
+enemy_type = "crypt_warden"
+count = 1
+radius = 0.5
+
+[node name="Sp31_L1A_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -57, 0, -37.5)
+enemy_type = "rotwalker"
+count = 8
+radius = 3.0
+
+[node name="Sp32_L1C_Archer" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60, 0, -23)
+enemy_type = "marrow_archer"
+count = 3
+radius = 3.0
+
+[node name="Sp33_L1D_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -63, 0, -10)
+enemy_type = "crypthound"
+count = 6
+radius = 3.0
+
+[node name="Sp34_L1E_Colossus" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -68.5, 0, 1)
+enemy_type = "crystal_colossus"
+count = 1
+radius = 0.5
+
+[node name="Sp35_L1E_Rot" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -67, 0, 2.5)
+enemy_type = "rotwalker"
+count = 6
+radius = 3.5
+
+[node name="Sp36_L2K_Hound" parent="Spawners" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.35, 0, -26.07)
+enemy_type = "crypthound"
+count = 3
+radius = 2.0
