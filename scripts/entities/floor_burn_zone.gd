@@ -46,7 +46,8 @@ func _spawn_fire_vfx() -> void:
 	if vfx is Node3D:
 		add_child(vfx)
 		(vfx as Node3D).position = Vector3.ZERO
-		(vfx as Node3D).scale = Vector3.ONE * radius
+		# V4:粒子原生覆盖 ≈2m,按半径的一半缩放即可;×radius 会溢出成巨型橙块
+		(vfx as Node3D).scale = Vector3.ONE * (radius * 0.5)
 		(vfx as Node3D).visible = false  # WARNING 时不显,_set_visual_burning 时打开
 		_fire_vfx = vfx as Node3D
 
@@ -80,18 +81,40 @@ func _init_material() -> void:
 func _set_visual_warning() -> void:
 	if _mat == null:
 		return
-	# 警示阶段:橙红半透,边缘脉动,不伤(强烈高光提示)
-	_mat.albedo_color = Color(1.0, 0.4, 0.15, 0.55)
-	_mat.emission = Color(1.0, 0.35, 0.05, 1.0)
-	_mat.emission_energy_multiplier = 3.0
+	# 警示阶段(V4 调):低透明度红晕 + 脉动,不再是一整块刺眼橙盘;
+	# 危险边界由描边环表达(见 _spawn_edge_ring)。
+	_mat.albedo_color = Color(1.0, 0.25, 0.1, 0.22)
+	_mat.emission = Color(1.0, 0.3, 0.05, 1.0)
+	_mat.emission_energy_multiplier = 1.6
+	_spawn_edge_ring()
+
+# 边界描边环:细发光圈标出燃烧范围(替代实心色块的信息职责)
+func _spawn_edge_ring() -> void:
+	var mi := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = radius - 0.18
+	torus.outer_radius = radius
+	torus.ring_segments = 40
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(1.0, 0.3, 0.08, 0.9)
+	m.emission_enabled = true
+	m.emission = Color(1.0, 0.3, 0.05)
+	m.emission_energy_multiplier = 4.0
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	torus.material = m
+	mi.mesh = torus
+	mi.position = Vector3(0, 0.1, 0)
+	add_child(mi)
 
 func _set_visual_burning() -> void:
 	if _mat == null:
 		return
-	# 燃烧阶段:深橙红 + 极高 emission
-	_mat.albedo_color = Color(1.0, 0.55, 0.1, 0.75)
-	_mat.emission = Color(1.0, 0.55, 0.08, 1.0)
-	_mat.emission_energy_multiplier = 5.5
+	# 燃烧阶段(V4 调):地面留中低强度红热底,火焰主体交给 BinbunVFX 粒子
+	_mat.albedo_color = Color(1.0, 0.4, 0.08, 0.38)
+	_mat.emission = Color(1.0, 0.45, 0.06, 1.0)
+	_mat.emission_energy_multiplier = 3.0
 	# 打开 BinbunVFX 火焰粒子
 	if _fire_vfx != null and is_instance_valid(_fire_vfx):
 		_fire_vfx.visible = true
@@ -104,7 +127,7 @@ func _process(delta: float) -> void:
 		# 简单脉动:emission 强度跟着时间正弦波动,提示倒计时
 		if _mat != null:
 			var pulse: float = 1.0 + 0.5 * sin(Time.get_ticks_msec() / 100.0)
-			_mat.emission_energy_multiplier = 3.0 * pulse
+			_mat.emission_energy_multiplier = 1.6 * pulse
 		if _phase_timer <= 0.0:
 			_phase = Phase.BURNING
 			_phase_timer = burning_duration

@@ -7,8 +7,10 @@ extends CanvasLayer
 # 尺寸：屏幕宽度 × MAP_SIZE_RATIO，正方形，右上角固定边距。
 
 # ── 显示参数 ─────────────────────────────────────────────────────────────
-const VIEW_RADIUS: float         = 55.0   # 小地图视口世界半径（已含 SCALE）
-const EXPLORE_RADIUS: float      = 28.0   # 玩家每次探索的圆形半径（世界单位）
+# VIEW_RADIUS 55→27.5:地图显示放大 2 倍——同样的移动距离在小地图上位移翻倍,玩家能明显感受到移动
+const VIEW_RADIUS: float         = 27.5   # 小地图视口世界半径（已含 SCALE）
+# EXPLORE_RADIUS 随视口等比缩小(28→14):否则放大后单次探索圆盖满整个面板,视野内永远无雾
+const EXPLORE_RADIUS: float      = 14.0   # 玩家每次探索的圆形半径（世界单位）
 const FOG_UPDATE_INTERVAL: float = 0.15   # 迷雾采样间隔（秒）
 const MAP_SIZE_RATIO: float      = 0.14   # 小地图边长 = 屏幕宽 × 此值（缩小一半）
 const MARGIN: float              = 16.0   # 距屏幕右/上边缘的像素距离
@@ -17,7 +19,7 @@ const RECT_INFLATE: float        = 1.5    # 矩形扩展量（消除拼接缝隙
 # 4K屏(3840px)下 FOG_CELL_PX=6 → FOG_CELL_SIZE≈1.2，draw_rect调用数约2.5万次/帧（可接受）
 # FOG_CELL_PX=2 时约22万次/帧 → 卡顿根本原因
 const FOG_CELL_PX: float         = 6.0   # 每格目标屏幕像素数（提高9倍减少绘制调用）
-const FOG_FADE_WIDTH: float      = 10.0  # 渐变过渡带宽度（世界单位，加大柔化）
+const FOG_FADE_WIDTH: float      = 6.0   # 渐变过渡带宽度（世界单位，随缩放等比减小）
 # FOG_CELL_SIZE 在运行时由 _map_size 动态计算，见 _update_fog_cell_size()
 var FOG_CELL_SIZE: float         = 3.0   # 运行时动态值，不要直接用
 # 迷雾圆心上限：防止长时间游玩导致O(n)爆炸

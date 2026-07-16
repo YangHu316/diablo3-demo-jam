@@ -442,6 +442,11 @@ func boss_killed_flash() -> void:
 func _process(delta: float) -> void:
 	if _is_dead and Input.is_key_pressed(KEY_R):
 		_is_dead = false
+		# 重开必须重置大秘境(RiftManager 是常驻 autoload,不随场景重载):
+		# 否则进度条停留满值 + guardian_triggered 卡死,boss 无法再次降临。
+		var rm: Node = get_node_or_null("/root/RiftManager")
+		if rm != null and rm.has_method("reset_rift"):
+			rm.reset_rift()
 		get_tree().reload_current_scene()
 	# 时间球: 倒计时每帧推进, 节流 0.25s 刷新 UI.
 	_time_orb_accum += delta

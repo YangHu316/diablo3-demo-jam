@@ -23,7 +23,13 @@ signal boss_defeated(clear_time_sec: float, kill_count: int)
 signal rift_failed(progress: float, goal: float, kill_count: int)
 
 const GOAL: float = 106.0                       # 总权重目标默认值 (~6min 填满). 外部 rm.GOAL 读此常量.
-const BOSS_SCENE: String = "res://scenes/levels/boss_room_play.tscn"
+# V4:弃用切场景 (boss_room_play.tscn) —— 进度满后守门人直接降临在玩家附近,
+# 全程单地图. 屠夫场景直接实例化; NPC (通关对话) 也在 boss 倒地处现身.
+const BUTCHER_SCENE: String = "res://scenes/enemies/butcher.tscn"
+const BOSS_NPC_SCRIPT: String = "res://scripts/entities/boss_npc.gd"
+const BOSS_SPAWN_MIN: float = 7.0     # 降临点距玩家最近距离
+const BOSS_SPAWN_MAX: float = 10.0    # 最远距离(保证降临演出在屏幕内)
+const FIRE_CAST_VFX: String = "res://assets/MagicVFX/assets/BinbunVFX_Vol2/ElementalMagicFX/effects/cast/vfx_fire_cast_01.tscn"
 
 # 大秘境时限 (秒). 倒计时归零且进度未满 → 任务失败 (rift_failed). HUD 时间球读此作满刻度.
 const RIFT_TIME_LIMIT: float = 120.0
@@ -129,6 +135,9 @@ func _on_enemy_killed(enemy, _killer, _overkill: int, _dir) -> void:
 	if mid == &"butcher" or mid == &"guardian":
 		if not run_cleared_triggered:
 			run_cleared_triggered = true
+			# 单地图模式:通关对话 NPC 直接在 boss 倒地处现身 (原 boss_room 的职责).
+			if enemy is Node3D:
+				_spawn_clear_npc((enemy as Node3D).global_position)
 			boss_defeated.emit(get_clear_time(), kill_count)
 		return
 	# 精英: 击杀本身不加权 (靠掉落的进度球加进度). 仅计 kill_count (上面已 +1).
@@ -162,20 +171,140 @@ func _trigger_guardian() -> void:
 	if guardian_triggered:
 		return
 	guardian_triggered = true
-	# 进入守门人 = 切 boss 关: 立即冻结计时 (快照本局已用时), 此后 get_time_remaining 返回定值.
+	# 进入守门人战: 立即冻结计时 (快照本局已用时), 此后 get_time_remaining 返回定值.
 	_frozen_clear_sec = float(Time.get_ticks_msec() - run_start_ms) / 1000.0
 	guardian_ready.emit()
-	# 满进度 → 切守门人房 (八边形房复用). 延一帧避免在信号回调中切场.
-	call_deferred("_go_boss")
+	# V4 单地图: 不切场景, 守门人直接降临在玩家附近. 延一帧避免在信号回调中生成.
+	call_deferred("_spawn_boss_near_player")
 
-func _go_boss() -> void:
+# ── 单地图守门人降临 ──────────────────────────────────
+func _spawn_boss_near_player() -> void:
 	var tree: SceneTree = get_tree()
-	if tree == null:
+	if tree == null or tree.current_scene == null:
 		return
-	if not ResourceLoader.exists(BOSS_SCENE):
-		push_warning("RiftManager: missing %s" % BOSS_SCENE)
+	var players: Array = tree.get_nodes_in_group("player")
+	if players.is_empty() or not (players[0] is Node3D):
 		return
-	tree.change_scene_to_file(BOSS_SCENE)
+	var player := players[0] as Node3D
+	var pos := _pick_spawn_point(player)
+	# 降临演出: 火焰法阵 + 冲天光柱 + 屏震, 0.9s 后屠夫落地
+	_spawn_portal_vfx(tree.current_scene, pos)
+	var cjm: Node = get_node_or_null("/root/CombatJuiceManager")
+	if cjm != null and cjm.has_method("_trigger_screen_shake"):
+		cjm._trigger_screen_shake()
+	var sfx: Node = get_node_or_null("/root/Sfx")
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("channel_charge", pos, 3.0, 0.05)
+	await tree.create_timer(0.9).timeout
+	# 防竞态:降临演出期间玩家死亡按 R 重开(reset_rift 清 guardian_triggered)→ 取消本次生成
+	if not guardian_triggered:
+		return
+	if not ResourceLoader.exists(BUTCHER_SCENE):
+		push_warning("RiftManager: missing %s" % BUTCHER_SCENE)
+		return
+	var boss: Node = (load(BUTCHER_SCENE) as PackedScene).instantiate()
+	tree.current_scene.add_child(boss)
+	if boss is Node3D:
+		(boss as Node3D).global_position = pos
+		# 从地底升起的登场感
+		var b3 := boss as Node3D
+		b3.scale = Vector3(1.0, 0.05, 1.0)
+		var tw: Tween = b3.create_tween()
+		tw.tween_property(b3, "scale", Vector3.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if sfx != null and sfx.has_method("play"):
+		sfx.play("explode", pos, 4.0, 0.05)
+	if cjm != null and cjm.has_method("_trigger_screen_shake"):
+		cjm._trigger_screen_shake()
+
+# 在玩家周围 [MIN, MAX] 米找一个"在导航网格上"的降临点 (16 方向×2 圈候选);
+# 全部失败则兜底玩家正前方 MIN 米.
+func _pick_spawn_point(player: Node3D) -> Vector3:
+	var map: RID = player.get_world_3d().navigation_map
+	var space := player.get_world_3d().direct_space_state
+	var eye: Vector3 = player.global_position + Vector3.UP * 1.2
+	for radius in [BOSS_SPAWN_MAX, BOSS_SPAWN_MIN]:
+		for i in 16:
+			var ang: float = TAU * float(i) / 16.0
+			var cand: Vector3 = player.global_position + Vector3(cos(ang), 0.0, sin(ang)) * float(radius)
+			cand.y = player.global_position.y
+			var cp: Vector3 = NavigationServer3D.map_get_closest_point(map, cand)
+			if Vector2(cp.x - cand.x, cp.z - cand.z).length() >= 0.8:
+				continue
+			# 视线检查:降临点必须与玩家无墙阻隔,保证登场演出看得见
+			var q := PhysicsRayQueryParameters3D.create(eye, cand + Vector3.UP * 1.2)
+			q.collision_mask = 4
+			if space.intersect_ray(q).is_empty():
+				return Vector3(cand.x, cp.y, cand.z)
+	var fwd: Vector3 = -player.global_transform.basis.z
+	fwd.y = 0.0
+	return player.global_position + (fwd.normalized() if fwd.length() > 0.1 else Vector3.FORWARD) * BOSS_SPAWN_MIN
+
+# 降临法阵: 火焰施法粒子 + 红色冲天光柱 + 扩散环, 自动清场
+func _spawn_portal_vfx(scene_root: Node, pos: Vector3) -> void:
+	var holder := Node3D.new()
+	scene_root.add_child(holder)
+	holder.global_position = pos
+	if ResourceLoader.exists(FIRE_CAST_VFX):
+		var vfx: Node = (load(FIRE_CAST_VFX) as PackedScene).instantiate()
+		holder.add_child(vfx)
+		_ignite_particles(vfx)
+	# 冲天光柱
+	var beam := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.5
+	cyl.bottom_radius = 1.4
+	cyl.height = 14.0
+	var bm := StandardMaterial3D.new()
+	bm.albedo_color = Color(1.0, 0.25, 0.1, 0.5)
+	bm.emission_enabled = true
+	bm.emission = Color(1.0, 0.3, 0.1)
+	bm.emission_energy_multiplier = 4.0
+	bm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	cyl.material = bm
+	beam.mesh = cyl
+	beam.position = Vector3(0, 7.0, 0)
+	holder.add_child(beam)
+	var light := OmniLight3D.new()
+	light.light_color = Color(1.0, 0.3, 0.12)
+	light.light_energy = 5.0
+	light.omni_range = 14.0
+	light.position = Vector3(0, 2.0, 0)
+	holder.add_child(light)
+	var tw: Tween = holder.create_tween()
+	tw.tween_interval(1.1)
+	tw.tween_property(beam, "scale", Vector3(0.02, 1.0, 0.02), 0.5).set_trans(Tween.TRANS_CUBIC)
+	tw.parallel().tween_property(light, "light_energy", 0.0, 0.5)
+	tw.tween_interval(1.6)
+	tw.tween_callback(Callable(holder, "queue_free"))
+
+# 递归点燃 VFX 场景里的所有粒子发射器
+func _ignite_particles(n: Node) -> void:
+	if n is GPUParticles3D:
+		(n as GPUParticles3D).emitting = true
+	elif n is CPUParticles3D:
+		(n as CPUParticles3D).emitting = true
+	for c in n.get_children():
+		_ignite_particles(c)
+
+# 通关对话 NPC 在 boss 倒地处现身 (原 boss_room._on_boss_defeated 的单地图版).
+func _spawn_clear_npc(boss_pos: Vector3) -> void:
+	var tree: SceneTree = get_tree()
+	if tree == null or tree.current_scene == null:
+		return
+	var npc := Area3D.new()
+	npc.set_script(load(BOSS_NPC_SCRIPT))
+	tree.current_scene.add_child(npc)
+	var p: Vector3 = boss_pos
+	# 朝玩家方向偏 2.5m, 贴地
+	var players: Array = tree.get_nodes_in_group("player")
+	if not players.is_empty() and players[0] is Node3D:
+		var d: Vector3 = (players[0] as Node3D).global_position - boss_pos
+		d.y = 0.0
+		p += (d.normalized() if d.length() > 0.1 else Vector3.BACK) * 2.5
+	p.y = 0.0
+	npc.global_position = p
 
 # ── 结算访问器 ────────────────────────────────────────────────
 # NPC 对话两轮结束后调用: 真正发 run_cleared → 结算面板弹出.

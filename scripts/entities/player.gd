@@ -16,6 +16,14 @@ signal dodge_ended()
 
 const SPEED: float = 7.0
 const ATTACK_RANGE: float = 18.0  # 利箭有效射程,目标在此范围内即停下射击
+# 锁敌保距(猎魔人手感):比射程更近的"安全输出带"。
+#   > KEEP_MAX 走近;< KEEP_MIN 面朝目标后撤;带内站定输出 —— 不再冲到敌人脸上。
+const KEEP_RANGE_MAX: float = 13.5
+const KEEP_RANGE_MIN: float = 6.0
+
+# 血瓶(键 1):无限次使用,回 35% 最大生命,10s 冷却
+const POTION_HEAL_PCT: float = 0.35
+const POTION_COOLDOWN: float = 10.0
 const ARRIVE_THRESHOLD: float = 0.2  # 到点判定半径
 
 # 功能塔·加速塔全局乘区 (TowerBuffManager 写: 激活=1+加成, 清除=1.0).
@@ -68,10 +76,17 @@ var _slot_manager: Node = null
 
 @onready var arrow_spawn_point: Marker3D = $ArrowSpawnPoint
 
+# 被遮挡透视:Godot 4.4+ 模板缓冲 X-Ray 预设。本体材质渲染时写入 stencil 标记,
+# 引擎自动附加的剪影 pass 只在「无标记且深度被挡」处上色 → 被墙挡住显形,
+# 被自己身体挡住(手臂在躯干后)不显形。此前用 depth_test_inverted overlay 无法区分
+# "墙挡"和"自挡",导致角色浑身蓝斑闪烁(破碎/抽搐感)——已弃用。
+const XRAY_TINT := Color(0.30, 0.72, 1.0, 0.55)
+
 func _ready() -> void:
 	add_to_group("player")
 	current_health = max_health
 	health_changed.emit(current_health, max_health)
+	_setup_xray_silhouette()
 	_slot_manager = get_node_or_null("SkillSlotManager")
 	if _slot_manager == null:
 		_slot_manager = get_node_or_null("../SkillSlotManager")  # 兼容兄弟节点摆放
@@ -79,9 +94,49 @@ func _ready() -> void:
 	if _slot_manager != null and _slot_manager.has_signal("skill_activated"):
 		_slot_manager.skill_activated.connect(_on_skill_activated)
 
+# 给角色 rig 可见网格的材质开启 stencil X-Ray(复制材质实例再改,不污染
+# 与敌人共享的 FBX 原材质)。仅玩家:敌人 rig 不走本脚本。
+func _setup_xray_silhouette() -> void:
+	if OS.get_environment("DH_NO_XRAY") == "1":
+		return
+	var rig := get_node_or_null("CharacterRig")
+	if rig == null:
+		return
+	var stack: Array[Node] = [rig]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		for c in n.get_children():
+			stack.append(c)
+		if not (n is MeshInstance3D):
+			continue
+		var mi := n as MeshInstance3D
+		if not mi.is_visible_in_tree():
+			continue   # 整包 16 个角色变体只显示 1 个,隐藏的不处理
+		if mi.material_override is BaseMaterial3D:
+			mi.material_override = _xray_dup(mi.material_override as BaseMaterial3D)
+			continue
+		for si in mi.get_surface_override_material_count():
+			var mat := mi.get_active_material(si)
+			if mat is BaseMaterial3D:
+				mi.set_surface_override_material(si, _xray_dup(mat as BaseMaterial3D))
+
+func _xray_dup(mat: BaseMaterial3D) -> BaseMaterial3D:
+	var dup := mat.duplicate() as BaseMaterial3D
+	dup.stencil_mode = BaseMaterial3D.STENCIL_MODE_XRAY
+	dup.stencil_color = XRAY_TINT
+	return dup
+
+var _potion_cd: float = 0.0
+
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+
+	# 血瓶:冷却滴答 + 键 1 触发(对话冻结时不可用)
+	if _potion_cd > 0.0:
+		_potion_cd -= delta
+	if Input.is_action_just_pressed("potion") and not is_frozen:
+		_use_potion()
 
 	# 闪避 buffer 衰减
 	if _evade_buffer_timer > 0.0:
@@ -141,14 +196,23 @@ func _tick_input_and_movement(delta: float) -> void:
 	# 3) LMB 按下/按住 — 重新决策:点中敌人 = 攻击目标;点中地面 = 移动目标
 	if lmb_held:
 		_resolve_lmb_click()
-	# 4) 攻击目标(从 LMB 点敌设置)— 走进射程,到了就停下让 SkillSlotManager 开火
+	# 4) 攻击目标(从 LMB 点敌设置)— 维持安全输出带:远了走近、近了后撤、带内站定开火
 	if is_instance_valid(_attack_target):
 		var ep: Vector3 = (_attack_target as Node3D).global_position
 		ep.y = global_position.y
 		var dist: float = global_position.distance_to(ep)
 		_face_toward(ep)
-		if dist > ATTACK_RANGE:
+		if dist > KEEP_RANGE_MAX:
 			_move_toward(ep, delta)
+		elif dist < KEEP_RANGE_MIN:
+			# 目标贴近:面朝目标后撤保距(射击照常,armed 只看射程)
+			var away: Vector3 = global_position - ep
+			away.y = 0.0
+			if away.length() > 0.01:
+				_move_toward(global_position + away.normalized() * 3.0, delta)
+				_face_toward(ep)   # 后撤不改朝向,持续对枪
+			else:
+				_stop_horizontal_motion()
 		else:
 			_stop_horizontal_motion()
 		return
@@ -179,6 +243,11 @@ func _resolve_lmb_click() -> void:
 		if just_clicked:
 			_spawn_click_indicator(enemy.global_position, true)
 		return
+	# 黏性锁定:按住期间光标滑出敌人模型时保持锁定输出,
+	# 不再降级成"走向敌人脚下的地面点"(这正是旧版冲脸的根源)。
+	# 想改走位 = 重新点一下地面(just_clicked)。
+	if not just_clicked and is_instance_valid(_attack_target):
+		return
 	var p: Vector3 = _get_mouse_ground_point()
 	_move_target = p
 	_has_move_target = true
@@ -186,19 +255,24 @@ func _resolve_lmb_click() -> void:
 	if just_clicked:
 		_spawn_click_indicator(p, false)
 
-# D3 经典点地反馈:在落点 spawn 一个 0.4s 圆环,扩散 + 淡出。
-# is_enemy=true → 红圈(锁敌);false → 白圈(走点)
+# D3 经典点地反馈:红圈(锁敌)单环;白色波纹(走点)三圈错峰扩散(水波)。
+# 高度抬 +0.06:L3 地砖顶面已压到碰撞面 +2cm(v7),环面浮在其上即可,不再需要 0.22 的高抬。
 func _spawn_click_indicator(world_pos: Vector3, is_enemy: bool) -> void:
 	var scene_root: Node = get_tree().current_scene
 	if scene_root == null:
 		return
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	if is_enemy:
-		mat.albedo_color = Color(1.0, 0.35, 0.30, 0.9)
-		mat.emission = Color(1.0, 0.30, 0.20, 1.0)
+		_spawn_click_ring(scene_root, world_pos, Color(1.0, 0.35, 0.30, 0.9), Color(1.0, 0.30, 0.20, 1.0), 0.0, 0.5, 1.4, 0.4)
 	else:
-		mat.albedo_color = Color(0.95, 0.95, 1.0, 0.85)
-		mat.emission = Color(0.85, 0.90, 1.0, 1.0)
+		_spawn_click_ring(scene_root, world_pos, Color(0.95, 0.95, 1.0, 0.9), Color(0.85, 0.90, 1.0, 1.0), 0.0, 0.35, 1.5, 0.45)
+		_spawn_click_ring(scene_root, world_pos, Color(0.95, 0.95, 1.0, 0.65), Color(0.85, 0.90, 1.0, 1.0), 0.12, 0.3, 1.25, 0.45)
+		_spawn_click_ring(scene_root, world_pos, Color(0.95, 0.95, 1.0, 0.4), Color(0.85, 0.90, 1.0, 1.0), 0.24, 0.25, 1.0, 0.45)
+
+func _spawn_click_ring(scene_root: Node, world_pos: Vector3, albedo: Color, emis: Color,
+		delay: float, from_s: float, to_s: float, dur: float) -> void:
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = albedo
+	mat.emission = emis
 	mat.emission_enabled = true
 	mat.emission_energy_multiplier = 3.5
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -211,13 +285,16 @@ func _spawn_click_indicator(world_pos: Vector3, is_enemy: bool) -> void:
 	torus.material = mat
 	var mi: MeshInstance3D = MeshInstance3D.new()
 	mi.mesh = torus
+	mi.visible = delay <= 0.0
 	scene_root.add_child(mi)
-	mi.global_position = world_pos + Vector3(0, 0.05, 0)
-	mi.scale = Vector3.ONE * 0.5
+	mi.global_position = world_pos + Vector3(0, 0.06, 0)
+	mi.scale = Vector3.ONE * from_s
 	var tw: Tween = create_tween().set_parallel(true)
-	tw.tween_property(mi, "scale", Vector3.ONE * 1.4, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(mat, "albedo_color:a", 0.0, 0.4)
-	tw.tween_property(mat, "emission_energy_multiplier", 0.0, 0.4)
+	if delay > 0.0:
+		tw.tween_callback(Callable(mi, "set_visible").bind(true)).set_delay(delay)
+	tw.tween_property(mi, "scale", Vector3.ONE * to_s, dur).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(delay)
+	tw.tween_property(mat, "albedo_color:a", 0.0, dur).set_delay(delay)
+	tw.tween_property(mat, "emission_energy_multiplier", 0.0, dur).set_delay(delay)
 	tw.chain().tween_callback(Callable(mi, "queue_free"))
 
 # 物理 raycast(layer mask = 敌人层 2)从相机射,命中的就是该敌人 collider 的根。
@@ -291,6 +368,57 @@ func _stop_horizontal_motion() -> void:
 func _clear_targets() -> void:
 	_has_move_target = false
 	_attack_target = null
+
+# ── 血瓶(键 1)────────────────────────────────────
+func _use_potion() -> void:
+	if _potion_cd > 0.0:
+		_spawn_float_text("冷却 %.1fs" % _potion_cd, Color(0.85, 0.5, 0.4))
+		return
+	if current_health >= max_health:
+		_spawn_float_text("生命已满", Color(0.75, 0.75, 0.75))
+		return
+	_potion_cd = POTION_COOLDOWN
+	var heal: int = int(round(float(max_health) * POTION_HEAL_PCT))
+	current_health = mini(current_health + heal, max_health)
+	health_changed.emit(current_health, max_health)
+	_spawn_float_text("+%d" % heal, Color(0.4, 1.0, 0.45))
+	# 治疗绿光:双圈扩散 + 短促亮光
+	var scene_root: Node = get_tree().current_scene
+	if scene_root != null:
+		var base: Vector3 = global_position
+		base.y += 0.06
+		_spawn_click_ring(scene_root, base, Color(0.35, 1.0, 0.5, 0.85), Color(0.3, 1.0, 0.45, 1.0), 0.0, 0.4, 1.6, 0.5)
+		_spawn_click_ring(scene_root, base, Color(0.35, 1.0, 0.5, 0.5), Color(0.3, 1.0, 0.45, 1.0), 0.15, 0.3, 1.2, 0.5)
+		var l := OmniLight3D.new()
+		l.light_color = Color(0.4, 1.0, 0.5)
+		l.light_energy = 2.2
+		l.omni_range = 5.0
+		l.shadow_enabled = false
+		scene_root.add_child(l)
+		l.global_position = global_position + Vector3.UP * 1.5
+		var lt: Tween = l.create_tween()
+		lt.tween_property(l, "light_energy", 0.0, 0.5)
+		lt.tween_callback(Callable(l, "queue_free"))
+
+# 头顶飘字(治疗量/冷却提示)
+func _spawn_float_text(txt: String, col: Color) -> void:
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		return
+	var lbl := Label3D.new()
+	lbl.text = txt
+	lbl.modulate = col
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.no_depth_test = true
+	lbl.font_size = 64
+	lbl.pixel_size = 0.01
+	lbl.outline_size = 12
+	scene_root.add_child(lbl)
+	lbl.global_position = global_position + Vector3(0, 2.3, 0)
+	var tw: Tween = lbl.create_tween()
+	tw.tween_property(lbl, "global_position", lbl.global_position + Vector3(0, 1.1, 0), 0.8)
+	tw.parallel().tween_property(lbl, "modulate:a", 0.0, 0.8)
+	tw.tween_callback(Callable(lbl, "queue_free"))
 
 # ── 朝向 ────────────────────────────────────────────
 func _face_toward(world_point: Vector3) -> void:
