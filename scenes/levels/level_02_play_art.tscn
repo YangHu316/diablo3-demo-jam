@@ -3118,7 +3118,7 @@ script = ExtResource("8")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -76.79977, -1.937151e-07, -3.0630455)
 
 [node name="Group_Zombie_x11" parent="." unique_id=1183187689 instance=ExtResource("9_7kxde")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.03876, -1.937151e-07, 55.436813)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.58571, 1.7136335e-06, 39.116203)
 
 [node name="Group_Dog_x5" parent="." unique_id=1937043361 instance=ExtResource("11_rmmqy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2229, 7.599592e-07, 17.830088)
@@ -3130,10 +3130,10 @@ transform = Transform3D(1.0004253, -0.0011268547, 0.0016113477, 0.0011301718, 1.
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.599335, 7.599592e-07, 6.1186047)
 
 [node name="Group_Dog_x7" parent="." unique_id=1247685860 instance=ExtResource("11_rmmqy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.51008, 7.599592e-07, 39.37099)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.51008, 7.599592e-07, 36.681053)
 
 [node name="Group_Zombie_x12" parent="." unique_id=1395945035 instance=ExtResource("9_7kxde")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -54.018833, 7.599592e-07, -23.078289)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.670013, 7.599592e-07, -23.078289)
 
 [node name="EliteGroup_SkeletonGuard" parent="." unique_id=138393122 instance=ExtResource("13_tlxbo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.986954, 1.1803445, -57.14684)
@@ -3181,10 +3181,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6177022, 0.117586896, 79.2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -52.346756, 7.599592e-07, 81.84159)
 
 [node name="Group_SkeletonGuard_x7" parent="." unique_id=1267331422 instance=ExtResource("15_l56i7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.328682, 7.599592e-07, 56.786777)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.472256, 7.599592e-07, 56.786777)
 
 [node name="Group_Bloated_x8" parent="." unique_id=98342184 instance=ExtResource("18_pg437")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80.561844, 7.599592e-07, 110.68601)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 82.716705, 7.599592e-07, 110.68601)
 
 [node name="Group_Bloated_x9" parent="." unique_id=763400725 instance=ExtResource("18_pg437")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.48216, 7.599592e-07, 85.2554)
